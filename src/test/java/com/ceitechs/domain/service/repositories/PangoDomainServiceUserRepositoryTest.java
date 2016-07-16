@@ -73,7 +73,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void testSaveUser() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -87,7 +86,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void testSaveUserForSize() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -104,7 +102,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void testSaveUserWithoutAddress() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -117,7 +114,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void testSaveUserWithAddress() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -139,7 +135,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void testUpdateAddress() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -173,7 +168,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void testSaveUserProfile() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -199,7 +193,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void testSaveUserPreferences() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -234,7 +227,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void testDeleteUserPreferences() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -274,7 +266,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void testUpdateUserPreferences() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -350,14 +341,12 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void findAllUser() {
         List<User> userList = userRepository.findAll();
         assertNotNull(userList);
     }
 
     @Test
-    @Ignore
     public void saveImage() {
 
         String fileName = resource.getFilename();
@@ -377,7 +366,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
-    @Ignore
     public void getImage() {
         List<GridFSDBFile> files = gridFsTemplate
                 .find(new Query().addCriteria(Criteria.where("metadata.userReferenceId").is("1")));
