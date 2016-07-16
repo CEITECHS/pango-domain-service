@@ -112,12 +112,11 @@ public class PangoUtility {
 
 
 	public static String generateIdAsString() {
-		return UUID.randomUUID().toString();
+		return replaceHyphanes(UUID.randomUUID().toString());
 	}
 
-	public static String generateProviderCode(String codefrom) {
-		return StringUtils.upperCase(RandomStringUtils.random(5,
-				codefrom.replaceAll("\\s+", "")));
+	public static String replaceHyphanes(String codefrom) {
+		return codefrom.replaceAll("\\s+", "");
 	}
 
 	public static <T> ArrayList<T> toArrayList(final Iterator<T> iterator) {
