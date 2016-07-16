@@ -69,8 +69,6 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
         assertEquals(meta.getReferenceId(), FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(file), ReferenceIdFor.PROPERTY).getReferenceId());
         gridFsService.deleteAttachment(resource.getFilename(),"1", ReferenceIdFor.PROPERTY);
         assertTrue(operations.find(null).size() == 0);
-
-
 	}
 	
 
