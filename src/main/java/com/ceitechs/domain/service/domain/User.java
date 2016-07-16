@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Getter;
@@ -15,15 +16,23 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@Document(collection="user")
+@Document(collection = "user")
+@TypeAlias("user")
 public class User {
     @Id
     private BigInteger userReferenceId;
+
     private String firstName;
+
     private String lastName;
+
     private String phoneNumber;
+
     private String emailAddress;
+
     private Address address;
+
     private UserProfile profile;
+
     private List<UserPreference> preferences;
 }

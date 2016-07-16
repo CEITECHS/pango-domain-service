@@ -28,5 +28,5 @@ public class UserPreference {
     private boolean active;
     private boolean sendNotification;
     private PreferenceCategory category;
-    private UserSearchHistory customerSearchHistory;
+    private UserSearchHistory userSearchHistory;
 }

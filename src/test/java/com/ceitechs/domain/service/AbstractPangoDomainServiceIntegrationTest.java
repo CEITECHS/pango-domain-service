@@ -9,7 +9,7 @@ import com.ceitechs.domain.service.config.PangoDomainServiceConfig;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(properties = {"db.host.name = localhost:27017", "db.password = pangoPreprodWriteUsrPass10",
-        "db.user =pangoWriteUser", "db.name = pango"})
+        "db.user =pangoWriteUser", "db.name = pango", "bucket.name = picture"})
 @ContextConfiguration(classes = {PangoDomainServiceConfig.class})
 public class AbstractPangoDomainServiceIntegrationTest {
 
