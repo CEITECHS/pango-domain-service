@@ -106,7 +106,7 @@ class PangoGridFsServiceImpl implements GridFsService {
     public void deleteAttachment(String fileName, String referenceId, ReferenceIdFor referenceIdFor) {
         Assert.hasText(fileName, "File name to delete can not be null or empty");
         Assert.hasText(referenceId, "Reference id can not be null or empty");
-        Criteria criteria = new Criteria(getMetaFieldWrapper(MetadataFields.FILE_NAME)).is(fileName);
+        Criteria criteria = new Criteria(MetadataFields.FILE_NAME).is(fileName);
         criteria.and(getMetaFieldWrapper(referenceIdFor.getMetadataField())).is(referenceId);
           operations.delete(query(criteria));
     }

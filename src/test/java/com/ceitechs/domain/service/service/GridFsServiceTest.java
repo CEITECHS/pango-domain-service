@@ -45,6 +45,10 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
 		 // then
 		 List<GridFSDBFile> files = operations.find(null);
 		 assertTrue(files.size() > 0);
+
+        gridFsService.deleteAttachment(resource.getFilename(),"1", ReferenceIdFor.PROPERTY);
+        List<GridFSDBFile> filesfew = operations.find(null);
+        assertTrue(files.size() > filesfew.size() );
 	}
 	
 	@Test
@@ -59,6 +63,8 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
 		GridFSDBFile file = gridFsService.getProfilePicture(meta,ReferenceIdFor.PROPERTY);
 		assertNotNull(file);
         assertEquals(meta.getReferenceId(), FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(file), ReferenceIdFor.PROPERTY).getReferenceId());
+        gridFsService.deleteAttachment(resource.getFilename(),"1", ReferenceIdFor.PROPERTY);
+        assertTrue(operations.find(null).size() == 0);
 
 	}
 	
