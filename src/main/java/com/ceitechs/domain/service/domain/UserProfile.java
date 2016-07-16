@@ -16,7 +16,7 @@ public class UserProfile {
     private long profileId;
     private String userName;
     private String password;
-    private Picture profilePicture;
+    private FileMetadata profilePicture;
     private boolean verified;
     private String verificationCode;
     private LocalDate verificationDate;

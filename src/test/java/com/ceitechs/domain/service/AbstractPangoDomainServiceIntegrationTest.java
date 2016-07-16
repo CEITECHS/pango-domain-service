@@ -2,6 +2,8 @@ package com.ceitechs.domain.service;
 
 import com.ceitechs.domain.service.config.PangoDomainServiceConfig;
 import org.junit.runner.RunWith;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -11,5 +13,5 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
         "db.user =pangoWriteUser", "db.name = pango", "bucket.name = picture"})
 @ContextConfiguration(classes = {PangoDomainServiceConfig.class})
 public class AbstractPangoDomainServiceIntegrationTest {
-
+    protected static final Resource resource = new ClassPathResource("ceitechs.png");
 }

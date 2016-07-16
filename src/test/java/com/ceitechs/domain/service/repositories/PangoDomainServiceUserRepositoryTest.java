@@ -31,7 +31,7 @@ import com.mongodb.gridfs.GridFSDBFile;
  * @since 1.0
  */
 public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
-    protected static final Resource resource = new ClassPathResource("ceitechs.png");
+
 
     @Autowired
     private PangoDomainServiceUserRepository userRepository;

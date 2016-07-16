@@ -7,10 +7,15 @@ import lombok.Setter;
  * @author iddymagohe
  * @since 0.1
  */
+
 @Getter
 @Setter
-public class Picture {
-    private String extension;
+public class Attachment {
+
+    private String fileType;
+    private String fileName;
+    private String fileSize;
     private String contentBase64;
-    private String caption;
+    private String fileDescription;
+
 }

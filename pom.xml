@@ -52,6 +52,12 @@
 			<version>1.16.6</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3.2</version>
+		</dependency>
+
 		<!-- testing dependencies-->
 		<dependency>
 			<groupId>org.springframework</groupId>
