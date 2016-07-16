@@ -86,7 +86,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
     @Test
     public void testSaveUserWithoutAddress() {
-
         User user = new User();
         user.setUserReferenceId(userReferenceId);
         user.setFirstName("fName");
@@ -94,13 +93,11 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
         user.setEmailAddress("fName.lName@pango.com");
 
         User savedUser = userRepository.save(user);
-
         assertThat("The address object should be null", savedUser.getAddress(), nullValue());
     }
 
     @Test
     public void testSaveUserWithAddress() {
-
         User user = new User();
         user.setUserReferenceId(userReferenceId);
         user.setFirstName("fName");
@@ -118,6 +115,39 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
         User savedUser = userRepository.save(user);
         assertThat("The address object should not be null", savedUser.getAddress(), notNullValue());
+    }
+
+    @Test
+    public void testUpdateAddress() {
+        User user = new User();
+        user.setUserReferenceId(userReferenceId);
+        user.setFirstName("fName");
+        user.setLastName("lName");
+        user.setEmailAddress("fName.lName@pango.com");
+
+        Address address = new Address();
+        address.setAddressLine1("Address Line 1");
+        address.setAddressLine2("Address Line 2");
+        address.setCity("City");
+        address.setState("State");
+        address.setZip("12345");
+
+        user.setAddress(address);
+
+        User savedUser = userRepository.save(user);
+        Address newAddress = new Address();
+        newAddress.setAddressLine1("New Address Line 1");
+        newAddress.setAddressLine2("New Address Line 2");
+        newAddress.setCity("New City");
+        newAddress.setState("New State");
+        newAddress.setZip("54321");
+
+        savedUser.setAddress(newAddress);
+        User newSavedUser = userRepository.save(savedUser);
+
+        assertThat("The address object should not be null", newSavedUser.getAddress(), notNullValue());
+        assertThat("The returned address should be same as the updated address",
+                (newSavedUser.getAddress().equals(newAddress)));
     }
 
     @Test
