@@ -6,6 +6,7 @@ package com.ceitechs.domain.service.util;
 import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.domain.FileMetadata;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.FileCopyUtils;
 
 import javax.crypto.Cipher;
@@ -155,7 +156,7 @@ public class PangoUtility {
      * @param referenceIdFor
      * @return
      */
-    public static Map<String, String> attachmentMetadataToMap(String referenceId,ReferenceIdFor referenceIdFor, Attachment attachment) {
+    public static Map<String, String> attachmentMetadataToMap(String referenceId,ReferenceIdFor referenceIdFor, String parentReferenceId, Attachment attachment) {
         Map<String, String> metadataMap = new HashMap<>();
         metadataMap.put(MetadataFields.CONTENT_TYPE, attachment.getFileType());
         metadataMap.put(MetadataFields.FILE_NAME, attachment.getFileName());
@@ -163,6 +164,11 @@ public class PangoUtility {
         metadataMap.put(MetadataFields.FILE_DESCR, attachment.getFileDescription());
         metadataMap.put(referenceIdFor.getMetadataField(), referenceId);
         metadataMap.put(MetadataFields.PROFILEPICTURE, String.valueOf(attachment.isProfilePicture()));
+        referenceIdFor.getParentField().ifPresent(p -> {
+            if (org.springframework.util.StringUtils.hasText(parentReferenceId)){
+                 metadataMap.put(p.getMetadataField(),parentReferenceId);
+            }
+        });
         return metadataMap;
 
     }

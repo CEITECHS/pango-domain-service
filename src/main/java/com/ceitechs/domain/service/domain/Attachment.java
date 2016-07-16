@@ -14,7 +14,7 @@ public class Attachment {
 
     private String fileType;
     private String fileName;
-    private String fileSize;
+    private long fileSize;
     private String contentBase64;
     private String fileDescription;
     private boolean profilePicture;

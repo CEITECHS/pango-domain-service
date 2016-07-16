@@ -8,10 +8,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.InputStream;
+import java.util.*;
 
+import com.ceitechs.domain.service.domain.*;
+import com.ceitechs.domain.service.service.GridFsService;
+import com.ceitechs.domain.service.util.ReferenceIdFor;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -22,9 +24,6 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
-import com.ceitechs.domain.service.domain.Address;
-import com.ceitechs.domain.service.domain.User;
-import com.ceitechs.domain.service.domain.UserProfile;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -42,6 +41,9 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
     @Autowired
     private GridFsTemplate gridFsTemplate;
+
+    @Autowired
+    GridFsService gridFsService;
 
     private String userReferenceId;
 
@@ -186,11 +188,17 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     @Test
     @Ignore
     public void saveImage() {
-        DBObject metadata = new BasicDBObject();
-        metadata.put("userReferenceId", "1");
-        metadata.put("caption", "profile_pic");
+
+        String fileName = resource.getFilename();
+
         try {
-            gridFsTemplate.store(resource.getInputStream(), resource.getFilename(), "image/png", metadata);
+            Attachment attachment = new Attachment();
+            attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
+            attachment.setFileName(resource.getFilename());
+            attachment.setFileSize(resource.getFile().length());
+            attachment.setFileDescription("profile_picture");
+            Map<String,String> metadata = PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.USER,"",attachment);
+            gridFsService.storeFiles(resource.getInputStream(), metadata, BasicDBObject::new); //TODO: test case
         } catch (IOException e) {
             e.printStackTrace();
         }

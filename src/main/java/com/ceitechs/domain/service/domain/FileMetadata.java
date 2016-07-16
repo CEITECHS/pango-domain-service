@@ -23,9 +23,15 @@ public class FileMetadata {
     private static final Logger logger = LoggerFactory.getLogger(FileMetadata.class);
 
     public enum FILETYPE {
-        PHOTO,
-        DOCUMENT,
-        VIDEO
+        PHOTO("image/"),
+        DOCUMENT("application/"),
+        VIDEO("application/");
+
+        private String suffix;
+
+        FILETYPE(String suffix) {
+            this.suffix = suffix;
+        }
     }
 
     private String referenceId;
