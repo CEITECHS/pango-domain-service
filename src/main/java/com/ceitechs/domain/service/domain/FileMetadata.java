@@ -31,4 +31,5 @@ public class FileMetadata {
     private String contentBase64;
     @Getter
     private String fileDescription;
+
 }

@@ -14,7 +14,7 @@ public interface MetadataFields {
     String ENQUIRY_REFERENCE_ID = "enquiryReferenceId";
     String TYPE = "type";
     String CONTENT_TYPE = "contentType";
-    String THUMBNAIL = "thumbnail";
+    String PROFILEPICTURE = "thumbnail";
     String FILE_NAME = "filename";
     String FILE_DESCR = "description";
     String REQURED_META = "A minimum of filename and ContentType metadata is required";

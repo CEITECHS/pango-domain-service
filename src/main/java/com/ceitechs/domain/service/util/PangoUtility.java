@@ -162,7 +162,7 @@ public class PangoUtility {
         metadataMap.put(MetadataFields.TYPE, FileMetadata.FILETYPE.PHOTO.name());
         metadataMap.put(MetadataFields.FILE_DESCR, attachment.getFileDescription());
         metadataMap.put(referenceIdFor.getMetadataField(), referenceId);
-        metadataMap.put(MetadataFields.THUMBNAIL, "true");
+        metadataMap.put(MetadataFields.PROFILEPICTURE, String.valueOf(attachment.isProfilePicture()));
         return metadataMap;
 
     }
