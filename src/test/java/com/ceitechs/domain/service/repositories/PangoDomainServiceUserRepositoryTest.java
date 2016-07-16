@@ -16,14 +16,12 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
 import com.ceitechs.domain.service.domain.Address;
@@ -38,7 +36,6 @@ import com.ceitechs.domain.service.util.DateConvertUtility;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.BasicDBObject;
-import com.mongodb.gridfs.GridFSDBFile;
 
 /**
  * 
@@ -49,9 +46,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
     @Autowired
     private PangoDomainServiceUserRepository userRepository;
-
-    @Autowired
-    private GridFsTemplate gridFsTemplate;
 
     @Autowired
     GridFsService gridFsService;
@@ -348,9 +342,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
     @Test
     public void saveImage() {
-
-        String fileName = resource.getFilename();
-
         try {
             Attachment attachment = new Attachment();
             attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
@@ -362,19 +353,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
             gridFsService.storeFiles(resource.getInputStream(), metadata, BasicDBObject::new);
         } catch (IOException e) {
             e.printStackTrace();
-        }
-    }
-
-    @Test
-    public void getImage() {
-        List<GridFSDBFile> files = gridFsTemplate
-                .find(new Query().addCriteria(Criteria.where("metadata.userReferenceId").is("1")));
-        for (GridFSDBFile file : files) {
-            try {
-                file.writeTo("/Users/abhisheksingh/Downloads/new-mongodb.png");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
