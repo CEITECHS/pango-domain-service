@@ -19,6 +19,10 @@ public class FileMetadata {
 
     @Getter
     private String referenceId;
+
+    @Getter
+    private String parentReferenceId;
+
     @Getter
     private String fileType; //PHOTO or VIDEO,Attachment
     @Getter

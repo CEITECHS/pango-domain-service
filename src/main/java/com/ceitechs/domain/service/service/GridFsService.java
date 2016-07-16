@@ -33,11 +33,40 @@ public interface GridFsService {
      * @param metadata
      * @param dbObject
      */
-    public void storeFiles(InputStream content, Map<String, String> metadata, Function<Map<String, String>, DBObject> dbObject);
+    void storeFiles(InputStream content, Map<String, String> metadata, Function<Map<String, String>, DBObject> dbObject);
 
-    public GridFSDBFile getUserProfilePicture(FileMetadata searchCriteria);
+    /**
+     *
+     * @param searchCriteria
+     * @return
+     */
+    GridFSDBFile getUserProfilePicture(FileMetadata searchCriteria);
 
-    public List<GridFSDBFile> getAllAttachments(FileMetadata searchCriteria, ReferenceIdFor idFor);
+    /**
+     * Retrieves all attachments by {@link FileMetadata#referenceId}
+     * @param searchCriteria
+     * @param idFor
+     * @return
+     */
+    List<GridFSDBFile> getAllAttachments(FileMetadata searchCriteria, ReferenceIdFor idFor);
+
+    /**
+     * Deletes a specific attachment by {@link FileMetadata#referenceId} and {@link FileMetadata#fileName}
+     * @param fileName
+     * @param referenceIdFor
+     */
+    void deleteAttachment(String fileName, ReferenceIdFor referenceIdFor);
+
+    /**
+     * Deletes all attachments by the {@link FileMetadata#referenceId} ,
+     * optional siblings when {@link FileMetadata#parentReferenceId} is passed and @param deleteSiblings id true
+     * @param id
+     * @param deleteSiblings
+     */
+    void deleteAttachementsFor(final FileMetadata searchCriteria, ReferenceIdFor id, boolean deleteSiblings);
+
+
+
 
 }
 
@@ -74,6 +103,17 @@ class PangoGridFsServiceImpl implements GridFsService {
         criteria.and(getMetaFieldWrapper(idFor.getMetadataField())).is(searchCriteria.getReferenceId());
         return operations.find(query(criteria));
     }
+
+    @Override
+    public void deleteAttachment(String fileName, ReferenceIdFor referenceIdFor) {
+
+    }
+
+    @Override
+    public void deleteAttachementsFor(FileMetadata searchCriteria, ReferenceIdFor id, boolean deleteSiblings) {
+
+    }
+
 
     /**
      * meta-data fields are nested in {@value #METADATAFIELD}
