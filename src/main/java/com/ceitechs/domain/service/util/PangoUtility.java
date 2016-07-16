@@ -152,18 +152,18 @@ public class PangoUtility {
      * 
      * @param referenceId
      * @param attachment
+     * @param referenceIdFor
      * @return
      */
-    public static Map<String, String> attachmentMetadataToMap(String referenceId, Attachment attachment) {
+    public static Map<String, String> attachmentMetadataToMap(String referenceId,ReferenceIdFor referenceIdFor, Attachment attachment) {
         Map<String, String> metadataMap = new HashMap<>();
         metadataMap.put(MetadataFields.CONTENT_TYPE, attachment.getFileType());
         metadataMap.put(MetadataFields.FILE_NAME, attachment.getFileName());
         metadataMap.put(MetadataFields.TYPE, FileMetadata.FILETYPE.PHOTO.name());
         metadataMap.put(MetadataFields.FILE_DESCR, "Thumbnail image");
-        metadataMap.put(MetadataFields.USER_REFERENCE_ID, referenceId);
+        metadataMap.put(referenceIdFor.getMetadataField(), referenceId);
         metadataMap.put(MetadataFields.THUMBNAIL, "true");
         return metadataMap;
 
     }
-
 }

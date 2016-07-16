@@ -39,7 +39,7 @@ public interface GridFsService {
 }
 
 @Service
-class EmefanaGridFsServiceImpl implements GridFsService{
+class PangoGridFsServiceImpl implements GridFsService{
 
 	@Autowired
 	private GridFsOperations operations;
