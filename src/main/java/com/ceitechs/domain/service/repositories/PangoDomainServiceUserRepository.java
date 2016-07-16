@@ -1,7 +1,5 @@
 package com.ceitechs.domain.service.repositories;
 
-import java.math.BigInteger;
-
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.ceitechs.domain.service.domain.User;
@@ -12,7 +10,7 @@ import com.ceitechs.domain.service.domain.User;
  * @author abhisheksingh -
  * @since 1.0
  */
-public interface PangoDomainServiceUserRepository extends MongoRepository<User, BigInteger> {
+public interface PangoDomainServiceUserRepository extends MongoRepository<User, String> {
 
 }
 

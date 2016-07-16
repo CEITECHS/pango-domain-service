@@ -2,18 +2,12 @@ package com.ceitechs.domain.service.repositories;
 
 import static org.junit.Assert.assertNotNull;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
@@ -32,7 +26,6 @@ import com.mongodb.gridfs.GridFSDBFile;
  */
 public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
 
-
     @Autowired
     private PangoDomainServiceUserRepository userRepository;
 
@@ -42,7 +35,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     @Test
     public void saveUser() {
         User user = new User();
-        user.setUserReferenceId(new BigInteger("1"));
+        user.setUserReferenceId("1");
         user.setFirstName("fName");
         user.setLastName("lName");
         user.setEmailAddress("fName.lName@pango.com");
@@ -55,7 +48,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
         address.setZip("12345");
 
         user.setAddress(address);
-        
+
         User savedUser = userRepository.save(user);
         assertNotNull("The expected userId should not be null", savedUser.getUserReferenceId());
     }
@@ -73,7 +66,6 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
         DBObject metadata = new BasicDBObject();
         metadata.put("userReferenceId", "1");
         metadata.put("caption", "profile_pic");
-        InputStream is;
         try {
             gridFsTemplate.store(resource.getInputStream(), resource.getFilename(), "image/png", metadata);
         } catch (IOException e) {

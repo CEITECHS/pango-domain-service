@@ -1,6 +1,5 @@
 package com.ceitechs.domain.service.domain;
 
-import java.math.BigInteger;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -20,7 +19,7 @@ import lombok.Setter;
 @TypeAlias("user")
 public class User {
     @Id
-    private BigInteger userReferenceId;
+    private String userReferenceId;
 
     private String firstName;
 
