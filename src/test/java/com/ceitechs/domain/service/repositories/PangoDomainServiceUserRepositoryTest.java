@@ -12,6 +12,8 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
@@ -29,6 +31,7 @@ import com.mongodb.gridfs.GridFSDBFile;
  * @since 1.0
  */
 public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
+    protected static final Resource resource = new ClassPathResource("ceitechs.png");
 
     @Autowired
     private PangoDomainServiceUserRepository userRepository;
@@ -72,9 +75,8 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
         metadata.put("caption", "profile_pic");
         InputStream is;
         try {
-            is = new FileInputStream("/Users/abhisheksingh/Downloads/mongodb.png");
-            gridFsTemplate.store(is, "mongodb.png", "image/png", metadata);
-        } catch (FileNotFoundException e) {
+            gridFsTemplate.store(resource.getInputStream(), resource.getFilename(), "image/png", metadata);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
