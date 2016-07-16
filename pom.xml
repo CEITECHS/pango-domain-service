@@ -25,6 +25,7 @@
 	<developers>
 		<developer>
 			<name>Abhishek Singh</name>
+			<email>abhikumar.singh@gmail.com</email>
 		</developer>
 		<developer>
 			<name>Iddy Magohe</name>
@@ -58,7 +59,7 @@
 			<version>3.3.2</version>
 		</dependency>
 
-		<!-- testing dependencies-->
+		<!-- testing dependencies -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
@@ -66,6 +67,11 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
