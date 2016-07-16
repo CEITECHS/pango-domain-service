@@ -13,8 +13,6 @@ import java.util.List;
 @Getter
 @Setter
 public class UserProfile {
-    private long profileId;
-    private String userName;
     private String password;
     private FileMetadata profilePicture;
     private boolean verified;

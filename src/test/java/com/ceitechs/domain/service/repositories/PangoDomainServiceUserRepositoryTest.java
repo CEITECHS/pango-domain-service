@@ -24,6 +24,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
 import com.ceitechs.domain.service.domain.Address;
 import com.ceitechs.domain.service.domain.User;
+import com.ceitechs.domain.service.domain.UserProfile;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -148,6 +149,31 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
         assertThat("The address object should not be null", newSavedUser.getAddress(), notNullValue());
         assertThat("The returned address should be same as the updated address",
                 (newSavedUser.getAddress().equals(newAddress)));
+    }
+
+    @Test
+    public void testSaveUserProfile() {
+        User user = new User();
+        user.setUserReferenceId(userReferenceId);
+        user.setFirstName("fName");
+        user.setLastName("lName");
+        user.setEmailAddress("fName.lName@pango.com");
+
+        Address address = new Address();
+        address.setAddressLine1("Address Line 1");
+        address.setAddressLine2("Address Line 2");
+        address.setCity("City");
+        address.setState("State");
+        address.setZip("12345");
+        user.setAddress(address);
+
+        UserProfile userProfile = new UserProfile();
+        userProfile.setPassword("password");
+        user.setProfile(userProfile);
+
+        User savedUser = userRepository.save(user);
+        assertThat("The returned user profile should be same as the updated user profile",
+                savedUser.getProfile().equals(userProfile));
     }
 
     @Test
