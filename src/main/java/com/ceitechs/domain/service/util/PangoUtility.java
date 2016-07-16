@@ -160,7 +160,7 @@ public class PangoUtility {
         metadataMap.put(MetadataFields.CONTENT_TYPE, attachment.getFileType());
         metadataMap.put(MetadataFields.FILE_NAME, attachment.getFileName());
         metadataMap.put(MetadataFields.TYPE, FileMetadata.FILETYPE.PHOTO.name());
-        metadataMap.put(MetadataFields.FILE_DESCR, "Thumbnail image");
+        metadataMap.put(MetadataFields.FILE_DESCR, attachment.getFileDescription());
         metadataMap.put(referenceIdFor.getMetadataField(), referenceId);
         metadataMap.put(MetadataFields.THUMBNAIL, "true");
         return metadataMap;
