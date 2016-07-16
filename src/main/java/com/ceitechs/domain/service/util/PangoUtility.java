@@ -6,8 +6,6 @@ package com.ceitechs.domain.service.util;
 import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.domain.FileMetadata;
 import lombok.Getter;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.FileCopyUtils;
 
 import javax.crypto.Cipher;
@@ -162,7 +160,7 @@ public class PangoUtility {
         metadataMap.put(MetadataFields.FILE_NAME, attachment.getFileName());
         metadataMap.put(MetadataFields.TYPE, FileMetadata.FILETYPE.PHOTO.name());
         metadataMap.put(MetadataFields.FILE_DESCR, "Thumbnail image");
-        metadataMap.put(MetadataFields.PROVIDER_ID, referenceId);
+        metadataMap.put(MetadataFields.USER_REFERENCE_ID, referenceId);
         metadataMap.put(MetadataFields.THUMBNAIL, "true");
         return metadataMap;
 

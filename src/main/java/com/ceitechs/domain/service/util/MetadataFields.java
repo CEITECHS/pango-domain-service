@@ -8,12 +8,13 @@ package com.ceitechs.domain.service.util;
  * @since 1.0
  */
 public interface MetadataFields {
-	public static final String PROVIDER_ID = "provider_id";
-	public static final String TYPE = "type";
-	public static final String CONTENT_TYPE = "contentType";
-	public static final String THUMBNAIL = "thumbnail";
-	public static final String USER_ID = "user_id";
-	public static final String FILE_NAME="filename";
-	public static final String FILE_DESCR="description";
-	public static final String REQURED_META="A minimum of filename and ContentType metadata is required";
+	String USER_REFERENCE_ID = "provider_id";
+	String PROPERTY_REFERENCE_ID="";
+	String UNIT_REFERENCE_ID="";
+	String TYPE = "type";
+	String CONTENT_TYPE = "contentType";
+	String THUMBNAIL = "thumbnail";
+	String FILE_NAME="filename";
+	String FILE_DESCR="description";
+	String REQURED_META="A minimum of filename and ContentType metadata is required";
 }

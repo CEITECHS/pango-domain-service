@@ -63,7 +63,7 @@ class EmefanaGridFsServiceImpl implements GridFsService{
 //		Assert.notNull(searchCriteria,"search criteria for thumbnail can not be null");
 //		Criteria criteria = new Criteria(getMetaField(MetadataFields.TYPE)).is(searchCriteria.oType().orElse(FileMetadata.FILETYPE.PHOTO.name()));
 //		searchCriteria.oProviderId().ifPresent(provider -> {
-//			criteria.and(getMetaField(MetadataFields.PROVIDER_ID)).is(provider);
+//			criteria.and(getMetaField(MetadataFields.USER_REFERENCE_ID)).is(provider);
 //			searchCriteria.oType().ifPresent(type -> {
 //				if (type.equalsIgnoreCase(FileMetadata.FILETYPE.PHOTO.name())) {
 //					criteria.and(getMetaField(MetadataFields.THUMBNAIL)).is("true");
@@ -81,7 +81,7 @@ class EmefanaGridFsServiceImpl implements GridFsService{
 	public List<GridFSDBFile> getAllAttachments(FileMetadata searchCriteria) {
 		Assert.notNull(searchCriteria,"Search criteria for photo gallery can not be null");
 		//Criteria criteria = new Criteria(getMetaField(MetadataFields.TYPE)).is(searchCriteria.oType().orElse(FILETYPE.PHOTO.name()));
-		//searchCriteria.oProviderId().ifPresent(provider -> criteria.and(getMetaField(MetadataFields.PROVIDER_ID)).is(provider));
+		//searchCriteria.oProviderId().ifPresent(provider -> criteria.and(getMetaField(MetadataFields.USER_REFERENCE_ID)).is(provider));
 		//return operations.find(query(criteria));
         return null;
 	}
