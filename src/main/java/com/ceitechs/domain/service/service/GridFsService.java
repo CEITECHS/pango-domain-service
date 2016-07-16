@@ -64,7 +64,7 @@ public interface GridFsService {
      * @param referenceIdFor
      * @param deleteSiblings
      */
-    void deleteAllAttachementsFor(final FileMetadata searchCriteria, ReferenceIdFor referenceIdFor, boolean deleteSiblings);
+    void deleteAllAttachmentsFor(final FileMetadata searchCriteria, ReferenceIdFor referenceIdFor, boolean deleteSiblings);
 
 }
 
@@ -118,7 +118,7 @@ class PangoGridFsServiceImpl implements GridFsService {
      * @param deleteSiblings
      */
     @Override
-    public void deleteAllAttachementsFor(FileMetadata searchCriteria, ReferenceIdFor referenceIdFor, boolean deleteSiblings) {
+    public void deleteAllAttachmentsFor(FileMetadata searchCriteria, ReferenceIdFor referenceIdFor, boolean deleteSiblings) {
         Assert.hasText(searchCriteria.getReferenceId(), "Reference id can not be null or empty");
         Criteria criteria = new Criteria();
         if(deleteSiblings && StringUtils.hasText(searchCriteria.getParentReferenceId())){

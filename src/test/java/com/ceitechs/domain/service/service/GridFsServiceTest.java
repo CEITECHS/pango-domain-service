@@ -68,6 +68,7 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
 
 	}
 	
+
 //	@Test
 //	public void getAllProviderPhotosTest(){
 //		FileMetadata meta = new FileMetadata("iddy", FileMetadata.FILETYPE.PHOTO.name(), null);
