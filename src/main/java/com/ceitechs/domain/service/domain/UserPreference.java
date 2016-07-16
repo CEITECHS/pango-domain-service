@@ -13,15 +13,15 @@ import lombok.Setter;
 @Setter
 public class UserPreference {
 
-    public enum PreferenceType {
+    public static enum PreferenceType {
         Notification;
     }
     
-    public enum PreferenceCategory {
+    public static enum PreferenceCategory {
         SEARCH;
     }
 
-    private long preferenceId;
+    private String preferenceId;
     private PreferenceType preferenceType;
     private LocalDate fromDate;
     private LocalDate toDate;

@@ -8,12 +8,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-import com.ceitechs.domain.service.domain.*;
-import com.ceitechs.domain.service.service.GridFsService;
-import com.ceitechs.domain.service.util.ReferenceIdFor;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -24,9 +23,16 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
+import com.ceitechs.domain.service.domain.Address;
+import com.ceitechs.domain.service.domain.Attachment;
+import com.ceitechs.domain.service.domain.FileMetadata;
+import com.ceitechs.domain.service.domain.User;
+import com.ceitechs.domain.service.domain.UserPreference;
+import com.ceitechs.domain.service.domain.UserProfile;
+import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
+import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.gridfs.GridFSDBFile;
 
 /**
@@ -59,6 +65,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
+    @Ignore
     public void testSaveUser() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -72,6 +79,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
+    @Ignore
     public void testSaveUserForSize() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -88,6 +96,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
+    @Ignore
     public void testSaveUserWithoutAddress() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -100,6 +109,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
+    @Ignore
     public void testSaveUserWithAddress() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -121,6 +131,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
+    @Ignore
     public void testUpdateAddress() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -154,6 +165,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
+    @Ignore
     public void testSaveUserProfile() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -176,6 +188,78 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
         User savedUser = userRepository.save(user);
         assertThat("The returned user profile should be same as the updated user profile",
                 savedUser.getProfile().equals(userProfile));
+    }
+
+    @Test
+    @Ignore
+    public void testSaveUserPreferences() {
+        User user = new User();
+        user.setUserReferenceId(userReferenceId);
+        user.setFirstName("fName");
+        user.setLastName("lName");
+        user.setEmailAddress("fName.lName@pango.com");
+
+        String preferenceId1 = PangoUtility.generateIdAsString();
+        String preferenceId2 = PangoUtility.generateIdAsString();
+
+        UserPreference userPreference1 = new UserPreference();
+        userPreference1.setPreferenceId(preferenceId1);
+        userPreference1.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference1.setActive(true);
+        userPreference1.setCategory(UserPreference.PreferenceCategory.SEARCH);
+
+        UserPreference userPreference2 = new UserPreference();
+        userPreference2.setPreferenceId(preferenceId2);
+        userPreference2.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference2.setCategory(UserPreference.PreferenceCategory.SEARCH);
+
+        List<UserPreference> preferencesList = new ArrayList<>();
+        preferencesList.add(userPreference1);
+        preferencesList.add(userPreference2);
+
+        user.setPreferences(preferencesList);
+
+        User savedUser = userRepository.save(user);
+
+        assertThat("The returned preferences list shoud match the expected list", savedUser.getPreferences(),
+                hasSize(2));
+    }
+
+    @Test
+    public void testDeleteUserPreferences() {
+        User user = new User();
+        user.setUserReferenceId(userReferenceId);
+        user.setFirstName("fName");
+        user.setLastName("lName");
+        user.setEmailAddress("fName.lName@pango.com");
+
+        String preferenceId1 = PangoUtility.generateIdAsString();
+        String preferenceId2 = PangoUtility.generateIdAsString();
+
+        UserPreference userPreference1 = new UserPreference();
+        userPreference1.setPreferenceId(preferenceId1);
+        userPreference1.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference1.setActive(true);
+        userPreference1.setCategory(UserPreference.PreferenceCategory.SEARCH);
+
+        UserPreference userPreference2 = new UserPreference();
+        userPreference2.setPreferenceId(preferenceId2);
+        userPreference2.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference2.setCategory(UserPreference.PreferenceCategory.SEARCH);
+
+        List<UserPreference> preferencesList = new ArrayList<>();
+        preferencesList.add(userPreference1);
+        preferencesList.add(userPreference2);
+
+        user.setPreferences(preferencesList);
+
+        User savedUser = userRepository.save(user);
+
+        // delete user preference
+        // userRepository.
+
+        assertThat("The returned preferences list shoud match the expected list", savedUser.getPreferences(),
+                hasSize(2));
     }
 
     @Test
