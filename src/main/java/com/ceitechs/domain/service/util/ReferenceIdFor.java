@@ -23,5 +23,6 @@ public enum ReferenceIdFor {
 
     ReferenceIdFor(String metadataField, Optional<ReferenceIdFor> parentField) {
         this.metadataField = metadataField;
+        this.parentField = parentField;
     }
 }

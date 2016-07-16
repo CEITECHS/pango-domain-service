@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.io.InputStream;
 import java.util.List;
@@ -40,7 +41,7 @@ public interface GridFsService {
      * @param searchCriteria
      * @return
      */
-    GridFSDBFile getUserProfilePicture(FileMetadata searchCriteria);
+    GridFSDBFile getProfilePicture(FileMetadata searchCriteria, ReferenceIdFor referenceIdFor);
 
     /**
      * Retrieves all attachments by {@link FileMetadata#referenceId}
@@ -55,18 +56,15 @@ public interface GridFsService {
      * @param fileName
      * @param referenceIdFor
      */
-    void deleteAttachment(String fileName, ReferenceIdFor referenceIdFor);
+    void deleteAttachment(String fileName, String referenceId, ReferenceIdFor referenceIdFor);
 
     /**
      * Deletes all attachments by the {@link FileMetadata#referenceId} ,
      * optional siblings when {@link FileMetadata#parentReferenceId} is passed and @param deleteSiblings id true
-     * @param id
+     * @param referenceIdFor
      * @param deleteSiblings
      */
-    void deleteAttachementsFor(final FileMetadata searchCriteria, ReferenceIdFor id, boolean deleteSiblings);
-
-
-
+    void deleteAllAttachementsFor(final FileMetadata searchCriteria, ReferenceIdFor referenceIdFor, boolean deleteSiblings);
 
 }
 
@@ -87,10 +85,10 @@ class PangoGridFsServiceImpl implements GridFsService {
     }
 
     @Override
-    public GridFSDBFile getUserProfilePicture(final FileMetadata searchCriteria) {
+    public GridFSDBFile getProfilePicture(FileMetadata searchCriteria, ReferenceIdFor referenceIdFor) {
         Assert.notNull(searchCriteria, "search criteria for thumbnail can not be null");
         Criteria criteria = new Criteria(getMetaFieldWrapper(MetadataFields.TYPE)).is((FileMetadata.FILETYPE.PHOTO.name()));
-        criteria.and(getMetaFieldWrapper(MetadataFields.USER_REFERENCE_ID)).is(searchCriteria.getReferenceId());
+        criteria.and(getMetaFieldWrapper(referenceIdFor.getMetadataField())).is(searchCriteria.getReferenceId());
         criteria.and(getMetaFieldWrapper(MetadataFields.PROFILEPICTURE)).is("true");
         return operations.findOne(query(criteria));
     }
@@ -105,13 +103,30 @@ class PangoGridFsServiceImpl implements GridFsService {
     }
 
     @Override
-    public void deleteAttachment(String fileName, ReferenceIdFor referenceIdFor) {
-
+    public void deleteAttachment(String fileName, String referenceId, ReferenceIdFor referenceIdFor) {
+        Assert.hasText(fileName, "File name to delete can not be null or empty");
+        Assert.hasText(referenceId, "Reference id can not be null or empty");
+        Criteria criteria = new Criteria(getMetaFieldWrapper(MetadataFields.FILE_NAME)).is(fileName);
+        criteria.and(getMetaFieldWrapper(referenceIdFor.getMetadataField())).is(referenceId);
+          operations.delete(query(criteria));
     }
 
+    /**
+     * Deletes all attachments by the {@link FileMetadata#referenceId} ,
+     * optional siblings when {@link FileMetadata#parentReferenceId} is passed and @param deleteSiblings id true
+     * @param referenceIdFor
+     * @param deleteSiblings
+     */
     @Override
-    public void deleteAttachementsFor(FileMetadata searchCriteria, ReferenceIdFor id, boolean deleteSiblings) {
-
+    public void deleteAllAttachementsFor(FileMetadata searchCriteria, ReferenceIdFor referenceIdFor, boolean deleteSiblings) {
+        Assert.hasText(searchCriteria.getReferenceId(), "Reference id can not be null or empty");
+        Criteria criteria = new Criteria();
+        if(deleteSiblings && StringUtils.hasText(searchCriteria.getParentReferenceId())){
+           referenceIdFor.getParentField().ifPresent( p -> criteria.and(getMetaFieldWrapper(p.getMetadataField())).is(searchCriteria.getReferenceId()) );
+        }else{
+            criteria.and(getMetaFieldWrapper(referenceIdFor.getMetadataField())).is(searchCriteria.getReferenceId());
+        }
+        operations.delete(query(criteria));
     }
 
 

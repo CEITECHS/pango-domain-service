@@ -158,12 +158,13 @@ public class PangoUtility {
      */
     public static Map<String, String> attachmentMetadataToMap(String referenceId,ReferenceIdFor referenceIdFor, String parentReferenceId, Attachment attachment) {
         Map<String, String> metadataMap = new HashMap<>();
-        metadataMap.put(MetadataFields.CONTENT_TYPE, attachment.getFileType());
+        metadataMap.put(MetadataFields.CONTENT_TYPE, FileMetadata.FILETYPE.valueOf(attachment.getFileType().toUpperCase()).getSuffix()+ attachment.extractExtension());
         metadataMap.put(MetadataFields.FILE_NAME, attachment.getFileName());
-        metadataMap.put(MetadataFields.TYPE, FileMetadata.FILETYPE.PHOTO.name());
+        metadataMap.put(MetadataFields.TYPE, FileMetadata.FILETYPE.valueOf(attachment.getFileType()).name());
         metadataMap.put(MetadataFields.FILE_DESCR, attachment.getFileDescription());
         metadataMap.put(referenceIdFor.getMetadataField(), referenceId);
         metadataMap.put(MetadataFields.PROFILEPICTURE, String.valueOf(attachment.isProfilePicture()));
+
         referenceIdFor.getParentField().ifPresent(p -> {
             if (org.springframework.util.StringUtils.hasText(parentReferenceId)){
                  metadataMap.put(p.getMetadataField(),parentReferenceId);

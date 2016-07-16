@@ -27,6 +27,7 @@ public class FileMetadata {
         DOCUMENT("application/"),
         VIDEO("application/");
 
+        @Getter
         private String suffix;
 
         FILETYPE(String suffix) {

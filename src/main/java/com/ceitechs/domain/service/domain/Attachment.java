@@ -19,4 +19,11 @@ public class Attachment {
     private String fileDescription;
     private boolean profilePicture;
 
+    public String extractExtension(){
+        if(getFileName().contains(".")){
+            return getFileName().substring(getFileName().lastIndexOf(".")+1);
+        }
+        return "";
+    }
+
 }
