@@ -78,4 +78,16 @@ public class FileMetadata {
         return Optional.ofNullable(map.get(field));
     }
 
+    @Override
+    public String toString() {
+        return "FileMetadata{" +
+                "referenceId='" + referenceId + '\'' +
+                ", parentReferenceId='" + parentReferenceId + '\'' +
+                ", fileType='" + fileType + '\'' +
+                ", thumbnail=" + thumbnail +
+                ", fileName='" + fileName + '\'' +
+                ", contentType='" + contentType + '\'' +
+                ", caption='" + caption + '\'' +
+                '}';
+    }
 }

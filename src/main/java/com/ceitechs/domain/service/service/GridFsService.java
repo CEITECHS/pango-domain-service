@@ -96,8 +96,9 @@ class PangoGridFsServiceImpl implements GridFsService {
 
     @Override
     public List<GridFSDBFile> getAllAttachments(FileMetadata searchCriteria, ReferenceIdFor idFor) {
-        Assert.notNull(searchCriteria, "Search criteria for photo gallery can not be null");
-        Criteria criteria = new Criteria(getMetaFieldWrapper(MetadataFields.TYPE)).is(FileMetadata.FILETYPE.PHOTO.name());
+        Assert.notNull(searchCriteria, "Search criteria for attachments can not be null");
+        Assert.hasText(searchCriteria.getFileType(),"File type can not be niull or empty");
+        Criteria criteria = new Criteria(getMetaFieldWrapper(MetadataFields.TYPE)).is(FileMetadata.FILETYPE.valueOf(searchCriteria.getFileType().toUpperCase()).name());
         criteria.and(getMetaFieldWrapper(idFor.getMetadataField())).is(searchCriteria.getReferenceId());
         return operations.find(query(criteria));
     }

@@ -98,7 +98,7 @@ public class PangoUtililityBeanTest extends AbstractPangoDomainServiceIntegratio
         String secretKey = PangoUtility.secretKeyText();
         String encryptedText = PangoUtility.encrypt("Emefana2014", secretKey);
         assertTrue("Emefana2014".equals(PangoUtility.decrypt(encryptedText, secretKey)));
-        System.out.println("Encrypted : " + encryptedText);
+       // System.out.println("Encrypted : " + encryptedText);
     }
 
     @Test

@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Attachment {
+public class Attachment implements Cloneable{
 
     private String fileType;
     private String fileName;
@@ -26,4 +26,8 @@ public class Attachment {
         return "";
     }
 
+    @Override
+    public Attachment clone() throws CloneNotSupportedException {
+        return (Attachment)super.clone();
+    }
 }

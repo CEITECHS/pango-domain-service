@@ -132,8 +132,7 @@ public class PangoUtility {
         if (inputStream.isPresent()) {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             FileCopyUtils.copy(inputStream.get(), output);
-            return Optional.ofNullable(
-                    "data:image/" + ext + ";base64," + DatatypeConverter.printBase64Binary(output.toByteArray()));
+            return Optional.ofNullable("data:image/" + ext + ";base64," + DatatypeConverter.printBase64Binary(output.toByteArray()));
         }
 
         return Optional.empty();
@@ -141,8 +140,7 @@ public class PangoUtility {
 
     public static Optional<InputStream> Base64ToInputStream(Optional<String> base64String) throws IOException {
         if (base64String.isPresent()) {
-            return Optional
-                    .ofNullable(new ByteArrayInputStream(DatatypeConverter.parseBase64Binary(base64String.get())));
+            return Optional.ofNullable(new ByteArrayInputStream(DatatypeConverter.parseBase64Binary(base64String.get())));
         }
 
         return Optional.empty();
