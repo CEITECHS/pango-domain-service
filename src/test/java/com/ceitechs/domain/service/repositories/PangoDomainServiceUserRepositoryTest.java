@@ -18,8 +18,10 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
@@ -50,6 +52,9 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
     @Autowired
     GridFsService gridFsService;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     private String userReferenceId;
 
@@ -226,6 +231,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
     }
 
     @Test
+    @Ignore
     public void testDeleteUserPreferences() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -254,11 +260,56 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
         user.setPreferences(preferencesList);
 
         User savedUser = userRepository.save(user);
+        Update update = new Update().pull("preferences", Query.query(Criteria.where("preferenceId").is(preferenceId1)));
 
         // delete user preference
-        // userRepository.
+        mongoTemplate.updateMulti(Query.query(Criteria.where("_id").is(savedUser.getUserReferenceId())), update,
+                User.class);
 
         assertThat("The returned preferences list shoud match the expected list", savedUser.getPreferences(),
+                hasSize(1));
+    }
+
+    @Test
+    public void testUpdateUserPreferences() {
+        User user = new User();
+        user.setUserReferenceId(userReferenceId);
+        user.setFirstName("fName");
+        user.setLastName("lName");
+        user.setEmailAddress("fName.lName@pango.com");
+
+        String preferenceId1 = PangoUtility.generateIdAsString();
+        String preferenceId2 = PangoUtility.generateIdAsString();
+
+        UserPreference userPreference1 = new UserPreference();
+        userPreference1.setPreferenceId(preferenceId1);
+        userPreference1.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference1.setActive(true);
+        userPreference1.setCategory(UserPreference.PreferenceCategory.SEARCH);
+
+        UserPreference userPreference2 = new UserPreference();
+        userPreference2.setPreferenceId(preferenceId2);
+        userPreference2.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference2.setCategory(UserPreference.PreferenceCategory.SEARCH);
+
+        List<UserPreference> preferencesList = new ArrayList<>();
+        preferencesList.add(userPreference1);
+        preferencesList.add(userPreference2);
+
+        user.setPreferences(preferencesList);
+
+        User savedUser = userRepository.save(user);
+        
+        List<UserPreference> newpreferencesList = savedUser.getPreferences();
+        newpreferencesList.forEach(userPref -> {
+            if(userPref.getPreferenceId().equals(preferenceId1)) {
+                userPref.setActive(false);
+            }
+        });
+        
+        User updatedUser = userRepository.save(savedUser);
+
+        assertThat("The returned preferences list shoud match the expected list", updatedUser.getPreferences(),
                 hasSize(2));
     }
 
@@ -281,8 +332,9 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
             attachment.setFileName(resource.getFilename());
             attachment.setFileSize(resource.getFile().length());
             attachment.setFileDescription("profile_picture");
-            Map<String,String> metadata = PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.USER,"",attachment);
-            gridFsService.storeFiles(resource.getInputStream(), metadata, BasicDBObject::new); //TODO: test case
+            Map<String, String> metadata = PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.USER, "",
+                    attachment);
+            gridFsService.storeFiles(resource.getInputStream(), metadata, BasicDBObject::new); // TODO: test case
         } catch (IOException e) {
             e.printStackTrace();
         }
