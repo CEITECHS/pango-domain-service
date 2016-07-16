@@ -16,24 +16,15 @@ public class FileMetadata {
         DOCUMENT,
         VIDEO
     }
-
-    @Getter
     private String referenceId;
-
-    @Getter
     private String parentReferenceId;
-
-    @Getter
     private String fileType; //PHOTO or VIDEO,Attachment
-    @Getter
     private boolean thumbnail; // applicable to properties
-    @Getter
     private String fileName;
-    @Getter
     private String contentType;
-    @Getter
     private String contentBase64;
-    @Getter
-    private String fileDescription;
+    private String caption;
+
+    //TODO: FileMetadata from GridFsFile
 
 }
