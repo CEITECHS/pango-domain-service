@@ -54,7 +54,8 @@ public class PangoDomainServicePropertyUnitEnquiryRepositoryTest extends Abstrac
         PropertyUnitEnquiry savedEnq =  unitEnquiryRepository.save(unitEnquiry);
         assertNotNull("Saved Enquiry can not be null",savedEnq);
         assertTrue(unitEnquiryRepository.updateEnquiryWith(unitEnquiry.getEnquiryReferenceId(),newCorrespondence()).isPresent());
-        assertThat("The returned correspondence list shoud match the expected list", unitEnquiryRepository.findOne(unitEnquiry.getEnquiryReferenceId()).getCorrespondences(), hasSize(1));
+        assertTrue(unitEnquiryRepository.updateEnquiryWith(unitEnquiry.getEnquiryReferenceId(),newCorrespondence()).isPresent());
+        assertThat("The returned correspondence list shoud match the expected list", unitEnquiryRepository.findOne(unitEnquiry.getEnquiryReferenceId()).getCorrespondences(), hasSize(2));
     }
 
     static private PropertyUnitEnquiry newEnquiry(){

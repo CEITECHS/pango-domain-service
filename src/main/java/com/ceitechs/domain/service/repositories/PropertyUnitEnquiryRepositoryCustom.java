@@ -42,7 +42,6 @@ class PropertyUnitEnquiryRepositoryImpl implements PropertyUnitEnquiryRepository
         Assert.hasText(enquiryId, "EnquiryId can not be null or Empty");
         if (enquiryRepository.exists(enquiryId)){
             Update update = new Update().push("correspondences", correspondence); //TODO bring in QueryDSL
-            correspondence.setMessage("Confirm the update" +correspondence.getMessage());
             PropertyUnitEnquiry propertyUnitEnquiry = mongoOperations.findAndModify(query(Criteria.where("_id").is(enquiryId)),update, PropertyUnitEnquiry.class);
            return   Optional.of(propertyUnitEnquiry);
         }
