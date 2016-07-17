@@ -37,6 +37,7 @@ public class FileMetadata {
 
     private String referenceId;
     private String parentReferenceId;
+    private String grandParentReferenceId; // applicable to correspondence attachment.
     private String fileType; //PHOTO or VIDEO,Attachment
     private boolean thumbnail; // applicable to properties
     private String fileName;
@@ -59,7 +60,11 @@ public class FileMetadata {
             FileMetadata.fieldAsStringFromGridFSDBFile(file, MetadataFields.TYPE).ifPresent(fileMetadata::setFileType);
             FileMetadata.fieldAsStringFromGridFSDBFile(file, MetadataFields.PROFILEPICTURE).ifPresent(value -> fileMetadata.setThumbnail(Boolean.valueOf(value)));
             FileMetadata.fieldAsStringFromGridFSDBFile(file, referenceIdFor.getMetadataField()).ifPresent(fileMetadata::setReferenceId);
-            referenceIdFor.getParentField().ifPresent(parentField -> FileMetadata.fieldAsStringFromGridFSDBFile(file, parentField.getMetadataField()).ifPresent(fileMetadata::setParentReferenceId));
+            referenceIdFor.getParentField().ifPresent(parentField -> {
+                FileMetadata.fieldAsStringFromGridFSDBFile(file, parentField.getMetadataField()).ifPresent(fileMetadata::setParentReferenceId);
+                   parentField.getParentField().ifPresent(grandParentField ->
+                        FileMetadata.fieldAsStringFromGridFSDBFile(file, grandParentField.getMetadataField()).ifPresent(fileMetadata::setGrandParentReferenceId));
+            });
             FileMetadata.fieldAsStringFromGridFSDBFile(file, MetadataFields.FILE_DESCR).ifPresent(fileMetadata::setCaption);
             try {
                 PangoUtility.InputStreamToBase64(Optional.ofNullable(file.getInputStream()), file.getContentType()).ifPresent(fileMetadata::setContentBase64);
@@ -83,6 +88,7 @@ public class FileMetadata {
         return "FileMetadata{" +
                 "referenceId='" + referenceId + '\'' +
                 ", parentReferenceId='" + parentReferenceId + '\'' +
+                ", grandParentReferenceId='" + grandParentReferenceId + '\'' +
                 ", fileType='" + fileType + '\'' +
                 ", thumbnail=" + thumbnail +
                 ", fileName='" + fileName + '\'' +

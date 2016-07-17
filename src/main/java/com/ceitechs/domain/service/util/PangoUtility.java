@@ -167,6 +167,12 @@ public class PangoUtility {
             if (org.springframework.util.StringUtils.hasText(parentReferenceIds[0])){
                  metadataMap.put(p.getMetadataField(),parentReferenceIds[0]);
             }
+
+            p.getParentField().ifPresent(gp -> {
+                if (org.springframework.util.StringUtils.hasText(parentReferenceIds[1])){
+                    metadataMap.put(gp.getMetadataField(),parentReferenceIds[1]);
+                }
+            });
         });
         return metadataMap;
 

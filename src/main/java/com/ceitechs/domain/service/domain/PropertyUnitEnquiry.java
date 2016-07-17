@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -22,10 +23,12 @@ import java.util.List;
 public class PropertyUnitEnquiry {
     @Id
     private String enquiryReferenceId;
-    private User user;
+
+    @DBRef
+    private User prospectiveTenant;
+    @DBRef
     private PropertyUnit propertyUnit;
     private String subject;
-    private String introduction;
     private String message;
     private LocalDate enquiryDate;
     private CorrespondenceType enquiryType;
