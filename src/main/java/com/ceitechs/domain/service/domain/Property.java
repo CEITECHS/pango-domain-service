@@ -1,6 +1,8 @@
 package com.ceitechs.domain.service.domain;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -48,5 +50,5 @@ public class Property {
     @Transient
     private List<FileMetadata> propertyImages;
 
-    private LocalDate createdDate = LocalDate.now();
+    private LocalDateTime createdDate = LocalDateTime.now(Clock.systemUTC());
 }

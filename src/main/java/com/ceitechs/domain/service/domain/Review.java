@@ -1,6 +1,8 @@
 package com.ceitechs.domain.service.domain;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -26,6 +28,6 @@ public class Review {
     private String reviewText;
     private double rating;
     private String reviewedBy;
-    private LocalDate createdDate = LocalDate.now();
+    private LocalDateTime createdDate = LocalDateTime.now(Clock.systemUTC());
     private boolean recommend;
 }

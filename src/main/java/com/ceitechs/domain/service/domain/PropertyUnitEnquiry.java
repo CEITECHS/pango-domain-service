@@ -8,7 +8,9 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -30,7 +32,7 @@ public class PropertyUnitEnquiry {
     private PropertyUnit propertyUnit;
     private String subject;
     private String message;
-    private LocalDate enquiryDate;
+    private LocalDateTime enquiryDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType enquiryType;
     List<EnquiryCorrespondence> correspondences;
 }

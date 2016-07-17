@@ -1,6 +1,7 @@
 package com.ceitechs.domain.service.domain;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -37,7 +38,7 @@ public class PropertyUnit {
 
     private String propertyTerms;
 
-    private LocalDate nextAvailableDate;
+    private LocalDateTime nextAvailableDate;
 
     private boolean autoListInd;
 
@@ -45,8 +46,6 @@ public class PropertyUnit {
     private double[] location;
 
     private double propertyRating;
-
-    private List<Review> reviews;
 
     @DBRef
     private User owner;
