@@ -1,7 +1,6 @@
 package com.ceitechs.domain.service.repositories;
 
 import com.ceitechs.domain.service.domain.Review;
-import com.sun.tools.javac.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
