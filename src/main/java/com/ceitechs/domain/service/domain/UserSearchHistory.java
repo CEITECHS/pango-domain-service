@@ -1,6 +1,8 @@
 package com.ceitechs.domain.service.domain;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +14,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserSearchHistory {
-    private LocalDate date;
+    private LocalDateTime date = LocalDateTime.now(Clock.systemUTC());
     private String query;
 }

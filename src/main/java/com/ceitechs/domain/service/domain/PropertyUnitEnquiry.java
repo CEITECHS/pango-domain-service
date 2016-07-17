@@ -25,12 +25,12 @@ import java.util.List;
 public class PropertyUnitEnquiry {
     @Id
     private String enquiryReferenceId;
-
     @DBRef
     private User prospectiveTenant;
     @DBRef
     private PropertyUnit propertyUnit;
     private String subject;
+    private String introduction;
     private String message;
     private LocalDateTime enquiryDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType enquiryType;
