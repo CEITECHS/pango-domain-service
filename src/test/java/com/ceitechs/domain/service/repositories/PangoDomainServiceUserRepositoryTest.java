@@ -319,7 +319,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
         userPreference1.setCategory(UserPreference.PreferenceCategory.SEARCH);
 
         UserSearchHistory searchHistory1 = new UserSearchHistory();
-        searchHistory1.setDate(DateConvertUtility.asLocalDate(new Date()));
+        searchHistory1.setDate(DateConvertUtility.asLocalDateTime(new Date()));
         searchHistory1.setQuery("Query1");
 
         userPreference1.setUserSearchHistory(searchHistory1);
