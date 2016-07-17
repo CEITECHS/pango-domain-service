@@ -43,6 +43,9 @@ public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomai
     private PangoDomainServiceUserRepository userRepository;
 
     @Autowired
+    private PangoDomainServicePropertyUnitRepository propertyUnitRepository;
+
+    @Autowired
     private MongoTemplate mongoTemplate;
 
     private String propertyId;
@@ -105,6 +108,8 @@ public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomai
         rent.setPeriodforAmount(PerPeriod.MONTHLY);
         property.setRent(rent);
 
+        // Adding property unit
+
         savedProperty = propertyRepository.save(property);
     }
 
@@ -127,17 +132,19 @@ public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomai
         Page<Property> propertiesList = propertyRepository.findByOwnerOrderByCreatedDateDesc(userReferenceId,
                 new PageRequest(0, 10));
         assertThat("The returned properties list should not be null", propertiesList, notNullValue());
-        assertThat("The returned properties list should match the expected list", propertiesList.getContent(), hasSize(1));
+        assertThat("The returned properties list should match the expected list", propertiesList.getContent(),
+                hasSize(1));
     }
 
     @Test
     public void testGetPropertyByListing() {
-        Page<Property> propertiesList = propertyRepository.findByListingForOrderByCreatedDateDesc(ListingFor.RENT, new PageRequest(0, 10));
+        Page<Property> propertiesList = propertyRepository.findByListingForOrderByCreatedDateDesc(ListingFor.RENT,
+                new PageRequest(0, 10));
         assertThat("The returned properties list should not be null", propertiesList, notNullValue());
-        assertThat("The returned properties list should match the expected list", propertiesList.getContent(), hasSize(1));
+        assertThat("The returned properties list should match the expected list", propertiesList.getContent(),
+                hasSize(1));
     }
-    
-    
+
     @After
     public void tearDown() {
         userRepository.delete(userReferenceId);

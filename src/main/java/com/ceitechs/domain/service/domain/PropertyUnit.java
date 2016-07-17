@@ -4,9 +4,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Getter;
@@ -46,6 +48,7 @@ public class PropertyUnit {
 
     private List<Review> reviews;
 
+    @DBRef
     private User owner;
 
     private Property property;
@@ -54,6 +57,7 @@ public class PropertyUnit {
 
     private PropertyRent rent;
 
+    @Transient
     private List<FileMetadata> propertyUnitImages;
 
     private List<UnitRentalHistory> history;

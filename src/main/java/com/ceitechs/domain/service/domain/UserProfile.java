@@ -1,10 +1,12 @@
 package com.ceitechs.domain.service.domain;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDate;
 import java.util.List;
+
+import org.springframework.data.annotation.Transient;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author iddymagohe
@@ -14,6 +16,7 @@ import java.util.List;
 @Setter
 public class UserProfile {
     private String password;
+    @Transient
     private FileMetadata profilePicture;
     private boolean verified;
     private String verificationCode;

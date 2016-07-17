@@ -255,8 +255,8 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
         mongoTemplate.updateMulti(Query.query(Criteria.where("_id").is(savedUser.getUserReferenceId())), update,
                 User.class);
 
-        assertThat("The returned preferences list shoud match the expected list", savedUser.getPreferences(),
-                hasSize(1));
+        User newUser = userRepository.findOne(userReferenceId);
+        assertThat("The returned preferences list shoud match the expected list", newUser.getPreferences(), hasSize(1));
     }
 
     @Test
@@ -348,7 +348,8 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
             attachment.setFileName(resource.getFilename());
             attachment.setFileSize(resource.getFile().length());
             attachment.setFileDescription("profile_picture");
-            Map<String, String> metadata = PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.USER, attachment,"");
+            Map<String, String> metadata = PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.USER, attachment,
+                    "");
             gridFsService.storeFiles(resource.getInputStream(), metadata, BasicDBObject::new);
         } catch (IOException e) {
             e.printStackTrace();

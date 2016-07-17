@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
@@ -44,7 +45,7 @@ public class Property {
 
     private PropertyRent rent;
 
-    @DBRef
+    @Transient
     private List<FileMetadata> propertyImages;
 
     private LocalDate createdDate = LocalDate.now();
