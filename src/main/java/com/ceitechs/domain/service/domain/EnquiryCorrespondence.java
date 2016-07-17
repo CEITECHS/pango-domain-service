@@ -1,7 +1,9 @@
 package com.ceitechs.domain.service.domain;
 
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +20,7 @@ public class EnquiryCorrespondence {
     private String message;
     @Transient
     private FileMetadata attachment;
-    private LocalDate correspondenceDate;
+    private LocalDateTime correspondenceDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType correspondenceType;
     private boolean owner;
 }
