@@ -348,8 +348,7 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
             attachment.setFileName(resource.getFilename());
             attachment.setFileSize(resource.getFile().length());
             attachment.setFileDescription("profile_picture");
-            Map<String, String> metadata = PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.USER, "",
-                    attachment);
+            Map<String, String> metadata = PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.USER, attachment,"");
             gridFsService.storeFiles(resource.getInputStream(), metadata, BasicDBObject::new);
         } catch (IOException e) {
             e.printStackTrace();

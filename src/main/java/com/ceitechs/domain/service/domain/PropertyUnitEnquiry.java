@@ -3,6 +3,9 @@ package com.ceitechs.domain.service.domain;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,8 +17,11 @@ import java.util.List;
 
 @Getter
 @Setter
+@Document(collection = "property_unit_enquiry")
+@TypeAlias(value = "property_unit_enquiry")
 public class PropertyUnitEnquiry {
-    private String correspondenceId;
+    @Id
+    private String enquiryReferenceId;
     private User user;
     private PropertyUnit propertyUnit;
     private String subject;

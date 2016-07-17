@@ -44,7 +44,7 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
 	public void storeFilesTest() throws IOException{
 		operations.delete(null);
         assertTrue(operations.find(null).size() == 0);
-		Map<String,String> metadataMap=  PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.PROPERTY,"",buildAttachment());
+		Map<String,String> metadataMap=  PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.PROPERTY,buildAttachment(),"");
         gridFsService.storeFiles(resource.getInputStream(), metadataMap, BasicDBObject::new);
 		 // then
 		 List<GridFSDBFile> files = operations.find(null);
@@ -60,7 +60,7 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
         operations.delete(null);
         assertTrue(operations.find(null).size() == 0);
        Attachment attachment = buildAttachment();
-        Map<String,String> metadataMap=  PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.PROPERTY,"",attachment);
+        Map<String,String> metadataMap=  PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.PROPERTY,attachment,"");
         gridFsService.storeFiles(resource.getInputStream(), metadataMap, BasicDBObject::new);
         FileMetadata meta = new FileMetadata();
         meta.setReferenceId("1");
@@ -86,7 +86,7 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
         Attachment at4 = at1.clone();
         Stream.of(at1,at2,at3).forEach(at ->{
             try {
-                Map<String,String> metadataMap=  PangoUtility.attachmentMetadataToMap("10", ReferenceIdFor.UNIT_PROPERTY,"1",at);
+                Map<String,String> metadataMap=  PangoUtility.attachmentMetadataToMap("10", ReferenceIdFor.UNIT_PROPERTY,at,"1");
                 gridFsService.storeFiles(resource.getInputStream(), metadataMap, BasicDBObject::new);
             } catch (IOException e) {
                 e.printStackTrace();
