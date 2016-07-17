@@ -13,11 +13,11 @@ import lombok.Setter;
 @Setter
 public class UserPreference {
 
-    public static enum PreferenceType {
+    public enum PreferenceType {
         Notification;
     }
     
-    public static enum PreferenceCategory {
+    public enum PreferenceCategory {
         SEARCH;
     }
 

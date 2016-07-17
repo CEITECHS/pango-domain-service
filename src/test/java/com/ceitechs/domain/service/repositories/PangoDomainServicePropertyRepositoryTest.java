@@ -6,10 +6,16 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.geo.Distance;
@@ -21,13 +27,20 @@ import org.springframework.data.mongodb.core.query.NearQuery;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
 import com.ceitechs.domain.service.domain.Address;
+import com.ceitechs.domain.service.domain.Attachment;
+import com.ceitechs.domain.service.domain.FileMetadata;
+import com.ceitechs.domain.service.domain.FileMetadata.FILETYPE;
 import com.ceitechs.domain.service.domain.ListingFor;
 import com.ceitechs.domain.service.domain.PerPeriod;
 import com.ceitechs.domain.service.domain.Property;
 import com.ceitechs.domain.service.domain.PropertyFeature;
 import com.ceitechs.domain.service.domain.PropertyRent;
 import com.ceitechs.domain.service.domain.User;
+import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
+import com.ceitechs.domain.service.util.ReferenceIdFor;
+import com.mongodb.BasicDBObject;
+import com.mongodb.gridfs.GridFSDBFile;
 
 /**
  * 
@@ -35,6 +48,8 @@ import com.ceitechs.domain.service.util.PangoUtility;
  * @since 1.0
  */
 public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
+
+    private Resource propertyResource = new ClassPathResource("property.jpg");
 
     @Autowired
     private PangoDomainServicePropertyRepository propertyRepository;
@@ -47,6 +62,9 @@ public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomai
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    @Autowired
+    private GridFsService gridFsService;
 
     private String propertyId;
 
@@ -110,6 +128,19 @@ public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomai
 
         // Adding property unit
 
+        // Adding property image
+        try {
+            Attachment attachment = new Attachment();
+            attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
+            attachment.setFileName(propertyResource.getFilename());
+            attachment.setFileSize(propertyResource.getFile().length());
+            attachment.setFileDescription("An Amazing Property");
+            Map<String, String> metadata = PangoUtility.attachmentMetadataToMap(propertyId, ReferenceIdFor.PROPERTY,
+                    attachment);
+            gridFsService.storeFiles(propertyResource.getInputStream(), metadata, BasicDBObject::new);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         savedProperty = propertyRepository.save(property);
     }
 
@@ -143,6 +174,30 @@ public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomai
         assertThat("The returned properties list should not be null", propertiesList, notNullValue());
         assertThat("The returned properties list should match the expected list", propertiesList.getContent(),
                 hasSize(1));
+    }
+
+    @Test
+    public void testGetPropertyImages() {
+        FileMetadata searchCriteria = new FileMetadata();
+        searchCriteria.setReferenceId(propertyId);
+        searchCriteria.setFileType(FILETYPE.PHOTO.name());
+        List<GridFSDBFile> results = gridFsService.getAllAttachments(searchCriteria, ReferenceIdFor.PROPERTY);
+        assertThat("The expected image count should match the returned image count", results, hasSize(1));
+    }
+
+    @Test
+    public void testDeletePropertyImages() {
+        gridFsService.deleteAttachment("property.jpg", propertyId, ReferenceIdFor.PROPERTY);
+        FileMetadata searchCriteria = new FileMetadata();
+        searchCriteria.setReferenceId(propertyId);
+        searchCriteria.setFileType(FILETYPE.PHOTO.name());
+        List<GridFSDBFile> results = gridFsService.getAllAttachments(searchCriteria, ReferenceIdFor.PROPERTY);
+        assertThat("The expected image count should match the returned image count", results, hasSize(0));
+    }
+
+    @Test
+    public void testUpdatePropertyImages() {
+        // TODO - Do we need this? 
     }
 
     @After

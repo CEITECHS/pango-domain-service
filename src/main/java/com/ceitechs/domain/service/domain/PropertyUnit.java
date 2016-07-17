@@ -1,6 +1,6 @@
 package com.ceitechs.domain.service.domain;
 
-import java.time.LocalDate;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -64,4 +64,6 @@ public class PropertyUnit {
     private List<PropertyUnitEnquiry> enquiries;
 
     private List<UnitHoldingHistory> holdingHistory;
+
+    private LocalDateTime createdDate = LocalDateTime.now(Clock.systemUTC());
 }

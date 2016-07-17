@@ -29,6 +29,8 @@ import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.domain.FileMetadata;
 import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.domain.UserPreference;
+import com.ceitechs.domain.service.domain.UserPreference.PreferenceCategory;
+import com.ceitechs.domain.service.domain.UserPreference.PreferenceType;
 import com.ceitechs.domain.service.domain.UserProfile;
 import com.ceitechs.domain.service.domain.UserSearchHistory;
 import com.ceitechs.domain.service.service.GridFsService;
@@ -199,14 +201,14 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
         UserPreference userPreference1 = new UserPreference();
         userPreference1.setPreferenceId(preferenceId1);
-        userPreference1.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference1.setPreferenceType(PreferenceType.Notification);
         userPreference1.setActive(true);
-        userPreference1.setCategory(UserPreference.PreferenceCategory.SEARCH);
+        userPreference1.setCategory(PreferenceCategory.SEARCH);
 
         UserPreference userPreference2 = new UserPreference();
         userPreference2.setPreferenceId(preferenceId2);
-        userPreference2.setPreferenceType(UserPreference.PreferenceType.Notification);
-        userPreference2.setCategory(UserPreference.PreferenceCategory.SEARCH);
+        userPreference2.setPreferenceType(PreferenceType.Notification);
+        userPreference2.setCategory(PreferenceCategory.SEARCH);
 
         List<UserPreference> preferencesList = new ArrayList<>();
         preferencesList.add(userPreference1);
@@ -233,14 +235,14 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
         UserPreference userPreference1 = new UserPreference();
         userPreference1.setPreferenceId(preferenceId1);
-        userPreference1.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference1.setPreferenceType(PreferenceType.Notification);
         userPreference1.setActive(true);
-        userPreference1.setCategory(UserPreference.PreferenceCategory.SEARCH);
+        userPreference1.setCategory(PreferenceCategory.SEARCH);
 
         UserPreference userPreference2 = new UserPreference();
         userPreference2.setPreferenceId(preferenceId2);
-        userPreference2.setPreferenceType(UserPreference.PreferenceType.Notification);
-        userPreference2.setCategory(UserPreference.PreferenceCategory.SEARCH);
+        userPreference2.setPreferenceType(PreferenceType.Notification);
+        userPreference2.setCategory(PreferenceCategory.SEARCH);
 
         List<UserPreference> preferencesList = new ArrayList<>();
         preferencesList.add(userPreference1);
@@ -272,14 +274,14 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
         UserPreference userPreference1 = new UserPreference();
         userPreference1.setPreferenceId(preferenceId1);
-        userPreference1.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference1.setPreferenceType(PreferenceType.Notification);
         userPreference1.setActive(true);
-        userPreference1.setCategory(UserPreference.PreferenceCategory.SEARCH);
+        userPreference1.setCategory(PreferenceCategory.SEARCH);
 
         UserPreference userPreference2 = new UserPreference();
         userPreference2.setPreferenceId(preferenceId2);
-        userPreference2.setPreferenceType(UserPreference.PreferenceType.Notification);
-        userPreference2.setCategory(UserPreference.PreferenceCategory.SEARCH);
+        userPreference2.setPreferenceType(PreferenceType.Notification);
+        userPreference2.setCategory(PreferenceCategory.SEARCH);
 
         List<UserPreference> preferencesList = new ArrayList<>();
         preferencesList.add(userPreference1);
@@ -314,9 +316,9 @@ public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainSer
 
         UserPreference userPreference1 = new UserPreference();
         userPreference1.setPreferenceId(preferenceId1);
-        userPreference1.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference1.setPreferenceType(PreferenceType.Notification);
         userPreference1.setActive(true);
-        userPreference1.setCategory(UserPreference.PreferenceCategory.SEARCH);
+        userPreference1.setCategory(PreferenceCategory.SEARCH);
 
         UserSearchHistory searchHistory1 = new UserSearchHistory();
         searchHistory1.setDate(DateConvertUtility.asLocalDateTime(new Date()));
