@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
@@ -14,14 +15,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @TypeAlias("review")
 @Getter
 @Setter
+@ToString
 public class Review {
     @Id
     private String reviewReferenceId;
-    private User tenant; // optional field, tenant being reviewed by landlord
-    private PropertyUnit propertyUnit; //// optional field, propertyUnit being reviewed by tenant
+    @Indexed
+    private String tenantReferenceId; // optional field, tenant being reviewed by landlord
+    @Indexed
+    private String propertyUnitReferenceId; // optional field, propertyUnit being reviewed by tenant
     private String reviewText;
     private double rating;
     private String reviewedBy;
-    private LocalDate createdDate;
+    private LocalDate createdDate = LocalDate.now();
     private boolean recommend;
 }

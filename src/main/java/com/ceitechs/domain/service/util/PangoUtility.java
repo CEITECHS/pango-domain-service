@@ -171,4 +171,14 @@ public class PangoUtility {
         return metadataMap;
 
     }
+
+    public static int random(int minimum, int maximum){
+        Random rand = new Random();
+        return  minimum + rand.nextInt((maximum - minimum) + 1);
+    }
+
+    public static double random(double minimum, double maximum){
+        Random r = new Random();
+        return  minimum + (maximum - minimum) * r.nextDouble();
+    }
 }
