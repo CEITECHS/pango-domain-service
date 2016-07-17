@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * @author iddymagohe
  * @since 0.1
  */
-public interface PangoDomainServicePropertyUnitEnquiryRepository extends MongoRepository<PropertyUnitEnquiry, String>{
+public interface PropertyUnitEnquiryRepository extends MongoRepository<PropertyUnitEnquiry, String>,PropertyUnitEnquiryRepositoryCustom {
 
     Page <PropertyUnitEnquiry> findByPropertyUnitOrderByEnquiryDateDesc(PropertyUnit propertyUnit, Pageable page);
     Page <PropertyUnitEnquiry> findByProspectiveTenantOrderByEnquiryDateDesc(User prospectiveTenant,Pageable page);

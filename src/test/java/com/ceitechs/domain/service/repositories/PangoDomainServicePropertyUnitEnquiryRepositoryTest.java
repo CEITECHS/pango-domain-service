@@ -6,10 +6,8 @@ import com.ceitechs.domain.service.domain.EnquiryCorrespondence;
 import com.ceitechs.domain.service.domain.PropertyUnitEnquiry;
 import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.util.PangoUtility;
-import org.bson.types.ObjectId;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.ceitechs.domain.service.repositories.PangoDomainServicePropertyUnitEnquiryRepository;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -22,7 +20,7 @@ import static org.junit.Assert.*;
 public class PangoDomainServicePropertyUnitEnquiryRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
 
     @Autowired
-    PangoDomainServicePropertyUnitEnquiryRepository unitEnquiryRepository;
+    PropertyUnitEnquiryRepository unitEnquiryRepository;
     @Autowired
     PangoDomainServiceUserRepository userRepository;
 
@@ -55,9 +53,7 @@ public class PangoDomainServicePropertyUnitEnquiryRepositoryTest extends Abstrac
         // unitEnquiry.setPropertyUnit(null); //TODO : Make sure property unit exists
         PropertyUnitEnquiry savedEnq =  unitEnquiryRepository.save(unitEnquiry);
         assertNotNull("Saved Enquiry can not be null",savedEnq);
-        PropertyUnitEnquiry enquiryToUpdate = unitEnquiryRepository.findOne(savedEnq.getEnquiryReferenceId());
-        enquiryToUpdate.addCorrespondence(newCorrespondence());
-        PropertyUnitEnquiry enquiryToUpdated = unitEnquiryRepository.save(enquiryToUpdate);
+        assertTrue(unitEnquiryRepository.updateEnquiryWith(unitEnquiry.getEnquiryReferenceId(),newCorrespondence()).isPresent());
         assertThat("The returned correspondence list shoud match the expected list", unitEnquiryRepository.findOne(unitEnquiry.getEnquiryReferenceId()).getCorrespondences(), hasSize(1));
     }
 
