@@ -5,9 +5,8 @@ package com.ceitechs.domain.service.util;
 
 import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.domain.FileMetadata;
-import com.ceitechs.domain.service.service.AttachmentToUpload;
+import com.ceitechs.domain.service.domain.AttachmentToUpload;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.FileCopyUtils;
 
 import javax.crypto.Cipher;

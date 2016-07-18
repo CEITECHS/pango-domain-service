@@ -1,12 +1,14 @@
-package com.ceitechs.domain.service.service;
+package com.ceitechs.domain.service.service.events;
 
+import com.ceitechs.domain.service.domain.AttachmentToUpload;
+import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.mongodb.BasicDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -20,18 +22,9 @@ import java.util.Optional;
  * @since 1.0
  */
 
-public interface PangoEventsListener{
-
-    /**
-     * Listen for <code>OnAttachmentEvent<List<AttachmentToUpload>> types of events</code> and fires to stores the respective attachments;
-     * @param attachmentsToUpload
-     */
-    void handleAttachmentsUpload(OnAttachmentEvent<List<AttachmentToUpload>> attachmentsToUpload);
-}
-
 @Service
- class PangoEventsListenerImpl implements PangoEventsListener {
-    private static final Logger logger = LoggerFactory.getLogger(PangoEventsListenerImpl.class);
+public class PangoEventsListener{
+    private static final Logger logger = LoggerFactory.getLogger(PangoEventsListener.class);
 
     @Autowired
     private GridFsService gridFsService;
@@ -41,10 +34,9 @@ public interface PangoEventsListener{
      * @param onAttachmentEvent
      */
 
+    @Async
     @EventListener
-    // @Async
     public void handleAttachmentsUpload(OnAttachmentEvent<List<AttachmentToUpload>> onAttachmentEvent){
-        System.out.println("never got here");
         List<AttachmentToUpload> attachmentToUploadList = onAttachmentEvent.get();
         if (!CollectionUtils.isEmpty(attachmentToUploadList)){
             attachmentToUploadList.stream()

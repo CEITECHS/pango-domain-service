@@ -3,21 +3,22 @@ package com.ceitechs.domain.service.service;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
 import com.ceitechs.domain.service.domain.Attachment;
+import com.ceitechs.domain.service.domain.AttachmentToUpload;
 import com.ceitechs.domain.service.domain.FileMetadata;
+import com.ceitechs.domain.service.service.events.OnAttachmentUploadEventImpl;
+import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
-import com.mongodb.BasicDBObject;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 
 import static org.junit.Assert.assertNotNull;
@@ -27,9 +28,9 @@ import static org.junit.Assert.assertTrue;
  * @author iddymagohe
  * @since 1.0
  */
-public class PersistAttachmentEventListenerTest extends AbstractPangoDomainServiceIntegrationTest {
+public class PangoAttachmentEventListenerTest extends AbstractPangoDomainServiceIntegrationTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(PersistAttachmentEventListenerTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(PangoAttachmentEventListenerTest.class);
 
 
     @Autowired
@@ -42,9 +43,8 @@ public class PersistAttachmentEventListenerTest extends AbstractPangoDomainServi
     public void publishAnEventToStoreTest() throws IOException {
         operations.delete(null);
         assertTrue(operations.find(null).size() == 0);
-
-        OnAttachmentEvent<List<AttachmentToUpload>> listSupplier = () -> Arrays.asList(new AttachmentToUpload("1",ReferenceIdFor.PROPERTY,buildAttachment(), ""));
-        pangoEventsPublisher.publishAttachmentUploadedEvent(listSupplier);
+        AttachmentToUpload attachmentToUpload = new AttachmentToUpload("1",ReferenceIdFor.PROPERTY,buildAttachment(), "");
+        pangoEventsPublisher.publishAttachmentEvent(new OnAttachmentUploadEventImpl(attachmentToUpload) );
 
         List<GridFSDBFile> files = operations.find(null);
         assertTrue(files.size() > 0);
@@ -56,6 +56,11 @@ public class PersistAttachmentEventListenerTest extends AbstractPangoDomainServi
         attachment.setFileName(resource.getFilename());
         try {
             attachment.setFileSize(resource.getFile().length());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            attachment.setContentBase64(PangoUtility.InputStreamToBase64(Optional.of(resource.getInputStream()),attachment.extractExtension()).get());
         } catch (IOException e) {
             e.printStackTrace();
         }

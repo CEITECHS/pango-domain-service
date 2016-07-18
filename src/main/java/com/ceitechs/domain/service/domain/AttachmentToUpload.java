@@ -1,4 +1,4 @@
-package com.ceitechs.domain.service.service;
+package com.ceitechs.domain.service.domain;
 
 import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
