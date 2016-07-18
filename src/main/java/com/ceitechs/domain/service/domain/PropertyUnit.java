@@ -50,6 +50,7 @@ public class PropertyUnit {
     @DBRef
     private User owner;
 
+    @DBRef
     private Property property;
 
     private PropertyFeature features;
