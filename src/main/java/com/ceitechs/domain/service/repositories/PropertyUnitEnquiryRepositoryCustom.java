@@ -28,7 +28,6 @@ public interface PropertyUnitEnquiryRepositoryCustom {
     Optional<PropertyUnitEnquiry>  updateEnquiryWith(String enquiryId, EnquiryCorrespondence correspondence);
 }
 
-
 class PropertyUnitEnquiryRepositoryImpl implements PropertyUnitEnquiryRepositoryCustom {
 
     @Autowired

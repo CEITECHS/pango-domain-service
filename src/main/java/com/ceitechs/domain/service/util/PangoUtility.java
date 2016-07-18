@@ -5,6 +5,7 @@ package com.ceitechs.domain.service.util;
 
 import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.domain.FileMetadata;
+import com.ceitechs.domain.service.service.AttachmentToUpload;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.FileCopyUtils;
@@ -147,7 +148,7 @@ public class PangoUtility {
     }
 
     /**
-     * To persist provider related files objects, not user profile photo
+     * Prepare Metadata required to persist an attachment
      * 
      * @param referenceId
      * @param attachment
@@ -176,6 +177,15 @@ public class PangoUtility {
         });
         return metadataMap;
 
+    }
+
+    /**
+     * Prepare Metadata required to persist an attachment
+     * @param attachmentToUpload
+     * @return
+     */
+    public static Map<String, String> attachmentMetadataToMap(AttachmentToUpload attachmentToUpload){
+        return  attachmentMetadataToMap(attachmentToUpload.getReferenceId(),attachmentToUpload.getReferenceIdFor(),attachmentToUpload.getAttachment(),attachmentToUpload.getParentReferenceId());
     }
 
     public static int random(int minimum, int maximum){
