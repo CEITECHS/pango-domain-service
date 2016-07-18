@@ -8,6 +8,8 @@ import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.util.PangoUtility;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -39,6 +41,20 @@ public class PangoDomainServicePropertyUnitEnquiryRepositoryTest extends Abstrac
        assertNotNull("Saved Enquiry can not be null",savedEnq);
        assertTrue(unitEnquiryRepository.findAll().size() > 0);
 
+    }
+
+    @Test
+    public void enquiriesByTenantTest(){
+        unitEnquiryRepository.deleteAll();
+        assertTrue(unitEnquiryRepository.findAll().size() == 0);
+        PropertyUnitEnquiry unitEnquiry = newEnquiry();
+        unitEnquiry.setEnquiryReferenceId(PangoUtility.generateIdAsString());
+        User usr = userRepository.findAll().get(0);
+        assertNotNull("User must exist to create an Enquiry",usr);
+        unitEnquiry.setProspectiveTenant(usr);
+        unitEnquiryRepository.save(unitEnquiry);
+        Page<PropertyUnitEnquiry> propertyUnitEnquiryPage = unitEnquiryRepository.findByProspectiveTenantOrderByEnquiryDateDesc(usr, new PageRequest(0,50));
+        assertThat("Returned Correspondence for this user should be 1 ", propertyUnitEnquiryPage.getContent(), hasSize(1));
     }
 
     @Test
@@ -77,4 +93,6 @@ public class PangoDomainServicePropertyUnitEnquiryRepositoryTest extends Abstrac
         correspondence.setOwner(true);
         return correspondence;
     }
+
+
 }
