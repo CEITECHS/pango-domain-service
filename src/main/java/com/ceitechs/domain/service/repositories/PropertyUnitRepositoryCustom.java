@@ -33,7 +33,7 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom{
 
         criteria.and("purpose").is(PropertyUnit.PropertyPurpose.valueOf(searchCriteria.getPropertyPupose()));
 
-        criteria.and("nextAvailableDate").lt(searchCriteria.getMoveInDate().get());
+        criteria.and("nextAvailableDate").lte(searchCriteria.getMoveInDate().get());
 
         criteria.and("features.nbrOfRooms").gte(searchCriteria.getRoomsCount());
 
