@@ -26,6 +26,7 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom{
 
     @Override
     public GeoResults<PropertyUnit> findAllPropertyUnits(PropertySearchCriteria searchCriteria) {
+
         return null;
     }
 }
