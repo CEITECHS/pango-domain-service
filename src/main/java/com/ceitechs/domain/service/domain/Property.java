@@ -37,14 +37,11 @@ public class Property {
     private double rating;
 
     @DBRef
-    private List<PropertyUnit> propertyUnits;
-
-    @DBRef
     private User owner;
 
     private PropertyFeature features;
 
-    private PropertyRent rent;
+    // private PropertyRent rent;
 
     @Transient
     private List<FileMetadata> propertyImages;

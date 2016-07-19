@@ -31,10 +31,8 @@ import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.domain.FileMetadata;
 import com.ceitechs.domain.service.domain.FileMetadata.FILETYPE;
 import com.ceitechs.domain.service.domain.ListingFor;
-import com.ceitechs.domain.service.domain.PerPeriod;
 import com.ceitechs.domain.service.domain.Property;
 import com.ceitechs.domain.service.domain.PropertyFeature;
-import com.ceitechs.domain.service.domain.PropertyRent;
 import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
@@ -56,9 +54,6 @@ public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomai
 
     @Autowired
     private PangoDomainServiceUserRepository userRepository;
-
-    @Autowired
-    private PangoDomainServicePropertyUnitRepository propertyUnitRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -118,15 +113,6 @@ public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomai
         PropertyFeature features = new PropertyFeature();
         features.setPropertySize("1200 SFT");
         property.setFeatures(features);
-
-        // Adding property rent
-        PropertyRent rent = new PropertyRent();
-        rent.setAmount(1200);
-        rent.setCurrency("USD");
-        rent.setPeriodforAmount(PerPeriod.MONTHLY);
-        property.setRent(rent);
-
-        // Adding property unit
 
         // Adding property image
         try {
