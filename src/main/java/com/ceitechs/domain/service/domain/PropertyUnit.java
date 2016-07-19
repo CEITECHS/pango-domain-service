@@ -66,5 +66,7 @@ public class PropertyUnit {
 
     private List<UnitHoldingHistory> holdingHistory;
 
+    private boolean active = true;
+
     private LocalDateTime createdDate = LocalDateTime.now(Clock.systemUTC());
 }
