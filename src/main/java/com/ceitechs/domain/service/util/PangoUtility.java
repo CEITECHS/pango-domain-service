@@ -8,6 +8,7 @@ import com.ceitechs.domain.service.domain.FileMetadata;
 import com.ceitechs.domain.service.domain.AttachmentToUpload;
 import lombok.Getter;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -20,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -30,6 +32,12 @@ import java.util.stream.StreamSupport;
  *
  */
 public class PangoUtility {
+
+    /**
+     * DATE_FORMAT = "YYYY-MM-dd"
+     */
+    public static final String  DATE_FORMAT_PATTERN = "\\d{4}-\\d{2}-\\d{2}";
+    public static final String DATE_FORMAT_PATTERN_SEPEATOR ="-";
 
     @Getter
     private String SECRET_KEY; // To be passed in as environment variable
@@ -195,5 +203,13 @@ public class PangoUtility {
     public static double random(double minimum, double maximum){
         Random r = new Random();
         return  minimum + (maximum - minimum) * r.nextDouble();
+    }
+
+    public static Optional<LocalDate> getLocalDateDateFrom(String dateString){
+        if (StringUtils.hasText(dateString) && dateString.matches(DATE_FORMAT_PATTERN)){
+            String[] dateParts  = dateString.split(DATE_FORMAT_PATTERN_SEPEATOR);
+            return Optional.of(LocalDate.of(Integer.valueOf(dateParts[0]),Integer.valueOf(dateParts[1]),Integer.valueOf(dateParts[2])));
+        }
+        return Optional.empty();
     }
 }

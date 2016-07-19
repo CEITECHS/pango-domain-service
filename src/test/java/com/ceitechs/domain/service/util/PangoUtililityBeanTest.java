@@ -10,6 +10,9 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Optional;
 
 import javax.crypto.SecretKey;
@@ -70,6 +73,15 @@ public class PangoUtililityBeanTest extends AbstractPangoDomainServiceIntegratio
         for (String p : phones) {
             assertTrue(p.matches(pattern));
         }
+
+         String DATE_FORMAT = "YYYY-MM-dd";
+        String DATE_FORMAT_PATTERN = "\\d{4}-\\d{2}-\\d{2}";
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+        Date now = new Date(System.currentTimeMillis());
+       // System.out.println(dateFormat.format(now));
+        assertTrue(dateFormat.format(now).matches(DATE_FORMAT_PATTERN));
+       // System.out.println(PangoUtility.getLocalDateDateFrom(dateFormat.format(now)).get());
+
 
     }
 
