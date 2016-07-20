@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import com.ceitechs.domain.service.domain.*;
 import org.junit.After;
@@ -149,15 +150,27 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
     @Test
     public void testFindBySearchCriteriaTest(){
         propertyUnitRepository.deleteAll();
+
         PropertyUnit propertyUnit = createPropertyUnit();
-        savedPropertyUnit = propertyUnitRepository.save(propertyUnit);
+        propertyUnitRepository.save(propertyUnit);
+        IntStream.range(0,6).forEach(i ->{
+            if(i%2 ==0)
+                propertyUnit.setLocation(new double[]{-6.769280,39.229809});
+            else{
+                propertyUnit.setLocation(new double[]{-6.808039,39.288764});
+            }
+
+            propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
+            propertyUnit.setPropertyUnitDesc(propertyUnit.getPropertyUnitDesc() + i);
+            propertyUnitRepository.save(propertyUnit);
+        });
 
         PropertySearchCriteria searchCriteria = new PropertySearchCriteria();
         searchCriteria.setPropertyPupose(PropertyPurpose.HOME.name());
         searchCriteria.setLatitude(-6.662951);
         searchCriteria.setLongitude(39.166650);
         searchCriteria.setMoveInDateAsString("2016-07-25");
-        searchCriteria.setRadius(50);
+        searchCriteria.setRadius(15);
         searchCriteria.setRoomsCount(4);
         searchCriteria.setBedRoomsCount(2);
         searchCriteria.setBathCount(2);
@@ -166,7 +179,8 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         assertTrue(!resultsList.getContent().isEmpty());
         System.out.println(resultsList.getAverageDistance());
         resultsList.getContent().stream().forEach(g-> {
-           assertTrue(g.getDistance().getValue() <= 50);
+           assertTrue(g.getDistance().getValue() <= searchCriteria.getRadius());
+            System.out.println(g.getContent().getPropertyUnitDesc() + " --- " + g.getDistance());
         });
     }
 
