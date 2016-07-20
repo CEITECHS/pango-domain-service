@@ -42,7 +42,7 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom{
         criteria.orOperator(Criteria.where("features.nbrOfBedRooms").gte(searchCriteria.getBedRoomsCount()),
                 Criteria.where("features.nbrOfBaths").gte(searchCriteria.getBathCount()));
 
-        Point location = new Point(searchCriteria.getLatitude(), searchCriteria.getLongitude());
+        Point location = new Point(searchCriteria.getLongitude(),searchCriteria.getLatitude());
 
         NearQuery near = NearQuery.near(location).maxDistance(new Distance(searchCriteria.getRadius(), Metrics.KILOMETERS));
         near.query(new Query(criteria));

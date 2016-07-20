@@ -155,9 +155,9 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         propertyUnitRepository.save(propertyUnit);
         IntStream.range(0,6).forEach(i ->{
             if(i%2 ==0)
-                propertyUnit.setLocation(new double[]{-6.769280,39.229809});
+                propertyUnit.setLocation(new double[]{39.229809,-6.769280});
             else{
-                propertyUnit.setLocation(new double[]{-6.808039,39.288764});
+                propertyUnit.setLocation(new double[]{39.288764,-6.808039});
             }
 
             propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
@@ -170,7 +170,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         searchCriteria.setLatitude(-6.662951);
         searchCriteria.setLongitude(39.166650);
         searchCriteria.setMoveInDateAsString("2016-07-25");
-        searchCriteria.setRadius(15);
+        searchCriteria.setRadius(50);
         searchCriteria.setRoomsCount(4);
         searchCriteria.setBedRoomsCount(2);
         searchCriteria.setBathCount(2);
@@ -228,7 +228,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         propertyUnit.setPurpose(PropertyPurpose.HOME);
 
         // Adding location(long,lat)
-        double[] location = {-6.816064, 39.272271};
+        double[] location = { 39.272271,-6.816064};
         propertyUnit.setLocation(location);
 
         // Adding the owner details
