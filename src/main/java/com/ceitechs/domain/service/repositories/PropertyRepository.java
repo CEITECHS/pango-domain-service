@@ -11,7 +11,7 @@ import com.ceitechs.domain.service.domain.Property;
  * @author abhisheksingh -
  * @since 1.0
  */
-public interface PangoDomainServicePropertyRepository extends MongoRepository<Property, String>{
+public interface PropertyRepository extends MongoRepository<Property, String>{
 
     public Page<Property> findByOwnerOrderByCreatedDateDesc(String userId, Pageable pageable);
     

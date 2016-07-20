@@ -7,8 +7,8 @@ import com.ceitechs.domain.service.util.PangoUtility;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.ceitechs.domain.service.repositories.PangoDomainServiceReviewRepository;
-import com.ceitechs.domain.service.repositories.PangoDomainServiceUserRepository;
+import com.ceitechs.domain.service.repositories.ReviewRepository;
+import com.ceitechs.domain.service.repositories.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.util.CollectionUtils;
@@ -23,13 +23,13 @@ import static org.junit.Assert.*;
  * @author iddymagohe
  * @since 1.0
  */
-public class PangoDomainServiceReviewRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
+public class ReviewRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
 
     @Autowired
-    PangoDomainServiceReviewRepository reviewRepository;
+    ReviewRepository reviewRepository;
 
     @Autowired
-    PangoDomainServiceUserRepository userRepository;
+    UserRepository userRepository;
 
     @Test
     public void saveReviewByTenantTest() {

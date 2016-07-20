@@ -44,10 +44,10 @@ import com.mongodb.BasicDBObject;
  * @author abhisheksingh -
  * @since 1.0
  */
-public class PangoDomainServiceUserRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
+public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
 
     @Autowired
-    private PangoDomainServiceUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     GridFsService gridFsService;

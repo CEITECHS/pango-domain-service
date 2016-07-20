@@ -24,7 +24,6 @@ public interface PropertyUnitEnquiryRepositoryCustom {
      * @param correspondence
      * @return
      */
-
     Optional<PropertyUnitEnquiry>  updateEnquiryWith(String enquiryId, EnquiryCorrespondence correspondence);
 }
 

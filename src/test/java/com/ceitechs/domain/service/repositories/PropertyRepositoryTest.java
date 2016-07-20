@@ -45,15 +45,15 @@ import com.mongodb.gridfs.GridFSDBFile;
  * @author abhisheksingh -
  * @since 1.0
  */
-public class PangoDomainServicePropertyRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
+public class PropertyRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
 
     private Resource propertyResource = new ClassPathResource("property.jpg");
 
     @Autowired
-    private PangoDomainServicePropertyRepository propertyRepository;
+    private PropertyRepository propertyRepository;
 
     @Autowired
-    private PangoDomainServiceUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;

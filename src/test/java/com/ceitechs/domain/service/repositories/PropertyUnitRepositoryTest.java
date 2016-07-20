@@ -36,18 +36,18 @@ import com.mongodb.BasicDBObject;
  * @author abhisheksingh -
  * @since 1.0
  */
-public class PangoDomainServicePropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
+public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
 
     private Resource propertyUnitResource = new ClassPathResource("propertyUnit.jpg");
 
     @Autowired
-    private PangoDomainServicePropertyUnitRepository propertyUnitRepository;
+    private PropertyUnitRepository propertyUnitRepository;
 
     @Autowired
-    private PangoDomainServicePropertyRepository propertyRepository;
+    private PropertyRepository propertyRepository;
 
     @Autowired
-    private PangoDomainServiceUserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate;

@@ -19,12 +19,12 @@ import static org.junit.Assert.*;
  * @author iddymagohe
  * @since 1.0
  */
-public class PangoDomainServicePropertyUnitEnquiryRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
+public class PropertyUnitEnquiryRepositoryTest extends AbstractPangoDomainServiceIntegrationTest {
 
     @Autowired
     PropertyUnitEnquiryRepository unitEnquiryRepository;
     @Autowired
-    PangoDomainServiceUserRepository userRepository;
+    UserRepository userRepository;
 
    @Test
    public void createAnEnquiryTest(){
