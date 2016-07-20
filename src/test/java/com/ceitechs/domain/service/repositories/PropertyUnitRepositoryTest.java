@@ -2,30 +2,25 @@ package com.ceitechs.domain.service.repositories;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
+import com.ceitechs.domain.service.domain.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
-import com.ceitechs.domain.service.domain.Address;
-import com.ceitechs.domain.service.domain.Attachment;
-import com.ceitechs.domain.service.domain.FileMetadata;
-import com.ceitechs.domain.service.domain.ListingFor;
-import com.ceitechs.domain.service.domain.PerPeriod;
-import com.ceitechs.domain.service.domain.Property;
-import com.ceitechs.domain.service.domain.PropertyFeature;
-import com.ceitechs.domain.service.domain.PropertyRent;
-import com.ceitechs.domain.service.domain.PropertyUnit;
 import com.ceitechs.domain.service.domain.PropertyUnit.PropertyPurpose;
-import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
@@ -149,6 +144,106 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
     public void testSavePropertyUnit() {
         assertNotNull("The saved property unit should not be null", savedPropertyUnit);
         assertEquals("The propertyUnitId should match", propertyUnitId, savedPropertyUnit.getPropertyUnitId());
+    }
+
+    @Test
+    public void testFindBySearchCriteriaTest(){
+        propertyUnitRepository.deleteAll();
+        PropertyUnit propertyUnit = createPropertyUnit();
+        savedPropertyUnit = propertyUnitRepository.save(propertyUnit);
+
+        PropertySearchCriteria searchCriteria = new PropertySearchCriteria();
+        searchCriteria.setPropertyPupose(PropertyPurpose.HOME.name());
+        searchCriteria.setLatitude(-6.662951);
+        searchCriteria.setLongitude(39.166650);
+        searchCriteria.setMoveInDateAsString("2016-07-25");
+        searchCriteria.setRadius(50);
+        searchCriteria.setRoomsCount(4);
+        searchCriteria.setBedRoomsCount(2);
+        searchCriteria.setBathCount(2);
+        GeoResults<PropertyUnit> resultsList = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
+        assertNotNull(resultsList);
+        assertTrue(!resultsList.getContent().isEmpty());
+        System.out.println(resultsList.getAverageDistance());
+        resultsList.getContent().stream().forEach(g-> {
+           assertTrue(g.getDistance().getValue() <= 50);
+        });
+    }
+
+
+
+    public  PropertyUnit createPropertyUnit(){
+        userReferenceId = PangoUtility.generateIdAsString();
+        User user = new User();
+        user.setUserReferenceId(userReferenceId);
+
+        Address address = new Address();
+        address.setAddressLine1("Masaki");
+        address.setAddressLine2("Address Line 2");
+        address.setCity("Dar es Salaam,");
+        address.setState("Dar es Salaam");
+        address.setZip("12345");
+        user.setAddress(address);
+
+        user.setFirstName("fName");
+        user.setLastName("lName");
+        user.setEmailAddress("fName.lName@pango.com");
+
+        // Save the user
+        userRepository.save(user);
+
+        propertyId = PangoUtility.generateIdAsString();
+        Property property = new Property();
+        property.setPropertyId(propertyId);
+        property.setPropertyDesc("nice property");
+
+        // Save the property
+        propertyRepository.save(property);
+
+        // Create a new property unit
+        PropertyUnit propertyUnit = new PropertyUnit();
+        property.setPropertyDesc("nice property unit");
+        propertyUnitId=PangoUtility.generateIdAsString();
+        propertyUnit.setPropertyUnitId(propertyUnitId);
+        propertyUnit.setPropertyUnitDesc("Amazing 2 bedrooms appartment");
+
+        // Adding listing
+        propertyUnit.setListingFor(ListingFor.RENT);
+
+        // Adding property purpose
+        propertyUnit.setPurpose(PropertyPurpose.HOME);
+
+        // Adding location(long,lat)
+        double[] location = {-6.816064, 39.272271};
+        propertyUnit.setLocation(location);
+
+        // Adding the owner details
+        propertyUnit.setOwner(user);
+
+        // Adding property feature
+        PropertyFeature features = new PropertyFeature();
+        features.setPropertySize("1200 SFT"); //TODO Should not be a String
+        features.setNbrOfBaths(2);
+        features.setNbrOfBedRooms(3);
+        features.setNbrOfRooms(5);
+        propertyUnit.setFeatures(features);
+
+        propertyUnit.setNextAvailableDate(LocalDateTime.now().plusDays(3));
+
+
+        // Adding property reference
+        propertyUnit.setProperty(property);
+
+        // Adding property rent
+        PropertyRent rent = new PropertyRent();
+        rent.setAmount(1200);
+        rent.setCurrency("USD");
+        rent.setPeriodforAmount(PerPeriod.MONTHLY);
+        propertyUnit.setRent(rent);
+
+        // Adding property unit image
+
+        return propertyUnit;
     }
 
     @After

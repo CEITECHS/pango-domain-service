@@ -6,6 +6,7 @@ import com.ceitechs.domain.service.domain.PropertyUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.*;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.index.GeospatialIndex;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.NearQuery;
 import org.springframework.data.mongodb.core.query.Query;
@@ -29,6 +30,7 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom{
     @Override
     public GeoResults<PropertyUnit> findAllPropertyUnits(PropertySearchCriteria searchCriteria) {
 
+
         Criteria criteria = Criteria.where("active").is(true);
 
         criteria.and("purpose").is(PropertyUnit.PropertyPurpose.valueOf(searchCriteria.getPropertyPupose()));
@@ -44,6 +46,8 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom{
 
         NearQuery near = NearQuery.near(location).maxDistance(new Distance(searchCriteria.getRadius(), Metrics.KILOMETERS));
         near.query(new Query(criteria));
+
+        mongoOperations.indexOps(PropertyUnit.class).ensureIndex(new GeospatialIndex("location"));
 
         return mongoOperations.geoNear(near,PropertyUnit.class);
     }
