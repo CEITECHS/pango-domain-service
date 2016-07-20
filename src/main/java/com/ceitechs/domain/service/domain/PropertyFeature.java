@@ -10,12 +10,13 @@ import java.util.List;
 @Setter
 @ToString
 public class PropertyFeature {
+    private boolean isStudio = false;
     private int nbrOfRooms;
     private int nbrOfBedRooms;
     private int nbrOfSelfContainedBedRooms;
     private int nbrOfBaths;
     private int nbrOfKitchens;    
     private String propertySize;
-    private String sizeUnit = "sqft"; // default squire foot
+    private String sizeUnit = "sqft"; // default square foot
     List<String> additionalFeatures;
 }
