@@ -1,23 +1,21 @@
 package com.ceitechs.domain.service.repositories;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+import java.util.stream.IntStream;
+
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
 import com.ceitechs.domain.service.domain.Review;
 import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.util.PangoUtility;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import com.ceitechs.domain.service.repositories.ReviewRepository;
-import com.ceitechs.domain.service.repositories.UserRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.util.CollectionUtils;
-
-import java.util.List;
-import java.util.Random;
-import java.util.stream.IntStream;
-
-import static org.junit.Assert.*;
 
 /**
  * @author iddymagohe

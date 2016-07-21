@@ -16,7 +16,7 @@ public class PropertyFeature {
     private int nbrOfSelfContainedBedRooms;
     private int nbrOfBaths;
     private int nbrOfKitchens;    
-    private String propertySize;
+    private double propertySize;
     private String sizeUnit = "sqft"; // default square foot
     List<String> additionalFeatures;
 }

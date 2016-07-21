@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -147,7 +146,7 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
 
         // Adding property feature
         PropertyFeature features = new PropertyFeature();
-        features.setPropertySize("1200 SFT");
+        features.setPropertySize(1200.0);
         propertyUnit.setFeatures(features);
 
         // Adding property reference

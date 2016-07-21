@@ -112,7 +112,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
 
         // Adding property feature
         PropertyFeature features = new PropertyFeature();
-        features.setPropertySize("1200 SFT");
+        features.setPropertySize(1200.0);
         propertyUnit.setFeatures(features);
 
         // Adding property reference
@@ -229,7 +229,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         propertyUnitRepository.save(propertyUnit);
         IntStream.range(0,6).forEach(i -> {
             PropertyFeature features = new PropertyFeature();
-            features.setPropertySize("1200"); //TODO Should not be a String
+            features.setPropertySize(1200.0); 
 
             PropertyRent rent = new PropertyRent();
             rent.setCurrency("TZS");
@@ -320,7 +320,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
 
         // Adding property feature
         PropertyFeature features = new PropertyFeature();
-        features.setPropertySize("1200"); //TODO Should not be a String
+        features.setPropertySize(1200.0); 
         features.setNbrOfBaths(2);
         features.setNbrOfBedRooms(3);
         features.setNbrOfRooms(5);

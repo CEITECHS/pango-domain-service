@@ -111,7 +111,7 @@ public class PropertyRepositoryTest extends AbstractPangoDomainServiceIntegratio
 
         // Adding property feature
         PropertyFeature features = new PropertyFeature();
-        features.setPropertySize("1200 SFT");
+        features.setPropertySize(1200.0);
         property.setFeatures(features);
 
         // Adding property image
