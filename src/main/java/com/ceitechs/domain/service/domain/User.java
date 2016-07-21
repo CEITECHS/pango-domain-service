@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * @author abhisheksingh
@@ -15,6 +16,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 @Document(collection = "user")
 @TypeAlias("user")
 public class User {

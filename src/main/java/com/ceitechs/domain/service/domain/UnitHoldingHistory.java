@@ -32,4 +32,6 @@ public class UnitHoldingHistory {
     private UserTransactionHistory transactionHistory;
 
     private PendingPayment holdingPayment;
+    
+    private boolean holdingRequestAccepted = false;
 }
