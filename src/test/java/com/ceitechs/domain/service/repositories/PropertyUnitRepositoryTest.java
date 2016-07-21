@@ -148,23 +148,45 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
     }
 
     @Test
-    public void testFindBySearchCriteriaTest(){
-        propertyUnitRepository.deleteAll();
+    public void bedRoomsWithinPriceAndDistanceTest(){
+        randomProperties();
 
-        PropertyUnit propertyUnit = createPropertyUnit();
-        propertyUnitRepository.save(propertyUnit);
-        IntStream.range(0,6).forEach(i ->{
-            if(i%2 ==0)
-                propertyUnit.setLocation(new double[]{39.229809,-6.769280});
-            else{
-                propertyUnit.setLocation(new double[]{39.288764,-6.808039});
-            }
+        PropertySearchCriteria searchCriteria = searchCriteriaResource();
+        searchCriteria.setBedRoomsCount(4);
+        searchCriteria.setMinPrice(3200);
 
-            propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
-            propertyUnit.setPropertyUnitDesc(propertyUnit.getPropertyUnitDesc() + i);
-            propertyUnitRepository.save(propertyUnit);
+        GeoResults<PropertyUnit> resultsList = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
+        assertNotNull(resultsList);
+        assertTrue(!resultsList.getContent().isEmpty());
+        System.out.println(resultsList.getAverageDistance());
+        resultsList.getContent().stream().forEach(g-> {
+            assertTrue(g.getDistance().getValue() <= searchCriteria.getRadius());
+            assertTrue(g.getContent().getRent().getAmount() >= searchCriteria.getMinPrice());
+            System.out.println(g.getContent().getPropertyUnitDesc() + " --- " + g.getDistance() + "--- " + g.getContent().getRent().getAmount() + " "+ g.getContent().getRent().getPeriodforAmount() );
         });
+    }
 
+    @Test
+    public void studioWithinPriceAndDistanceTest(){
+        randomProperties();
+        PropertySearchCriteria searchCriteria = searchCriteriaResource();
+        searchCriteria.setBedRoomsCount(0.5);
+
+
+        GeoResults<PropertyUnit> resultsList = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
+        assertNotNull(resultsList);
+        assertTrue(!resultsList.getContent().isEmpty());
+        System.out.println(resultsList.getAverageDistance());
+        resultsList.getContent().stream().forEach(g-> {
+            assertTrue(g.getDistance().getValue() <= searchCriteria.getRadius());
+            assertTrue(g.getContent().getRent().getAmount() >= searchCriteria.getMinPrice());
+            assertTrue(g.getContent().getFeatures().isStudio());
+            System.out.println(g.getContent().getPropertyUnitDesc() + " --- " + g.getDistance() + "---" + g.getContent().getRent().getAmount());
+
+        });
+    }
+
+    public PropertySearchCriteria searchCriteriaResource(){
         PropertySearchCriteria searchCriteria = new PropertySearchCriteria();
         searchCriteria.setPropertyPupose(PropertyPurpose.HOME.name());
         searchCriteria.setLatitude(-6.662951);
@@ -173,17 +195,59 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         searchCriteria.setRadius(50);
         searchCriteria.setRoomsCount(4);
         searchCriteria.setBedRoomsCount(2);
-        searchCriteria.setBathCount(2);
-        GeoResults<PropertyUnit> resultsList = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
-        assertNotNull(resultsList);
-        assertTrue(!resultsList.getContent().isEmpty());
-        System.out.println(resultsList.getAverageDistance());
-        resultsList.getContent().stream().forEach(g-> {
-           assertTrue(g.getDistance().getValue() <= searchCriteria.getRadius());
-            System.out.println(g.getContent().getPropertyUnitDesc() + " --- " + g.getDistance());
-        });
+        searchCriteria.setBathCount(1);
+        searchCriteria.setMinPrice(2200);
+        searchCriteria.setMaxPrice(2200);
+        return searchCriteria;
     }
 
+
+    public void randomProperties(){
+        propertyUnitRepository.deleteAll();
+
+        PropertyUnit propertyUnit = createPropertyUnit();
+        propertyUnitRepository.save(propertyUnit);
+        IntStream.range(0,6).forEach(i -> {
+            PropertyFeature features = new PropertyFeature();
+            features.setPropertySize("1200"); //TODO Should not be a String
+
+            PropertyRent rent = new PropertyRent();
+            rent.setCurrency("TZS");
+            rent.setPeriodforAmount(PerPeriod.MONTHLY);
+            if(i%2 == 0) {
+                rent.setAmount(1200 +(i*1000) );
+                propertyUnit.setLocation(new double[]{39.229809, -6.769280});
+                propertyUnit.setPurpose(PropertyPurpose.BUSINESS);
+                features.setNbrOfBaths(2);
+                features.setNbrOfRooms(i+1);
+                propertyUnit.setPropertyUnitDesc(String.format(" A nice %d rooms office", features.getNbrOfRooms()));
+                propertyUnit.setFeatures(features);
+                propertyUnit.setRent(rent);
+            }else{
+                rent.setAmount(1200 +(i*1000) );
+                propertyUnit.setLocation(new double[]{39.288764,-6.808039});
+                propertyUnit.setPurpose(PropertyPurpose.HOME);
+                features.setNbrOfBedRooms(i+1);
+                if(i == 1) {
+                    features.setStudio(true);
+                    features.setNbrOfBedRooms(0);
+                    propertyUnit.setPropertyUnitDesc("Studio apartment ");
+                }
+                else {
+                    features.setNbrOfRooms(i+1);
+                    propertyUnit.setPropertyUnitDesc(String.format(" Amazing %d bed rooms apartment", features.getNbrOfBedRooms()));
+                }
+                features.setNbrOfBaths(2);
+                propertyUnit.setFeatures(features);
+                propertyUnit.setRent(rent);
+
+            }
+
+            propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
+            propertyUnit.setPropertyUnitDesc(propertyUnit.getPropertyUnitDesc() + i);
+            propertyUnitRepository.save(propertyUnit);
+        });
+    }
 
 
     public  PropertyUnit createPropertyUnit(){
@@ -236,7 +300,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
 
         // Adding property feature
         PropertyFeature features = new PropertyFeature();
-        features.setPropertySize("1200 SFT"); //TODO Should not be a String
+        features.setPropertySize("1200"); //TODO Should not be a String
         features.setNbrOfBaths(2);
         features.setNbrOfBedRooms(3);
         features.setNbrOfRooms(5);
@@ -251,7 +315,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         // Adding property rent
         PropertyRent rent = new PropertyRent();
         rent.setAmount(1200);
-        rent.setCurrency("USD");
+        rent.setCurrency("TZS");
         rent.setPeriodforAmount(PerPeriod.MONTHLY);
         propertyUnit.setRent(rent);
 

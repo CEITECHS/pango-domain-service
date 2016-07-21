@@ -40,7 +40,10 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom {
 
         PropertyUnit.PropertyPurpose propertyPurpose = PropertyUnit.PropertyPurpose.valueOf(searchCriteria.getPropertyPupose());
 
+
+
         Criteria criteria = Criteria.where("active").is(true);
+        Query query = new Query(criteria);
 
         criteria.and("purpose").is(propertyPurpose);
 
@@ -61,16 +64,17 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom {
 
         criteria.and("nextAvailableDate").lte(searchCriteria.getMoveInDate().get()); //amount
 
-        criteria.and("rent.amount").gte(searchCriteria.getMinPrice());
-
-        if (searchCriteria.getMaxPrice() > 0 && searchCriteria.getMaxPrice() > searchCriteria.getMinPrice() ) {
-            criteria.and("rent.amount").lte(searchCriteria.getMinPrice());
+        if (searchCriteria.getMaxPrice() >= searchCriteria.getMinPrice() ) {
+            //query.addCriteria(Criteria.where("rent.amount").gte(searchCriteria.getMinPrice()).lt(searchCriteria.getMaxPrice()));
+            criteria.and("rent.amount").gte(searchCriteria.getMinPrice()).lte(searchCriteria.getMaxPrice());
+        }else{
+            criteria.and("rent.amount").gte(searchCriteria.getMinPrice());
         }
 
         Point location = new Point(searchCriteria.getLongitude(), searchCriteria.getLatitude());
 
         NearQuery near = NearQuery.near(location).maxDistance(new Distance(searchCriteria.getRadius(), Metrics.KILOMETERS));
-        near.query(new Query(criteria));
+        near.query(query);
 
         mongoOperations.indexOps(PropertyUnit.class).ensureIndex(new GeospatialIndex("location"));
 
