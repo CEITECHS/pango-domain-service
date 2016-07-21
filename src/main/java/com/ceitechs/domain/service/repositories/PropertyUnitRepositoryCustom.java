@@ -48,7 +48,7 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom {
         criteria.and("purpose").is(propertyPurpose);
 
         if (propertyPurpose == PropertyUnit.PropertyPurpose.BUSINESS)
-            criteria.and("features.nbrOfRooms").gte(searchCriteria.getRoomsCount()); // Offices
+             criteria.and("features.nbrOfRooms").gte(searchCriteria.getRoomsCount()); // Offices
 
         if (propertyPurpose == PropertyUnit.PropertyPurpose.HOME) {
             if (searchCriteria.getBedRoomsCount() > 0 && searchCriteria.getBedRoomsCount() < 1.0) { // studio
@@ -70,6 +70,8 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom {
         }else{
             criteria.and("rent.amount").gte(searchCriteria.getMinPrice());
         }
+
+        //TODO Include features(amenities) in filtering results
 
         Point location = new Point(searchCriteria.getLongitude(), searchCriteria.getLatitude());
 

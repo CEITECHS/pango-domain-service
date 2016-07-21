@@ -171,8 +171,6 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         randomProperties();
         PropertySearchCriteria searchCriteria = searchCriteriaResource();
         searchCriteria.setBedRoomsCount(0.5);
-
-
         GeoResults<PropertyUnit> resultsList = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
         assertNotNull(resultsList);
         assertTrue(!resultsList.getContent().isEmpty());
@@ -181,10 +179,32 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
             assertTrue(g.getDistance().getValue() <= searchCriteria.getRadius());
             assertTrue(g.getContent().getRent().getAmount() >= searchCriteria.getMinPrice());
             assertTrue(g.getContent().getFeatures().isStudio());
-            System.out.println(g.getContent().getPropertyUnitDesc() + " --- " + g.getDistance() + "---" + g.getContent().getRent().getAmount());
+            System.out.println(g.getContent().getPropertyUnitDesc() + " --- " + g.getDistance() + "--- " + g.getContent().getRent().getAmount() + " "+ g.getContent().getRent().getPeriodforAmount() );
 
         });
     }
+
+    @Test
+    public void officeWithinPriceAndDistanceTest(){
+        randomProperties();
+        PropertySearchCriteria searchCriteria = searchCriteriaResource();
+        searchCriteria.setPropertyPupose(PropertyPurpose.BUSINESS.name());
+        searchCriteria.setRoomsCount(1);
+        searchCriteria.setMinPrice(1000);
+        searchCriteria.setMaxPrice(0);
+        searchCriteria.setBathCount(1);
+        GeoResults<PropertyUnit> resultsList = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
+        assertNotNull(resultsList);
+        assertTrue(!resultsList.getContent().isEmpty());
+        System.out.println(resultsList.getAverageDistance());
+        resultsList.getContent().stream().forEach(g-> {
+            assertTrue(g.getDistance().getValue() <= searchCriteria.getRadius());
+            assertTrue(g.getContent().getRent().getAmount() >= searchCriteria.getMinPrice());
+            System.out.println(g.getContent().getPropertyUnitDesc() + " --- " + g.getDistance() + "--- " + g.getContent().getRent().getAmount() + " "+ g.getContent().getRent().getPeriodforAmount() );
+
+        });
+    }
+
 
     public PropertySearchCriteria searchCriteriaResource(){
         PropertySearchCriteria searchCriteria = new PropertySearchCriteria();
