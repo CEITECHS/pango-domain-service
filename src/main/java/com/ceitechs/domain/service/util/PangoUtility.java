@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -211,5 +213,13 @@ public class PangoUtility {
             return Optional.of(LocalDate.of(Integer.valueOf(dateParts[0]),Integer.valueOf(dateParts[1]),Integer.valueOf(dateParts[2])));
         }
         return Optional.empty();
+    }
+
+    public static String remainingDurationBtnDateTimes(final LocalDateTime startDateATime,  final LocalDateTime toDateTime){
+            LocalDateTime lastDate = LocalDateTime.of(startDateATime.toLocalDate(), startDateATime.toLocalTime()) ;
+            long days =  ChronoUnit.DAYS.between(startDateATime,toDateTime);
+            long hours =  ChronoUnit.HOURS.between(lastDate.plusDays(days),toDateTime);
+            long minutes = ChronoUnit.MINUTES.between(lastDate.plusDays(days).plusHours(hours),toDateTime);
+            return String.format("%dd %dh %dm",days, hours, minutes);
     }
 }

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -118,6 +119,13 @@ public class PangoUtililityBeanTest extends AbstractPangoDomainServiceIntegratio
         String id = PangoUtility.generateIdAsString();
         assertNotNull("Generated Id should not be null", id);
         assertTrue("Generated Id should not contain hyphens", !id.contains("-"));
+    }
+
+    @Test
+    public void remainingDurationTest(){
+        System.out.println(PangoUtility.remainingDurationBtnDateTimes(LocalDateTime.now(), LocalDateTime.now().plusDays(2)));
+        System.out.println(PangoUtility.remainingDurationBtnDateTimes(LocalDateTime.now(), LocalDateTime.now().plusDays(2).plusHours(1)));
+        System.out.println(PangoUtility.remainingDurationBtnDateTimes(LocalDateTime.now(), LocalDateTime.now().plusDays(2).plusHours(1).plusMinutes(24)));
     }
 
 }
