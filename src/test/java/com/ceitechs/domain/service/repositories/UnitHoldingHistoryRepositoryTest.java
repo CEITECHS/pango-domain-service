@@ -242,5 +242,4 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
     @After
     public void tearDown() {
     }
-
 }
