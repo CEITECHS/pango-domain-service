@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -18,5 +20,5 @@ public class PropertyFeature {
     private int nbrOfKitchens;    
     private double propertySize;
     private String sizeUnit = "sqft"; // default square foot
-    List<Amenity> additionalFeatures;
+    private List<Amenity> additionalFeatures = new ArrayList<>();
 }

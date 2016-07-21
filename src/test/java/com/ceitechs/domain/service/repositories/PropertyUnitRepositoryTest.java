@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -171,6 +172,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         randomProperties();
         PropertySearchCriteria searchCriteria = searchCriteriaResource();
         searchCriteria.setBedRoomsCount(0.5);
+        searchCriteria.setAmenities("gym,SWIMMING POOL");
         GeoResults<PropertyUnit> resultsList = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
         assertNotNull(resultsList);
         assertTrue(!resultsList.getContent().isEmpty());
@@ -252,6 +254,14 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
                     features.setStudio(true);
                     features.setNbrOfBedRooms(0);
                     propertyUnit.setPropertyUnitDesc("Studio apartment ");
+                    Amenity amenity = new Amenity();
+                    amenity.setAvailable(false);
+                    amenity.setName("GYM");
+
+                    Amenity amenity1 = new Amenity();
+                    amenity1.setAvailable(true);
+                    amenity1.setName("SWIMMING POOL");
+                    features.getAdditionalFeatures().addAll(Arrays.asList(amenity,amenity1));
                 }
                 else {
                     features.setNbrOfRooms(i+1);
