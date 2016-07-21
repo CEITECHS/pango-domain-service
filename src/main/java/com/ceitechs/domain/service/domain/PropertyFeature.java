@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @ToString
 public class PropertyFeature {
-    private boolean isStudio = false;
+    private boolean studio = false;
     private int nbrOfRooms;
     private int nbrOfBedRooms;
     private int nbrOfSelfContainedBedRooms;

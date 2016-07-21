@@ -18,37 +18,62 @@ import org.springframework.stereotype.Service;
  */
 public interface PropertyUnitRepositoryCustom {
 
+    /**
+     * @param searchCriteria
+     * @return
+     */
     GeoResults<PropertyUnit> findAllPropertyUnits(PropertySearchCriteria searchCriteria);
 }
 
 @Service
-class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom{
+class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom {
 
     @Autowired
     MongoOperations mongoOperations;
 
     @Override
     public GeoResults<PropertyUnit> findAllPropertyUnits(PropertySearchCriteria searchCriteria) {
+        /**
+         * Number of Rooms
+         *  - exact match for studios and rooms (bed or offices )less than 4.
+         */
 
+        PropertyUnit.PropertyPurpose propertyPurpose = PropertyUnit.PropertyPurpose.valueOf(searchCriteria.getPropertyPupose());
 
         Criteria criteria = Criteria.where("active").is(true);
 
-        criteria.and("purpose").is(PropertyUnit.PropertyPurpose.valueOf(searchCriteria.getPropertyPupose()));
+        criteria.and("purpose").is(propertyPurpose);
 
-        criteria.and("nextAvailableDate").lte(searchCriteria.getMoveInDate().get());
+        if (propertyPurpose == PropertyUnit.PropertyPurpose.BUSINESS)
+            criteria.and("features.nbrOfRooms").gte(searchCriteria.getRoomsCount()); // Offices
 
-        criteria.and("features.nbrOfRooms").gte(searchCriteria.getRoomsCount());
+        if (propertyPurpose == PropertyUnit.PropertyPurpose.HOME) {
+            if (searchCriteria.getBedRoomsCount() > 0 && searchCriteria.getBedRoomsCount() < 1.0) { // studio
+                criteria.and("features.studio").is(true);
+            } else if (searchCriteria.getRoomsCount() > 0 && searchCriteria.getBedRoomsCount() < 4.0) { //Bed rooms
+                criteria.and("features.nbrOfBedRooms").is(Double.valueOf(searchCriteria.getBedRoomsCount()).intValue());
+            } else {
+                criteria.and("features.nbrOfBedRooms").gte(Double.valueOf(searchCriteria.getBedRoomsCount()).intValue()); //0-4+
+            }
+        }
 
-        criteria.orOperator(Criteria.where("features.nbrOfBedRooms").gte(searchCriteria.getBedRoomsCount()),
-                Criteria.where("features.nbrOfBaths").gte(searchCriteria.getBathCount()));
+        criteria.and("features.nbrOfBaths").gte(searchCriteria.getBathCount());
 
-        Point location = new Point(searchCriteria.getLongitude(),searchCriteria.getLatitude());
+        criteria.and("nextAvailableDate").lte(searchCriteria.getMoveInDate().get()); //amount
+
+        criteria.and("rent.amount").gte(searchCriteria.getMinPrice());
+
+        if (searchCriteria.getMaxPrice() > 0 && searchCriteria.getMaxPrice() > searchCriteria.getMinPrice() ) {
+            criteria.and("rent.amount").lte(searchCriteria.getMinPrice());
+        }
+
+        Point location = new Point(searchCriteria.getLongitude(), searchCriteria.getLatitude());
 
         NearQuery near = NearQuery.near(location).maxDistance(new Distance(searchCriteria.getRadius(), Metrics.KILOMETERS));
         near.query(new Query(criteria));
 
         mongoOperations.indexOps(PropertyUnit.class).ensureIndex(new GeospatialIndex("location"));
 
-        return mongoOperations.geoNear(near,PropertyUnit.class);
+        return mongoOperations.geoNear(near, PropertyUnit.class);
     }
 }

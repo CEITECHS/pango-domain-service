@@ -25,8 +25,11 @@ public class PropertySearchCriteria {
     private String propertyPupose;
     private String moveInDateAsString; // Date-format YYYY-MM-DD
     private int roomsCount;
-    private int bedRoomsCount;
+    private double bedRoomsCount;
     private int bathCount;
+
+    private double minPrice;
+    private double maxPrice;
 
     public Optional<LocalDate> getMoveInDate(){
        return PangoUtility.getLocalDateDateFrom(moveInDateAsString);
