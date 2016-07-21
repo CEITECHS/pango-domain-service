@@ -30,6 +30,7 @@ public class PropertySearchCriteria {
 
     private double minPrice;
     private double maxPrice;
+    private String features;
 
     public Optional<LocalDate> getMoveInDate(){
        return PangoUtility.getLocalDateDateFrom(moveInDateAsString);
