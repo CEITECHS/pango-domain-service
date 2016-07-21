@@ -3,12 +3,14 @@ package com.ceitechs.domain.service.repositories;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -182,8 +184,8 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
         unitHoldingHistory.setPropertyUnit(propertyUnit);
 
         // Holding on a property would be for 48 hours
-        unitHoldingHistory.setStartDate(LocalDate.now());
-        unitHoldingHistory.setEndDate(LocalDate.now().plusDays(2));
+        unitHoldingHistory.setStartDate(LocalDateTime.now());
+        unitHoldingHistory.setEndDate(LocalDateTime.now().plusDays(2));
 
         // Holding Payment
         PendingPayment holdingPayment = new PendingPayment();
@@ -220,16 +222,21 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
     @Test
     public void testGetUnitHoldingHistoryByOwner() {
         // Get all the unit holding history for the owners property
-        User owner = new User();
-        owner.setUserReferenceId(ownerReferenceId);
-        PropertyUnit propertyUnit = new PropertyUnit();
-        propertyUnit.setOwner(owner);
-        List<UnitHoldingHistory> results = unitHoldingHistoryRepository.getUnitHoldingHistory(ownerReferenceId,
-                LocalDate.now());
+        Optional<List<UnitHoldingHistory>> results = unitHoldingHistoryRepository
+                .getUnitHoldingHistory(ownerReferenceId);
         assertNotNull("The returned unit holding history should not be null", results);
-        assertThat("The returned unit holding history should match the expected list", results, hasSize(1));
+        assertThat("The returned unit holding history should match the expected list", results.get(), hasSize(1));
         assertEquals("The owner id should from the results should match the expected owner id", ownerReferenceId,
-                results.get(0).getPropertyUnit().getOwner().getUserReferenceId());
+                results.get().get(0).getPropertyUnit().getOwner().getUserReferenceId());
+    }
+
+    @Test
+    public void testGetUnitHoldingHistoryByOwnerWithNoProperty() {
+        // Get all the unit holding history for the owners property
+        String ownerId = PangoUtility.generateIdAsString();
+        Optional<List<UnitHoldingHistory>> results = unitHoldingHistoryRepository.getUnitHoldingHistory(ownerId);
+        assertNotNull("The returned unit holding history should be null", results);
+        assertFalse("The returned unit holding history should match the expected", results.isPresent());
     }
 
     @After

@@ -1,8 +1,9 @@
 package com.ceitechs.domain.service.repositories;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,7 +22,7 @@ import com.ceitechs.domain.service.domain.User;
  */
 public interface UnitHoldingHistoryRepositoryCustom {
 
-    List<UnitHoldingHistory> getUnitHoldingHistory(String ownerId, LocalDate date);
+    Optional<List<UnitHoldingHistory>> getUnitHoldingHistory(String ownerId);
 }
 
 /**
@@ -39,16 +40,19 @@ class UnitHoldingHistoryRepositoryImpl implements UnitHoldingHistoryRepositoryCu
     private PropertyUnitRepository propertyUnitRepository;
 
     @Override
-    public List<UnitHoldingHistory> getUnitHoldingHistory(String ownerId, LocalDate date) {
+    public Optional<List<UnitHoldingHistory>> getUnitHoldingHistory(String ownerId) {
         User user = new User();
         user.setUserReferenceId(ownerId);
         List<PropertyUnit> propertyUnitList = propertyUnitRepository.findByOwner(user);
-        List<String> propertyUnitIds = new ArrayList<>();
-        propertyUnitList.forEach(propertyUnit -> {
-            propertyUnitIds.add(propertyUnit.getPropertyUnitId());
-        });
-        Criteria criteria = Criteria.where("propertyUnit.$id").in(propertyUnitIds).and("startDate").lte(date)
-                .and("endDate").gte(date);
-        return mongoTemplate.find(Query.query(criteria), UnitHoldingHistory.class);
+        List<String> propertyUnitIds = propertyUnitList.stream().map(PropertyUnit::getPropertyUnitId)
+                .collect(Collectors.toList());
+        if (propertyUnitIds.size() > 0) {
+            LocalDateTime dateTime = LocalDateTime.now();
+            Criteria criteria = Criteria.where("propertyUnit.$id").in(propertyUnitIds).and("startDate").lte(dateTime)
+                    .and("endDate").gte(dateTime);
+            return Optional.of(mongoTemplate.find(Query.query(criteria), UnitHoldingHistory.class));
+        } else {
+            return Optional.empty();
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.ceitechs.domain.service.domain;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
@@ -25,9 +25,9 @@ public class UnitHoldingHistory {
     @DBRef
     private User user;
 
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     private UserTransactionHistory transactionHistory;
 
