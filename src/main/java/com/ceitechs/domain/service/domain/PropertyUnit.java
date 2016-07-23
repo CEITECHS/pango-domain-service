@@ -30,6 +30,8 @@ public class PropertyUnit {
     @Id
     private String propertyUnitId;
 
+    private String unitNumber;
+
     private String propertyUnitDesc;
 
     private PropertyPurpose purpose;
