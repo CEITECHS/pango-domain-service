@@ -39,8 +39,6 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
     @Autowired
     private PropertyUnitRepository propertyUnitRepository;
 
-    @Autowired
-    private PropertyRepository propertyRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -84,16 +82,10 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         userRepository.save(user);
 
         propertyId = PangoUtility.generateIdAsString();
-        PropertyRemoved property = new PropertyRemoved();
-        property.setPropertyId(propertyId);
-        property.setPropertyDesc("nice property");
-
-        // Save the property
-        propertyRepository.save(property);
 
         // Create a new property unit
         PropertyUnit propertyUnit = new PropertyUnit();
-        property.setPropertyDesc("nice property unit");
+
         propertyUnitId=PangoUtility.generateIdAsString();
         propertyUnit.setPropertyUnitId(propertyUnitId);
 
@@ -297,16 +289,9 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         userRepository.save(user);
 
         propertyId = PangoUtility.generateIdAsString();
-        PropertyRemoved property = new PropertyRemoved();
-        property.setPropertyId(propertyId);
-        property.setPropertyDesc("nice property");
-
-        // Save the property
-        propertyRepository.save(property);
 
         // Create a new property unit
         PropertyUnit propertyUnit = new PropertyUnit();
-        property.setPropertyDesc("nice property unit");
         propertyUnitId=PangoUtility.generateIdAsString();
         propertyUnit.setPropertyUnitId(propertyUnitId);
         propertyUnit.setPropertyUnitDesc("Amazing 2 bedrooms appartment");

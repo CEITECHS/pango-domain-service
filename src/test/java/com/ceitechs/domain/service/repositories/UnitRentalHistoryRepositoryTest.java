@@ -29,7 +29,6 @@ import com.ceitechs.domain.service.domain.FileMetadata;
 import com.ceitechs.domain.service.domain.ListingFor;
 import com.ceitechs.domain.service.domain.PendingPayment;
 import com.ceitechs.domain.service.domain.PerPeriod;
-import com.ceitechs.domain.service.domain.PropertyRemoved;
 import com.ceitechs.domain.service.domain.PropertyFeature;
 import com.ceitechs.domain.service.domain.PropertyRent;
 import com.ceitechs.domain.service.domain.PropertyUnit;
@@ -60,9 +59,6 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private PropertyRepository propertyRepository;
 
     @Autowired
     private GridFsService gridFsService;
@@ -118,17 +114,9 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         // Save the owner
         userRepository.save(owner);
 
-        // Create a property
-        propertyId = PangoUtility.generateIdAsString();
-        PropertyRemoved property = new PropertyRemoved();
-        property.setPropertyId(propertyId);
-        property.setPropertyDesc("nice property");
-        // Save the property
-        propertyRepository.save(property);
 
         // Create a new property unit
         PropertyUnit propertyUnit = new PropertyUnit();
-        property.setPropertyDesc("nice property unit");
         propertyUnitId = PangoUtility.generateIdAsString();
         propertyUnit.setPropertyUnitId(propertyUnitId);
         // Adding listing

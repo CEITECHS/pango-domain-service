@@ -23,7 +23,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
-import com.ceitechs.domain.service.domain.PropertyRemoved;
 import com.ceitechs.domain.service.domain.PropertyUnit.PropertyPurpose;
 import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
@@ -48,8 +47,7 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private PropertyRepository propertyRepository;
+
 
     @Autowired
     private GridFsService gridFsService;
@@ -108,16 +106,9 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
 
         // Create a property
         propertyId = PangoUtility.generateIdAsString();
-        PropertyRemoved property = new PropertyRemoved();
-        property.setPropertyId(propertyId);
-        property.setPropertyDesc("nice property");
-
-        // Save the property
-        propertyRepository.save(property);
 
         // Create a new property unit
         PropertyUnit propertyUnit = new PropertyUnit();
-        property.setPropertyDesc("nice property unit");
         propertyUnitId = PangoUtility.generateIdAsString();
         propertyUnit.setPropertyUnitId(propertyUnitId);
 
