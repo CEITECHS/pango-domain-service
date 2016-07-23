@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -85,7 +84,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         userRepository.save(user);
 
         propertyId = PangoUtility.generateIdAsString();
-        Property property = new Property();
+        PropertyRemoved property = new PropertyRemoved();
         property.setPropertyId(propertyId);
         property.setPropertyDesc("nice property");
 
@@ -116,9 +115,6 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         features.setPropertySize(1200.0);
         propertyUnit.setFeatures(features);
 
-        // Adding property reference
-        propertyUnit.setProperty(property);
-
         // Adding property rent
         PropertyRent rent = new PropertyRent();
         rent.setAmount(1200);
@@ -132,7 +128,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
             attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
             attachment.setFileName(propertyUnitResource.getFilename());
             attachment.setFileSize(propertyUnitResource.getFile().length());
-            attachment.setFileDescription("An Amazing Property Unit");
+            attachment.setFileDescription("An Amazing PropertyRemoved Unit");
             Map<String, String> metadata = PangoUtility.attachmentMetadataToMap(propertyUnitId,
                     ReferenceIdFor.UNIT_PROPERTY, attachment, propertyId);
             gridFsService.storeFiles(propertyUnitResource.getInputStream(), metadata, BasicDBObject::new);
@@ -213,7 +209,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         searchCriteria.setPropertyPupose(PropertyPurpose.HOME.name());
         searchCriteria.setLatitude(-6.662951);
         searchCriteria.setLongitude(39.166650);
-        searchCriteria.setMoveInDateAsString("2016-07-25");
+        searchCriteria.setMoveInDateAsString("2018-07-25");
         searchCriteria.setRadius(50);
         searchCriteria.setRoomsCount(4);
         searchCriteria.setBedRoomsCount(2);
@@ -301,7 +297,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         userRepository.save(user);
 
         propertyId = PangoUtility.generateIdAsString();
-        Property property = new Property();
+        PropertyRemoved property = new PropertyRemoved();
         property.setPropertyId(propertyId);
         property.setPropertyDesc("nice property");
 
@@ -339,8 +335,6 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         propertyUnit.setNextAvailableDate(LocalDateTime.now().plusDays(3));
 
 
-        // Adding property reference
-        propertyUnit.setProperty(property);
 
         // Adding property rent
         PropertyRent rent = new PropertyRent();

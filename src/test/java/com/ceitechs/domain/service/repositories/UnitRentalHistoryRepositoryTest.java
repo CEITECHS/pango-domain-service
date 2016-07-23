@@ -29,7 +29,7 @@ import com.ceitechs.domain.service.domain.FileMetadata;
 import com.ceitechs.domain.service.domain.ListingFor;
 import com.ceitechs.domain.service.domain.PendingPayment;
 import com.ceitechs.domain.service.domain.PerPeriod;
-import com.ceitechs.domain.service.domain.Property;
+import com.ceitechs.domain.service.domain.PropertyRemoved;
 import com.ceitechs.domain.service.domain.PropertyFeature;
 import com.ceitechs.domain.service.domain.PropertyRent;
 import com.ceitechs.domain.service.domain.PropertyUnit;
@@ -120,7 +120,7 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
 
         // Create a property
         propertyId = PangoUtility.generateIdAsString();
-        Property property = new Property();
+        PropertyRemoved property = new PropertyRemoved();
         property.setPropertyId(propertyId);
         property.setPropertyDesc("nice property");
         // Save the property
@@ -144,8 +144,7 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         PropertyFeature features = new PropertyFeature();
         features.setPropertySize(1200.0);
         propertyUnit.setFeatures(features);
-        // Adding property reference
-        propertyUnit.setProperty(property);
+
         // Adding property rent
         PropertyRent rent = new PropertyRent();
         rent.setAmount(1200);
@@ -158,7 +157,7 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
             attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
             attachment.setFileName(propertyUnitResource.getFilename());
             attachment.setFileSize(propertyUnitResource.getFile().length());
-            attachment.setFileDescription("An Amazing Property Unit");
+            attachment.setFileDescription("An Amazing PropertyRemoved Unit");
             Map<String, String> metadata = PangoUtility.attachmentMetadataToMap(propertyUnitId,
                     ReferenceIdFor.UNIT_PROPERTY, attachment, propertyId);
             gridFsService.storeFiles(propertyUnitResource.getInputStream(), metadata, BasicDBObject::new);

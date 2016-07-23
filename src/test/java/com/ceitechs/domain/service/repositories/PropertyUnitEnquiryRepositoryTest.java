@@ -79,7 +79,7 @@ public class PropertyUnitEnquiryRepositoryTest extends AbstractPangoDomainServic
         unitEnquiry.setEnquiryType(CorrespondenceType.INTERESTED);
         unitEnquiry.setIntroduction("My name is so and so a teacher, looking for a family apartment");
         unitEnquiry.setMessage("I'm interested in renting property, was wondering whether the price is negotiable?");
-        unitEnquiry.setSubject("RE: Your Property Listed on Pango Platform");
+        unitEnquiry.setSubject("RE: Your PropertyRemoved Listed on Pango Platform");
         return unitEnquiry;
     }
 

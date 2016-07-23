@@ -4,16 +4,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.ceitechs.domain.service.domain.Property;
+import com.ceitechs.domain.service.domain.PropertyRemoved;
 
 /**
  * 
  * @author abhisheksingh -
  * @since 1.0
  */
-public interface PropertyRepository extends MongoRepository<Property, String>{
+public interface PropertyRepository extends MongoRepository<PropertyRemoved, String>{
 
-    public Page<Property> findByOwnerOrderByCreatedDateDesc(String userId, Pageable pageable);
+    public Page<PropertyRemoved> findByOwnerOrderByCreatedDateDesc(String userId, Pageable pageable);
     
-    public Page<Property> findByListingForOrderByCreatedDateDesc(Enum listingFor, Pageable pageable);
+    public Page<PropertyRemoved> findByListingForOrderByCreatedDateDesc(Enum listingFor, Pageable pageable);
 }

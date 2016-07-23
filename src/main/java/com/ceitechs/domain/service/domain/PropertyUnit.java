@@ -44,14 +44,12 @@ public class PropertyUnit {
 
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
     private double[] location;
+    private Address address;
 
     private double propertyRating;
 
     @DBRef
     private User owner;
-
-    @DBRef
-    private Property property;
 
     private PropertyFeature features;
 

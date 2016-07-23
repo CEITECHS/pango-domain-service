@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.ceitechs.domain.service.domain.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,21 +23,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
-import com.ceitechs.domain.service.domain.Address;
-import com.ceitechs.domain.service.domain.Attachment;
-import com.ceitechs.domain.service.domain.FileMetadata;
-import com.ceitechs.domain.service.domain.ListingFor;
-import com.ceitechs.domain.service.domain.PendingPayment;
-import com.ceitechs.domain.service.domain.PerPeriod;
-import com.ceitechs.domain.service.domain.Property;
-import com.ceitechs.domain.service.domain.PropertyFeature;
-import com.ceitechs.domain.service.domain.PropertyRent;
-import com.ceitechs.domain.service.domain.PropertyUnit;
+import com.ceitechs.domain.service.domain.PropertyRemoved;
 import com.ceitechs.domain.service.domain.PropertyUnit.PropertyPurpose;
-import com.ceitechs.domain.service.domain.TransactionType;
-import com.ceitechs.domain.service.domain.UnitHoldingHistory;
-import com.ceitechs.domain.service.domain.User;
-import com.ceitechs.domain.service.domain.UserTransactionHistory;
 import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
@@ -120,7 +108,7 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
 
         // Create a property
         propertyId = PangoUtility.generateIdAsString();
-        Property property = new Property();
+        PropertyRemoved property = new PropertyRemoved();
         property.setPropertyId(propertyId);
         property.setPropertyDesc("nice property");
 
@@ -151,8 +139,7 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
         features.setPropertySize(1200.0);
         propertyUnit.setFeatures(features);
 
-        // Adding property reference
-        propertyUnit.setProperty(property);
+
 
         // Adding property rent
         PropertyRent rent = new PropertyRent();
@@ -167,7 +154,7 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
             attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
             attachment.setFileName(propertyUnitResource.getFilename());
             attachment.setFileSize(propertyUnitResource.getFile().length());
-            attachment.setFileDescription("An Amazing Property Unit");
+            attachment.setFileDescription("An Amazing PropertyRemoved Unit");
             Map<String, String> metadata = PangoUtility.attachmentMetadataToMap(propertyUnitId,
                     ReferenceIdFor.UNIT_PROPERTY, attachment, propertyId);
             gridFsService.storeFiles(propertyUnitResource.getInputStream(), metadata, BasicDBObject::new);
