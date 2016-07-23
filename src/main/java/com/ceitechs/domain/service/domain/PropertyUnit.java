@@ -2,6 +2,7 @@ package com.ceitechs.domain.service.domain;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -58,7 +59,9 @@ public class PropertyUnit {
     private PropertyRent rent;
 
     @Transient
-    private List<FileMetadata> propertyUnitImages;
+    private List<FileMetadata> propertyUnitImages = new ArrayList<>();
+    @Transient
+    private List<Attachment> attachments = new ArrayList<>();
 
     private List<UnitRentalHistory> history;
 

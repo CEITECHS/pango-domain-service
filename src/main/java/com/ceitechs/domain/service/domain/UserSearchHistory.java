@@ -14,10 +14,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserSearchHistory {
+    
     private LocalDateTime date = LocalDateTime.now(Clock.systemUTC());
     private PropertySearchCriteria query;
+    private int resultCount;
 
-    public UserSearchHistory(PropertySearchCriteria searchCriteria) {
+    public UserSearchHistory(PropertySearchCriteria searchCriteria, int count) {
         query = searchCriteria;
+        resultCount = count;
     }
 }

@@ -23,5 +23,5 @@ public class UserProfile {
     private LocalDate verificationDate;
     private double customerRating;
     private LocalDate createdDate;
-    private List<UserPreference> preferences;
+    private List<UserPreference> preferences; //TODO Do you need this here?
 }

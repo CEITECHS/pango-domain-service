@@ -23,12 +23,12 @@ public class PangoEventsPublisher {
     }
 
     /**
-     * An easier way to publish various events of type {@link OnAttachmentEvent}
+     * An easier way to publish various events of type {@link OnPangoEvent}
      *
-     * @param onAttachmentEvent
+     * @param onPangoEvent
      * @param <T>
      */
-    public <T> void publishAttachmentEvent(OnAttachmentEvent<T> onAttachmentEvent){
-        publisher.publishEvent(onAttachmentEvent);
+    public <T> void publishAttachmentEvent(OnPangoEvent<T> onPangoEvent){
+        publisher.publishEvent(onPangoEvent);
     }
 }

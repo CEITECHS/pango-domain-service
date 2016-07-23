@@ -1,6 +1,7 @@
 package com.ceitechs.domain.service.service.events;
 
 import com.ceitechs.domain.service.domain.AttachmentToUpload;
+import com.ceitechs.domain.service.domain.PropertySearchCriteria;
 import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.mongodb.BasicDBObject;
@@ -30,14 +31,14 @@ public class PangoEventsListener{
     private GridFsService gridFsService;
 
     /**
-     * Listen for <code>OnAttachmentEvent<List<AttachmentToUpload>> types of events</code> and fires to stores the respective attachments;
-     * @param onAttachmentEvent
+     * Listen for <code>OnPangoEvent<List<AttachmentToUpload>> types of events</code> and fires to stores the respective attachments;
+     * @param onPangoEvent
      */
 
     @Async
     @EventListener
-    public void handleAttachmentsUpload(OnAttachmentEvent<List<AttachmentToUpload>> onAttachmentEvent){
-        List<AttachmentToUpload> attachmentToUploadList = onAttachmentEvent.get();
+    public void handleAttachmentsUpload(OnPangoEvent<List<AttachmentToUpload>> onPangoEvent){
+        List<AttachmentToUpload> attachmentToUploadList = onPangoEvent.get();
         if (!CollectionUtils.isEmpty(attachmentToUploadList)){
             attachmentToUploadList.stream()
                     .filter(attachmentToUpload -> attachmentToUpload.getAttachment() != null && (StringUtils.hasText(attachmentToUpload.getAttachment().getFileName()) && StringUtils.hasText(attachmentToUpload.getAttachment().getContentBase64())))
@@ -54,5 +55,13 @@ public class PangoEventsListener{
                         }
                     });
         }
+    }
+
+    @Async
+    @EventListener
+    public void handleUserSearchEvent(OnPangoEvent<PropertySearchCriteria> searchCriteriaOnPangoEvent){
+        //TODO : Update the user search history
+        throw new UnsupportedOperationException("Please implement this action");
+
     }
 }

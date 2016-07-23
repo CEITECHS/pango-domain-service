@@ -9,7 +9,7 @@ import java.util.List;
  * @author iddymagohe
  * @since 1.0
  */
-public class OnAttachmentUploadEventImpl implements OnAttachmentEvent<List<AttachmentToUpload>> {
+public class OnAttachmentUploadEventImpl implements OnPangoEvent<List<AttachmentToUpload>> {
     private final List<AttachmentToUpload> attachmentToUpload;
 
     public OnAttachmentUploadEventImpl(List<AttachmentToUpload> attachmentToUpload) {

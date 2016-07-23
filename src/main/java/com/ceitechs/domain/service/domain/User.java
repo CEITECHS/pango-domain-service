@@ -35,5 +35,5 @@ public class User {
 
     private UserProfile profile;
 
-    private List<UserPreference> preferences;
+    private List<UserPreference> preferences; //TODO do you need this here?
 }
