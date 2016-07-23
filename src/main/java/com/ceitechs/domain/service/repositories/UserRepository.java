@@ -10,7 +10,7 @@ import com.ceitechs.domain.service.domain.User;
  * @author abhisheksingh -
  * @since 1.0
  */
-public interface UserRepository extends MongoRepository<User, String> {
+public interface UserRepository extends MongoRepository<User, String> , UserRepositoryCustom{
 
 }
 

@@ -190,6 +190,7 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
 
     @Test
     public void testSaveUserPreferences() {
+
         User user = new User();
         user.setUserReferenceId(userReferenceId);
         user.setFirstName("fName");
@@ -263,6 +264,7 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
 
     @Test
     public void testUpdateUserPreferences() {
+        userRepository.deleteAll();
         User user = new User();
         user.setUserReferenceId(userReferenceId);
         user.setFirstName("fName");
@@ -300,11 +302,22 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
 
         User updatedUser = userRepository.save(savedUser);
 
-        assertThat("The returned preferences list shoud match the expected list", updatedUser.getPreferences(),
-                hasSize(2));
+        UserPreference userPreference3 = new UserPreference();
+        userPreference3.setPreferenceId(preferenceId2);
+        userPreference3.setPreferenceType(PreferenceType.Notification);
+        userPreference3.setCategory(PreferenceCategory.USERSET);
+
+        userRepository.addUserPreferences(userPreference3, updatedUser);
+
+        User usr = userRepository.findOne(updatedUser.getUserReferenceId());
+
+        assertThat("The returned preferences list shoud match the expected list", usr.getPreferences(),
+                hasSize(3));
     }
 
-    @Test
+
+
+   // @Test
     public void testSaveSearchHistory() {
         User user = new User();
         user.setUserReferenceId(userReferenceId);
@@ -320,11 +333,11 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
         userPreference1.setActive(true);
         userPreference1.setCategory(PreferenceCategory.SEARCH);
 
-        UserSearchHistory searchHistory1 = new UserSearchHistory();
-        searchHistory1.setDate(DateConvertUtility.asLocalDateTime(new Date()));
-        searchHistory1.setQuery("Query1");
+       // UserSearchHistory searchHistory1 = new UserSearchHistory("Query1", 1);
+       // searchHistory1.setDate(DateConvertUtility.asLocalDateTime(new Date()));
+      //  searchHistory1.setQuery("Query1");
 
-        userPreference1.setUserSearchHistory(searchHistory1);
+      //  userPreference1.setUserSearchHistory(searchHistory1);
 
         List<UserPreference> preferencesList = new ArrayList<>();
         preferencesList.add(userPreference1);

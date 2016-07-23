@@ -1,25 +1,24 @@
 package com.ceitechs.domain.service.service;
 
 
-import com.ceitechs.domain.service.domain.AttachmentToUpload;
-import com.ceitechs.domain.service.domain.PropertySearchCriteria;
-import com.ceitechs.domain.service.domain.PropertyUnit;
-import com.ceitechs.domain.service.domain.User;
+import com.ceitechs.domain.service.domain.*;
 import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
-import com.ceitechs.domain.service.service.events.OnAttachmentUploadEventImpl;
+import com.ceitechs.domain.service.service.events.OnAttachmentUploadEvent;
+import com.ceitechs.domain.service.service.events.OnPropertySearchEvent;
 import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
-import com.sun.tools.javac.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +42,7 @@ public interface PangoDomainService {
      * @param user
      * @return
      */
-    List<GeoResults<PropertyUnit>> searchForProperties(PropertySearchCriteria searchCriteria, User user);
+    List<GeoResult<PropertyUnit>> searchForProperties(PropertySearchCriteria searchCriteria, User user);
 
 }
 
@@ -86,7 +85,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
             logger.info("Saved Property "+ savedUnit);
 
             if(savedUnit !=null && !propertyUnit.getAttachments().isEmpty()){
-                OnAttachmentUploadEventImpl attachmentEvent = new OnAttachmentUploadEventImpl(
+                OnAttachmentUploadEvent attachmentEvent = new OnAttachmentUploadEvent(
                        propertyUnit.getAttachments() .stream().map((attachment) ->  new AttachmentToUpload(savedUnit.getPropertyUnitId(), ReferenceIdFor.PROPERTY, attachment,"")).collect(Collectors.toList()));
                         eventsPublisher.publishAttachmentEvent(attachmentEvent);
                 logger.info("published event to store attachmnets");
@@ -106,9 +105,14 @@ class PangoDomainServiceImpl implements PangoDomainService {
      * @return
      */
     @Override
-    public List<GeoResults<PropertyUnit>> searchForProperties(PropertySearchCriteria searchCriteria, User user) {
+    public List<GeoResult<PropertyUnit>> searchForProperties(PropertySearchCriteria searchCriteria, User user) {
         Assert.notNull(searchCriteria,"Search criteria can not be null ");
-
-        return null;
+        GeoResults<PropertyUnit> propertyUnitGeoResults = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
+        if(!propertyUnitGeoResults.getContent().isEmpty() && user != null){
+            OnPropertySearchEvent onPropertySearchEvent = new OnPropertySearchEvent(new UserSearchHistory(searchCriteria, propertyUnitGeoResults.getContent().size()),user);
+            logger.info("publishing Property Search event for user "+ user.getUserReferenceId());
+            eventsPublisher.publishAttachmentEvent(onPropertySearchEvent);
+        }
+        return propertyUnitGeoResults.getContent();
     }
 }

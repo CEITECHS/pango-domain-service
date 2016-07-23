@@ -5,7 +5,7 @@ import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
 import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.domain.AttachmentToUpload;
 import com.ceitechs.domain.service.domain.FileMetadata;
-import com.ceitechs.domain.service.service.events.OnAttachmentUploadEventImpl;
+import com.ceitechs.domain.service.service.events.OnAttachmentUploadEvent;
 import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
@@ -44,7 +44,7 @@ public class PangoAttachmentEventListenerTest extends AbstractPangoDomainService
         operations.delete(null);
         assertTrue(operations.find(null).size() == 0);
         AttachmentToUpload attachmentToUpload = new AttachmentToUpload("1",ReferenceIdFor.PROPERTY,buildAttachment(), "");
-        pangoEventsPublisher.publishAttachmentEvent(new OnAttachmentUploadEventImpl(attachmentToUpload) );
+        pangoEventsPublisher.publishAttachmentEvent(new OnAttachmentUploadEvent(attachmentToUpload) );
 
         List<GridFSDBFile> files = operations.find(null);
         assertTrue(files.size() > 0);

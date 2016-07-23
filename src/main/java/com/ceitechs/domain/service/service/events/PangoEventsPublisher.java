@@ -1,8 +1,5 @@
 package com.ceitechs.domain.service.service.events;
 
-/**
- * Created by iddymagohe on 7/17/16.
- */
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;

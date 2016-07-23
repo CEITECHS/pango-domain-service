@@ -1,7 +1,7 @@
 package com.ceitechs.domain.service.service.events;
 
-import com.ceitechs.domain.service.domain.AttachmentToUpload;
-import com.ceitechs.domain.service.domain.PropertySearchCriteria;
+import com.ceitechs.domain.service.domain.*;
+import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.mongodb.BasicDBObject;
@@ -29,6 +29,9 @@ public class PangoEventsListener{
 
     @Autowired
     private GridFsService gridFsService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Listen for <code>OnPangoEvent<List<AttachmentToUpload>> types of events</code> and fires to stores the respective attachments;
@@ -59,9 +62,16 @@ public class PangoEventsListener{
 
     @Async
     @EventListener
-    public void handleUserSearchEvent(OnPangoEvent<PropertySearchCriteria> searchCriteriaOnPangoEvent){
-        //TODO : Update the user search history
-        throw new UnsupportedOperationException("Please implement this action");
+    public void handleUserSearchEvent(OnPangoEvent<UserSearchHistory> searchHistoryOnPangoEvent) {
+        UserPreference userPreference = new UserPreference();
+        userPreference.setCategory(UserPreference.PreferenceCategory.SEARCH);
+        userPreference.setPreferenceType(UserPreference.PreferenceType.NotforDisplay);
+        userPreference.setUserSearchHistory(searchHistoryOnPangoEvent.get());
+        Optional<User> resp = userRepository.addUserPreferences(userPreference, searchHistoryOnPangoEvent.getUser());
+        if (resp.isPresent())
+            logger.info("Updated search history for user : " + searchHistoryOnPangoEvent.getUser().getUserReferenceId());
+        else
+            logger.info("Updated search history for user : " + searchHistoryOnPangoEvent.getUser().getUserReferenceId());
 
     }
 }

@@ -2,26 +2,30 @@ package com.ceitechs.domain.service.service.events;
 
 import com.ceitechs.domain.service.domain.PropertySearchCriteria;
 import com.ceitechs.domain.service.domain.User;
+import com.ceitechs.domain.service.domain.UserSearchHistory;
 
 /**
- * Created by iddymagohe on 7/22/16.
+ * @author iddymagohe
+ * @since 1.0
  */
-public class OnPropertySearchEvent implements OnPangoEvent<PropertySearchCriteria> {
+public class OnPropertySearchEvent implements OnPangoEvent<UserSearchHistory> {
 
-    private final PropertySearchCriteria propertySearchCriteria;
-
-    private final int resultCount;
+    private final UserSearchHistory userSearchHistory;
 
     private final User user;
 
-    public OnPropertySearchEvent(PropertySearchCriteria propertySearchCriteria, int resultCount, User user) {
-        this.propertySearchCriteria = propertySearchCriteria;
-        this.resultCount = resultCount;
+    public OnPropertySearchEvent(UserSearchHistory userSearchHistory, User user) {
+        this.userSearchHistory = userSearchHistory;
         this.user = user;
     }
 
     @Override
-    public PropertySearchCriteria get() {
-        return null;
+    public UserSearchHistory get() {
+        return userSearchHistory;
+    }
+
+    @Override
+    public User getUser() {
+        return user;
     }
 }

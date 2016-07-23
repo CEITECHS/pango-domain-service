@@ -14,11 +14,13 @@ import lombok.Setter;
 public class UserPreference {
 
     public enum PreferenceType {
-        Notification;
+        Notification,
+        NotforDisplay
     }
     
     public enum PreferenceCategory {
-        SEARCH;
+        SEARCH,
+        USERSET
     }
 
     private String preferenceId;
