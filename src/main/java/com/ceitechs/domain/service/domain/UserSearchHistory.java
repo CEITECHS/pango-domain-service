@@ -15,5 +15,9 @@ import lombok.Setter;
 @Setter
 public class UserSearchHistory {
     private LocalDateTime date = LocalDateTime.now(Clock.systemUTC());
-    private String query;
+    private PropertySearchCriteria query;
+
+    public UserSearchHistory(PropertySearchCriteria searchCriteria) {
+        query = searchCriteria;
+    }
 }
