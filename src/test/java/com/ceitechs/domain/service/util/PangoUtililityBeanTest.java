@@ -30,14 +30,14 @@ public class PangoUtililityBeanTest extends AbstractPangoDomainServiceIntegratio
 
     @Test
     public void InputStreamToBase64Test() throws IOException {
-        String base64 = PangoUtility.InputStreamToBase64(Optional.ofNullable(resource.getInputStream()), "png").get();
+        String base64 = PangoUtility.InputStreamToBase64(Optional.ofNullable(resource.getInputStream()), "image/png").get();
         assertNotNull(base64);
         assertTrue(base64.contains("data:image/png;base64"));
     }
 
     @Test
     public void Base64ToInputStreamTest() throws IOException {
-        String base64 = PangoUtility.InputStreamToBase64(Optional.ofNullable(resource.getInputStream()), "png").get();
+        String base64 = PangoUtility.InputStreamToBase64(Optional.ofNullable(resource.getInputStream()), "image/png").get();
         assertNotNull(base64);
         String splitedBase64 = base64.split(",")[1];
         assertNotNull(splitedBase64);

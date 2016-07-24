@@ -23,4 +23,7 @@ public class UserSearchHistory {
         query = searchCriteria;
         resultCount = count;
     }
+
+    public UserSearchHistory() {
+    }
 }

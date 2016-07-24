@@ -9,8 +9,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@TestPropertySource(properties = {"db.host.name = localhost:27017", "db.password = pangoPreprodWriteUsrPass10",
-        "db.user =pangoWriteUser", "db.name = pango", "bucket.name = picture"})
+@TestPropertySource(properties = {"pango.domain.service.db.host.name = localhost:27017", "pango.domain.service.db.password = pangoPreprodWriteUsrPass10",
+        "pango.domain.service.db.user =pangoWriteUser", "pango.domain.service.db.name = pango", "pango.domain.service.bucket.name = picture"})
 @ContextConfiguration(classes = {PangoDomainServiceConfig.class})
 public class AbstractPangoDomainServiceIntegrationTest {
     protected static final Resource resource = new ClassPathResource("ceitechs.png");

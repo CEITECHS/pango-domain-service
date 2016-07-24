@@ -142,7 +142,7 @@ public class PangoUtility {
         if (inputStream.isPresent()) {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             FileCopyUtils.copy(inputStream.get(), output);
-            return Optional.ofNullable("data:image/" + ext + ";base64," + DatatypeConverter.printBase64Binary(output.toByteArray()));
+            return Optional.ofNullable("data:" + ext + ";base64," + DatatypeConverter.printBase64Binary(output.toByteArray()));
         }
 
         return Optional.empty();

@@ -32,19 +32,19 @@ public class PangoDomainServiceMongoConfiguration extends AbstractMongoConfigura
 
     private final static String HOST_PORT_SEPARATOR = ":";
 
-    @Value("${db.password}")
+    @Value("${pango.domain.service.db.password}")
     private String dbPassword;
 
-    @Value("${db.user}")
+    @Value("${pango.domain.service.db.user}")
     private String dbuser;
 
-    @Value("${db.host.name}")
+    @Value("${pango.domain.service.db.host.name}")
     private String host;
 
-    @Value("${db.name}")
+    @Value("${pango.domain.service.db.name}")
     private String dbName;
 
-    @Value("${bucket.name}")
+    @Value("${pango.domain.service.bucket.name}")
     private String bucketName;
 
     @Override
