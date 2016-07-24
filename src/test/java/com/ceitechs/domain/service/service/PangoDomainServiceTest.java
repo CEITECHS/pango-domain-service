@@ -10,12 +10,15 @@ import com.mongodb.gridfs.GridFSDBFile;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.geo.GeoResult;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 /**
@@ -55,7 +58,34 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         meta.setReferenceId(propertyUnitOptional.get().getPropertyUnitId());
         GridFSDBFile file = gridFsService.getProfilePicture(meta, ReferenceIdFor.PROPERTY);
         assertNotNull(file);
+    }
 
+    @Test
+    public void searchPropertyTest() throws IOException {
+        operations.delete(null);
+        unitRepository.deleteAll();
+        userRepository.deleteAll();
+
+        PropertyUnit unit = createPropertyUnit();
+        User usr = unit.getOwner();
+
+        Optional<PropertyUnit> propertyUnitOptional = domainService.createProperty(unit, usr);
+        assertTrue(propertyUnitOptional.isPresent());
+
+        PropertySearchCriteria searchCriteria= new PropertySearchCriteria();
+        searchCriteria.setMinPrice(1000);
+        searchCriteria.setPropertyPupose(unit.getPurpose().name());
+        searchCriteria.setBedRoomsCount(3);
+        searchCriteria.setLatitude(-6.662951);
+        searchCriteria.setLongitude(39.166650);
+        searchCriteria.setRadius(50);
+        searchCriteria.setMoveInDateAsString("2018-05-05");
+        List<GeoResult<PropertyUnit>> geoResults = domainService.searchForProperties(searchCriteria,usr);
+        assertThat("A size of one is expected", geoResults,hasSize(1));
+        geoResults.forEach(g ->{
+            System.out.println(g.getDistance() + " - " +g.getContent());
+            System.out.println(g.getContent().getCoverPhoto());
+        });
     }
 
     public PropertyUnit createPropertyUnit() throws IOException {

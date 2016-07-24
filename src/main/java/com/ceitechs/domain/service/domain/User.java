@@ -1,5 +1,6 @@
 package com.ceitechs.domain.service.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -35,5 +36,5 @@ public class User {
 
     private UserProfile profile;
 
-    private List<UserPreference> preferences;
+    private List<UserPreference> preferences = new ArrayList<>();
 }

@@ -40,4 +40,15 @@ public class Attachment implements Cloneable{
         this.setFileDescription(fileMetadata.getCaption());
         this.setProfilePicture(fileMetadata.isThumbnail());
     }
+
+    @Override
+    public String toString() {
+        return "Attachment{" +
+                "fileType='" + fileType + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", fileSize=" + fileSize +
+                ", fileDescription='" + fileDescription + '\'' +
+                ", profilePicture=" + profilePicture +
+                '}';
+    }
 }

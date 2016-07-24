@@ -61,7 +61,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
     private final PropertyUnitRepository propertyUnitRepository;
     private final UserRepository userRepository;
     private final GridFsService gridFsService;
-    private ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
 
     @Autowired
@@ -129,7 +129,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
                     logger.info("publishing Property Search event for user " + user.getUserReferenceId());
                     eventsPublisher.publishAttachmentEvent(onPropertySearchEvent);
                 }
-            });
+           });
 
             return propertyCoverPhoto.isEmpty()? propertyUnitGeoResults.getContent() : propertyUnitGeoResults.getContent().stream()
                     .map(propertyUnitGeoResult -> {
