@@ -138,7 +138,6 @@ class PangoDomainServiceImpl implements PangoDomainService {
                            propertyUnit.setCoverPhoto(new Attachment(propertyCoverPhoto.get(propertyUnit.getPropertyUnitId())));
                         return new GeoResult<>(propertyUnit,propertyUnitGeoResult.getDistance());
                     }).collect(Collectors.toList());
-
         }
         return propertyUnitGeoResults.getContent();
     }
