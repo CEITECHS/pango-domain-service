@@ -96,7 +96,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
                 OnAttachmentUploadEvent attachmentEvent = new OnAttachmentUploadEvent(
                        propertyUnit.getAttachments() .stream().map((attachment) ->  new AttachmentToUpload(savedUnit.getPropertyUnitId(), ReferenceIdFor.PROPERTY, attachment,"")).collect(Collectors.toList()));
                         eventsPublisher.publishAttachmentEvent(attachmentEvent);
-                logger.info("published event to store attachmnets");
+                logger.info("published event to store attachments");
                 return Optional.of(savedUnit);
             }
 
