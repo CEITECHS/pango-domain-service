@@ -9,6 +9,7 @@ import com.ceitechs.domain.service.service.events.OnPropertySearchEvent;
 import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
+import com.mongodb.gridfs.GridFSDBFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -33,7 +39,7 @@ public interface PangoDomainService {
      * @param user
      * @return
      */
-     PropertyUnit createProperty(PropertyUnit propertyUnit, User user);
+     Optional<PropertyUnit> createProperty(PropertyUnit propertyUnit, User user);
 
     /**
      * Search for properties and updates user search criteria
@@ -52,16 +58,18 @@ class PangoDomainServiceImpl implements PangoDomainService {
     private static final Logger logger = LoggerFactory.getLogger(PangoDomainServiceImpl.class);
 
     private final PangoEventsPublisher eventsPublisher;
-
     private final PropertyUnitRepository propertyUnitRepository;
-
     private final UserRepository userRepository;
+    private final GridFsService gridFsService;
+    private ExecutorService executorService = Executors.newCachedThreadPool();
+
 
     @Autowired
-    public PangoDomainServiceImpl(PangoEventsPublisher eventsPublisher, PropertyUnitRepository propertyUnitRepository, UserRepository userRepository) {
+    public PangoDomainServiceImpl(PangoEventsPublisher eventsPublisher, PropertyUnitRepository propertyUnitRepository, UserRepository userRepository,GridFsService gridFsService) {
         this.eventsPublisher = eventsPublisher;
         this.propertyUnitRepository = propertyUnitRepository;
         this.userRepository = userRepository;
+        this.gridFsService = gridFsService;
     }
 
     /**
@@ -72,7 +80,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
      * @return
      */
     @Override
-    public PropertyUnit createProperty(PropertyUnit propertyUnit, User user) {
+    public Optional<PropertyUnit> createProperty(PropertyUnit propertyUnit, User user) {
         Assert.notNull(propertyUnit, "Property to add can not be null or Empty");
         Assert.notNull(propertyUnit.getOwner(), "Property Owner can not be null or Empty");
 
@@ -89,12 +97,12 @@ class PangoDomainServiceImpl implements PangoDomainService {
                        propertyUnit.getAttachments() .stream().map((attachment) ->  new AttachmentToUpload(savedUnit.getPropertyUnitId(), ReferenceIdFor.PROPERTY, attachment,"")).collect(Collectors.toList()));
                         eventsPublisher.publishAttachmentEvent(attachmentEvent);
                 logger.info("published event to store attachmnets");
-                return savedUnit;
+                return Optional.of(savedUnit);
             }
 
         }
         //TODO : Existing or firstTime update by Coordinator do update
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -108,10 +116,29 @@ class PangoDomainServiceImpl implements PangoDomainService {
     public List<GeoResult<PropertyUnit>> searchForProperties(PropertySearchCriteria searchCriteria, User user) {
         Assert.notNull(searchCriteria,"Search criteria can not be null ");
         GeoResults<PropertyUnit> propertyUnitGeoResults = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
-        if(!propertyUnitGeoResults.getContent().isEmpty() && user != null){
-            OnPropertySearchEvent onPropertySearchEvent = new OnPropertySearchEvent(new UserSearchHistory(searchCriteria, propertyUnitGeoResults.getContent().size()),user);
-            logger.info("publishing Property Search event for user "+ user.getUserReferenceId());
-            eventsPublisher.publishAttachmentEvent(onPropertySearchEvent);
+        if(!propertyUnitGeoResults.getContent().isEmpty()){
+            // associate cover photos
+           List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(propertyUnitGeoResults.getContent().parallelStream()
+                    .map(propertyUnitGeoResult -> propertyUnitGeoResult.getContent().getPropertyUnitId())
+                    .collect(Collectors.toList()));
+            Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
+
+            executorService.submit(() ->{
+                if( user != null) {
+                    OnPropertySearchEvent onPropertySearchEvent = new OnPropertySearchEvent(new UserSearchHistory(searchCriteria, propertyUnitGeoResults.getContent().size()), user);
+                    logger.info("publishing Property Search event for user " + user.getUserReferenceId());
+                    eventsPublisher.publishAttachmentEvent(onPropertySearchEvent);
+                }
+            });
+
+            return propertyCoverPhoto.isEmpty()? propertyUnitGeoResults.getContent() : propertyUnitGeoResults.getContent().stream()
+                    .map(propertyUnitGeoResult -> {
+                        PropertyUnit propertyUnit = propertyUnitGeoResult.getContent();
+                        if(propertyCoverPhoto.containsKey(propertyUnit.getPropertyUnitId()))
+                           propertyUnit.setCoverPhoto(new Attachment(propertyCoverPhoto.get(propertyUnit.getPropertyUnitId())));
+                        return new GeoResult<>(propertyUnit,propertyUnitGeoResult.getDistance());
+                    }).collect(Collectors.toList());
+
         }
         return propertyUnitGeoResults.getContent();
     }

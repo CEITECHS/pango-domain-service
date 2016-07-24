@@ -30,4 +30,14 @@ public class Attachment implements Cloneable{
     public Attachment clone() throws CloneNotSupportedException {
         return (Attachment)super.clone();
     }
+
+    public Attachment() {
+    }
+
+    public Attachment(FileMetadata fileMetadata) {
+        this.setContentBase64(fileMetadata.getContentBase64());
+        this.setFileType(fileMetadata.getFileType());
+        this.setFileDescription(fileMetadata.getCaption());
+        this.setProfilePicture(fileMetadata.isThumbnail());
+    }
 }

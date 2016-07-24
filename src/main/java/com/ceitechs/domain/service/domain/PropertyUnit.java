@@ -63,6 +63,9 @@ public class PropertyUnit {
     @Transient
     private List<Attachment> attachments = new ArrayList<>();
 
+    @Transient
+    private Attachment coverPhoto;
+
     private List<UnitRentalHistory> history;
 
     private List<PropertyUnitEnquiry> enquiries;

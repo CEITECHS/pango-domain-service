@@ -55,6 +55,13 @@ public interface GridFsService {
     GridFSDBFile getProfilePicture(FileMetadata searchCriteria, ReferenceIdFor referenceIdFor);
 
     /**
+     *
+     * @param referenceIds
+     * @return
+     */
+    List<GridFSDBFile> getPropertiesCoverPhotos(List<String> referenceIds);
+
+    /**
      * Retrieves all attachments by {@link FileMetadata#referenceId}
      * @param searchCriteria
      * @param idFor
@@ -102,6 +109,19 @@ class PangoGridFsServiceImpl implements GridFsService {
         criteria.and(getMetaFieldWrapper(referenceIdFor.getMetadataField())).is(searchCriteria.getReferenceId());
         criteria.and(getMetaFieldWrapper(MetadataFields.PROFILEPICTURE)).is("true");
         return operations.findOne(query(criteria));
+    }
+
+    /**
+     * @param referenceIds
+     * @return
+     */
+    @Override
+    public List<GridFSDBFile> getPropertiesCoverPhotos(List<String> referenceIds) {
+        Assert.notNull(referenceIds, "search criteria for thumbnail can not be null");
+        Criteria criteria = new Criteria(getMetaFieldWrapper(MetadataFields.TYPE)).is((FileMetadata.FILETYPE.PHOTO.name()));
+        criteria.and(getMetaFieldWrapper(ReferenceIdFor.PROPERTY.getMetadataField())).in(referenceIds);
+        criteria.and(getMetaFieldWrapper(MetadataFields.PROFILEPICTURE)).is("true");
+        return operations.find(query(criteria));
     }
 
 

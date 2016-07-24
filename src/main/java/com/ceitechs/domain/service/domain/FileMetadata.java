@@ -9,8 +9,10 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Optional;
+import java.io.File;
+import java.sql.Ref;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author iddymagohe
@@ -73,6 +75,22 @@ public class FileMetadata {
             }
         });
         return  fileMetadata;
+    }
+
+    public static Map<String,FileMetadata> getFileMetaFromGridFSDBFileAsMap(List<GridFSDBFile> gridFSDBFiles){
+        if (gridFSDBFiles !=null && !gridFSDBFiles.isEmpty()){
+            return gridFSDBFiles.parallelStream().map(gridFSDBFile -> getFileMetadataFromGridFSDBFile(Optional.of(gridFSDBFile), ReferenceIdFor.PROPERTY))
+                    .collect(Collectors.toMap(FileMetadata::getReferenceId,fileMetada -> fileMetada));
+        }
+        return Collections.emptyMap();
+    }
+
+    public static List<FileMetadata> getFileMetaFromGridFSDBFileAsList(List<GridFSDBFile> gridFSDBFiles){
+        if (gridFSDBFiles !=null && !gridFSDBFiles.isEmpty()){
+            return gridFSDBFiles.parallelStream().map(gridFSDBFile -> getFileMetadataFromGridFSDBFile(Optional.of(gridFSDBFile), ReferenceIdFor.PROPERTY))
+                    .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
     public static Optional<String> fieldAsStringFromGridFSDBFile(final GridFSDBFile file, final String field) {
