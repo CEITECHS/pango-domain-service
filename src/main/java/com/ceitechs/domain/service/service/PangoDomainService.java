@@ -50,6 +50,14 @@ public interface PangoDomainService {
      */
     List<GeoResult<PropertyUnit>> searchForProperties(PropertySearchCriteria searchCriteria, User user);
 
+    /**
+     *
+     * @param propertyReferenceId
+     * @param user
+     * @return
+     */
+    Optional<PropertyUnit> retrievePropertyBy(String propertyReferenceId, User user);
+
 }
 
 @Service
@@ -123,13 +131,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
                     .collect(Collectors.toList()));
             Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
 
-            executorService.submit(() ->{
-                if( user != null) {
-                    OnPropertySearchEvent onPropertySearchEvent = new OnPropertySearchEvent(new UserSearchHistory(searchCriteria, propertyUnitGeoResults.getContent().size()), user);
-                    logger.info("publishing Property Search event for user " + user.getUserReferenceId());
-                    eventsPublisher.publishAttachmentEvent(onPropertySearchEvent);
-                }
-           });
+            recordUserSearchHistory(new UserSearchHistory(searchCriteria, propertyUnitGeoResults.getContent().size()), user);
 
             return propertyCoverPhoto.isEmpty()? propertyUnitGeoResults.getContent() : propertyUnitGeoResults.getContent().stream()
                     .map(propertyUnitGeoResult -> {
@@ -141,4 +143,39 @@ class PangoDomainServiceImpl implements PangoDomainService {
         }
         return propertyUnitGeoResults.getContent();
     }
+
+    /**
+     * @param propertyReferenceId
+     * @param user
+     * @return
+     */
+    @Override
+    public Optional<PropertyUnit> retrievePropertyBy(String propertyReferenceId, User user) {
+        Optional<PropertyUnit> propertyUnit = Optional.of(propertyUnitRepository.findOne(propertyReferenceId));
+
+        PropertySearchCriteria propertySearchCriteria = new PropertySearchCriteria();
+        propertySearchCriteria.setPropertyReferenceId(propertyReferenceId);
+        recordUserSearchHistory(new UserSearchHistory(propertySearchCriteria, propertyUnit.isPresent()?1:0), user);
+        propertyUnit.ifPresent(p -> {
+            FileMetadata fileMetadata = new FileMetadata();
+            fileMetadata.setReferenceId(p.getPropertyUnitId());
+            fileMetadata.setFileType(FileMetadata.FILETYPE.PHOTO.name());
+            List<GridFSDBFile> attachments = gridFsService.getAllAttachments(fileMetadata, ReferenceIdFor.PROPERTY);
+            p.setAttachments(FileMetadata.getFileMetaFromGridFSDBFileAsList(attachments).parallelStream().map(Attachment::new).collect(Collectors.toList()));
+        });
+
+        return propertyUnit;
+    }
+
+    private void recordUserSearchHistory(UserSearchHistory searchCriteria, User user){
+        if (user == null || !StringUtils.hasText(user.getUserReferenceId())) return;
+        executorService.submit(() ->{
+            if( user != null) {
+                OnPropertySearchEvent onPropertySearchEvent = new OnPropertySearchEvent(searchCriteria, user);
+                logger.info("publishing Property Search event for user " + user.getUserReferenceId());
+                eventsPublisher.publishAttachmentEvent(onPropertySearchEvent);
+            }
+        });
+    }
+
 }

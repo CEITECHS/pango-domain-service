@@ -18,6 +18,7 @@ import java.util.Optional;
 @Getter
 @Setter
 public class PropertySearchCriteria {
+    private String propertyReferenceId;
     private LocalDateTime searchDate;
     private double longitude;
     private double latitude;

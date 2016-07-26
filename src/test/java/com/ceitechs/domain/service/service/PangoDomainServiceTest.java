@@ -88,6 +88,23 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         });
     }
 
+    @Test
+    public void searchPropertyByReferenceIdTest() throws IOException {
+        operations.delete(null);
+        unitRepository.deleteAll();
+        userRepository.deleteAll();
+
+        PropertyUnit unit = createPropertyUnit();
+        User usr = unit.getOwner();
+
+        Optional<PropertyUnit> propertyUnitOptional = domainService.createProperty(unit, usr);
+        assertTrue(propertyUnitOptional.isPresent());
+       Optional<PropertyUnit> propertyUnit = domainService.retrievePropertyBy(propertyUnitOptional.get().getPropertyUnitId(),usr);
+        assertTrue(propertyUnit.isPresent());
+        assertThat("Attachments", propertyUnit.get().getAttachments(),hasSize(unit.getAttachments().size()));
+        System.out.println(propertyUnit.get());
+    }
+
     public PropertyUnit createPropertyUnit() throws IOException {
         String userReferenceId = PangoUtility.generateIdAsString();
         User user = new User();
