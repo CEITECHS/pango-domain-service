@@ -33,6 +33,9 @@ public class PropertySearchCriteria {
     private double maxPrice;
     private String amenities;
 
+    private int page = 0;
+    private int pageSize = 50;
+
     public Optional<LocalDate> getMoveInDate(){
        return PangoUtility.getLocalDateDateFrom(moveInDateAsString);
     }

@@ -4,6 +4,7 @@ package com.ceitechs.domain.service.repositories;
 import com.ceitechs.domain.service.domain.PropertySearchCriteria;
 import com.ceitechs.domain.service.domain.PropertyUnit;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.geo.*;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.index.GeospatialIndex;
@@ -84,8 +85,7 @@ class PropertyUnitRepositoryImpl implements PropertyUnitRepositoryCustom {
         Point location = new Point(searchCriteria.getLongitude(), searchCriteria.getLatitude());
 
         NearQuery near = NearQuery.near(location).maxDistance(new Distance(searchCriteria.getRadius(), Metrics.KILOMETERS));
-        near.query(query);
-
+        near.query(query).with(new PageRequest(searchCriteria.getPage(),searchCriteria.getPageSize()));
         mongoOperations.indexOps(PropertyUnit.class).ensureIndex(new GeospatialIndex("location"));
 
         return mongoOperations.geoNear(near, PropertyUnit.class);
