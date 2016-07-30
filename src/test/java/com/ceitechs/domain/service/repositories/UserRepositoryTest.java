@@ -180,6 +180,7 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
         user.setAddress(address);
 
         UserProfile userProfile = new UserProfile();
+        userProfile.setVerified(true);
         userProfile.setPassword("password");
         user.setProfile(userProfile);
 

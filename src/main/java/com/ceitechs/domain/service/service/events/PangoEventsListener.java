@@ -71,7 +71,14 @@ public class PangoEventsListener{
         if (resp.isPresent())
             logger.info("Updated search history for user : " + searchHistoryOnPangoEvent.getUser().getUserReferenceId());
         else
-            logger.info("Updated search history for user : " + searchHistoryOnPangoEvent.getUser().getUserReferenceId());
+            logger.info("Could not update search history for user : " + searchHistoryOnPangoEvent.getUser().getUserReferenceId());
 
+    }
+
+    public void HandleUserInteractionEvents(OnPangoEvent<User> userOnPangoEvent){
+        if (userOnPangoEvent instanceof UserVerificationEvent){
+            //TODO - generate verification code (check for existing of expired ) and trigger email to user
+            logger.info("generating verfication code for user");
+        }
     }
 }

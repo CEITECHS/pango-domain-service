@@ -3,6 +3,7 @@ package com.ceitechs.domain.service.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ceitechs.domain.service.service.UserProjection;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,7 +21,7 @@ import lombok.ToString;
 @ToString
 @Document(collection = "user")
 @TypeAlias("user")
-public class User {
+public class User implements UserProjection {
     @Id
     private String userReferenceId;
 
@@ -37,4 +38,14 @@ public class User {
     private UserProfile profile;
 
     private List<UserPreference> preferences = new ArrayList<>();
+
+    @Override
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
+    @Override
+    public Attachment getProfilePicture() {
+        return profile.getProfilePicture();
+    }
 }

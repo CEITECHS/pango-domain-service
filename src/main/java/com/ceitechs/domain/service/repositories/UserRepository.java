@@ -12,5 +12,10 @@ import com.ceitechs.domain.service.domain.User;
  */
 public interface UserRepository extends MongoRepository<User, String> , UserRepositoryCustom{
 
+    User findByEmailAddressIgnoreCaseAndProfileVerifiedTrue(String email);
+
+    User findByEmailAddressOrUserReferenceIdAllIgnoreCase(String emailAddress, String userReferenceId);
+
+
 }
 

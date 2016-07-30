@@ -1,6 +1,7 @@
 package com.ceitechs.domain.service.domain;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Transient;
@@ -16,12 +17,11 @@ import lombok.Setter;
 @Setter
 public class UserProfile {
     private String password;
-    @Transient
-    private FileMetadata profilePicture;
     private boolean verified;
     private String verificationCode;
     private LocalDate verificationDate;
     private double customerRating;
     private LocalDate createdDate;
-    @Transient Attachment attachmentPhoto;
+    @Transient Attachment profilePicture;
+    List<PangoUserRole> roles = new ArrayList<>();
 }

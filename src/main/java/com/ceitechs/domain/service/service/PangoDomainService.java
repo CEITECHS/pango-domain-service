@@ -4,9 +4,7 @@ package com.ceitechs.domain.service.service;
 import com.ceitechs.domain.service.domain.*;
 import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
-import com.ceitechs.domain.service.service.events.OnAttachmentUploadEvent;
-import com.ceitechs.domain.service.service.events.OnPropertySearchEvent;
-import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
+import com.ceitechs.domain.service.service.events.*;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.gridfs.GridFSDBFile;
@@ -19,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,6 +54,31 @@ public interface PangoDomainService {
      * @return
      */
     Optional<PropertyUnit> retrievePropertyBy(String propertyReferenceId, User user);
+
+    /**
+     *
+     * @param user
+     * @return
+     */
+    Optional<UserProjection> registerUser(User user) throws EntityExists;
+
+    /**
+     * Used for login type of activity
+     * @param username
+     * @return
+     */
+    User retrieveVerifiedUserByUsername(String username);
+
+    /**
+     * retrieve user associated with a profile picture if one exists.
+     *
+     * @param userId
+     * @param userName
+     * @return
+     */
+    Optional<UserProjection> retrieveUserByIdOrUserName(String userId, String userName);
+
+    List<UserPreference> retrievePreferencesByUserId(String userId);
 
 }
 
@@ -167,15 +189,85 @@ class PangoDomainServiceImpl implements PangoDomainService {
         return propertyUnit;
     }
 
+    /**
+     * @param user
+     * @return
+     */
+    @Override
+    public Optional<UserProjection> registerUser(User user) throws EntityExists {
+        Assert.notNull(user, "User to register can not be null");
+        Assert.hasText(user.getEmailAddress(), "user email address can not be null or empty");
+        Assert.hasText(user.getProfile().getPassword(), "user password can not be null or Empty");
+        Assert.notEmpty(user.getProfile().getRoles(), "User roles can not be null");
+        // check that user by email doesn't exists
+        User existingUser = userRepository.findByEmailAddressIgnoreCaseAndProfileVerifiedTrue(user.getEmailAddress());
+        if (existingUser != null && StringUtils.hasText(existingUser.getEmailAddress())) {
+            if (!existingUser.getProfile().isVerified())
+                triggerUserInteractionEvent(user, UserInteraction.VERIFICATION);
+            throw new EntityExists("User with Email address exists");
+
+        }
+        user.getProfile().setVerified(false);
+        User savedUser = userRepository.save(user);
+        savedUser.getProfile().setPassword("**********");
+        if(savedUser != null) triggerUserInteractionEvent(savedUser, UserInteraction.REGISTRATION);
+        return Optional.of(savedUser);
+    }
+
+    @Override
+    public User retrieveVerifiedUserByUsername(String userId) {
+        return userRepository.findByEmailAddressIgnoreCaseAndProfileVerifiedTrue(userId);
+    }
+
+    /**
+     *
+     * @param userId
+     * @param userName
+     * @return
+     */
+    @Override
+    public Optional<UserProjection> retrieveUserByIdOrUserName(String userId, String userName) {
+        Assert.isTrue(StringUtils.hasText(userId) || StringUtils.hasText(userName), "UserId or UserName can not be empty or null");
+        User user = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCase(userName, userId);
+        // associate user's profile picture
+        if (user != null) {
+            FileMetadata fileMetadata = new FileMetadata();
+            fileMetadata.setReferenceId(user.getUserReferenceId());
+            Attachment userProfilePicture = new Attachment(FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(gridFsService.getProfilePicture(fileMetadata, ReferenceIdFor.USER)), ReferenceIdFor.USER));
+            user.getProfile().setProfilePicture(userProfilePicture);
+        }
+
+        return Optional.of(user);
+    }
+
+    @Override
+    public List<UserPreference> retrievePreferencesByUserId(String userId) {
+        return null;
+    }
+
+
     private void recordUserSearchHistory(UserSearchHistory searchCriteria, User user){
         if (user == null || !StringUtils.hasText(user.getUserReferenceId())) return;
-        executorService.submit(() ->{
+        executorService.submit(() -> {
             if( user != null) {
                 OnPropertySearchEvent onPropertySearchEvent = new OnPropertySearchEvent(searchCriteria, user);
                 logger.info("publishing Property Search event for user " + user.getUserReferenceId());
                 eventsPublisher.publishAttachmentEvent(onPropertySearchEvent);
             }
         });
+        return;
+    }
+
+    private void triggerUserInteractionEvent(User user, UserInteraction userInteraction){
+        if (user == null || !StringUtils.hasText(user.getEmailAddress())) return;
+        executorService.submit(() -> {
+             if (userInteraction == UserInteraction.VERIFICATION){
+                 UserVerificationEvent verificationEvent = new UserVerificationEvent(user);
+                 logger.info("publishing User email verification for user " + user.getUserReferenceId());
+                 eventsPublisher.publishAttachmentEvent(verificationEvent);
+             }
+        });
+        return;
     }
 
 }
