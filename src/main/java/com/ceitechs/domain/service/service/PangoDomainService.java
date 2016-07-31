@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author iddymagohe
- * @since 1.0
+ * @since 1.0 -
  */
 public interface PangoDomainService {
 
@@ -100,6 +100,15 @@ public interface PangoDomainService {
      * @return
      */
     Optional<UserProjection> removeUserPreferenceBy(String preferenceId, User user);
+
+
+    /**
+     *  Update a particular user-preference
+     * @param userPreference
+     * @param user
+     * @return
+     */
+    Optional<UserProjection> updateUserPreference(UserPreference userPreference, User user);
 
 }
 
@@ -290,6 +299,13 @@ class PangoDomainServiceImpl implements PangoDomainService {
         return removeResponse.isPresent() ? Optional.of(removeResponse.get()) : Optional.empty();
     }
 
+    @Override
+    public Optional<UserProjection> updateUserPreference(UserPreference userPreference, User user) {
+        // 1. Remove preference from user
+         removeUserPreferenceBy(userPreference.getPreferenceId(),user);
+        // 2. Add new preference to User
+        return addUserPreference(userPreference, user);
+    }
 
     private void recordUserSearchHistory(UserSearchHistory searchCriteria, User user){
         if (user == null || !StringUtils.hasText(user.getUserReferenceId())) return;

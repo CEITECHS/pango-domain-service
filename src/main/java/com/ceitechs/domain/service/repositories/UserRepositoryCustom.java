@@ -5,6 +5,7 @@ import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.domain.UserPreference;
 import com.ceitechs.domain.service.service.UserProjection;
 import com.ceitechs.domain.service.util.PangoUtility;
+import com.mongodb.BasicDBObject;
 import com.mysema.commons.lang.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -25,7 +26,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 /**
  * @author iddymagohe
- * @since 1.0
+ * @since 1.0 -
  */
 public interface UserRepositoryCustom {
 
@@ -85,7 +86,7 @@ public interface UserRepositoryCustom {
         User user = mongoOperations.findOne(query, User.class);
         return user.getPreferences().isEmpty() ? user.getPreferences() :
                 user.getPreferences().stream().filter(userPreference -> userPreference.getCategory() != UserPreference.PreferenceCategory.SEARCH || userPreference.getPreferenceType() != UserPreference.PreferenceType.NotforDisplay)
-                        .sorted(Comparator.comparing(UserPreference::isActive).reversed().thenComparing(UserPreference::getCreatedOn).reversed())
+                        .sorted(Comparator.comparing(UserPreference::isActive).thenComparing(UserPreference::getCreatedOn).reversed())
                         .limit(10)
                         .collect(Collectors.toList());
     }
@@ -100,15 +101,9 @@ public interface UserRepositoryCustom {
         Assert.notNull(user, "user  to update preference on can not be null");
         Assert.hasText(user.getUserReferenceId(),"User referenceId can not be empty or null for updating preference");
         Assert.hasText(userPreference.getPreferenceId(), "preference Identifier to update can not be null or empty");
-        Update update = new Update().set("preferences.$.active",  userPreference.isActive())
-                .set("preferences.$.fromDate", userPreference.getFromDate())
-                .set("preferences.$.toDate",userPreference.getToDate())
-                .set("preferences.$.sendNotification",userPreference.isSendNotification())
-                .set("preferences.$.userSearchHistory", userPreference.getUserSearchHistory());
-        User usr = mongoOperations.findAndModify(query(Criteria.where("_id").is(user.getUserReferenceId()).and("preferences").elemMatch(Criteria.where("preferenceId").is(userPreference.getPreferenceId())))
-                , update, FindAndModifyOptions.options().returnNew(true), User.class);
 
-    return Optional.ofNullable(user);
+       removePreferenceBy(userPreference.getPreferenceId(),user);
+    return addUserPreferences(userPreference,user);
     }
 
     @Override
@@ -116,9 +111,9 @@ public interface UserRepositoryCustom {
         Assert.hasText(preferenceId, "preference Id can not be null or empty");
         Assert.notNull(user, "User can not be null");
         Assert.hasText(user.getUserReferenceId(), "user Id can not be null or empty");
-        Update update = new Update().pull("preferences",query( new Criteria().elemMatch(Criteria.where("preferenceId").is(preferenceId))));
-        User usr = mongoOperations.findAndModify(query(Criteria.where("_id").is(user.getUserReferenceId())),update, FindAndModifyOptions.options().returnNew(true), User.class);
-        return Optional.ofNullable(usr);
+        Update update = new Update().pull("preferences",new BasicDBObject("preferenceId",preferenceId));
+        mongoOperations.updateFirst(query(Criteria.where("_id").is(user.getUserReferenceId()).and("preferences").elemMatch(Criteria.where("preferenceId").is(preferenceId))),update, User.class);
+        return Optional.ofNullable(user);
     }
 
 

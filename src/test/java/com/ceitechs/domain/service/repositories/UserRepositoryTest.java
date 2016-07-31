@@ -1,19 +1,24 @@
 package com.ceitechs.domain.service.repositories;
 
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
+import com.ceitechs.domain.service.domain.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,20 +29,14 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
-import com.ceitechs.domain.service.domain.Address;
-import com.ceitechs.domain.service.domain.Attachment;
-import com.ceitechs.domain.service.domain.FileMetadata;
-import com.ceitechs.domain.service.domain.User;
-import com.ceitechs.domain.service.domain.UserPreference;
 import com.ceitechs.domain.service.domain.UserPreference.PreferenceCategory;
 import com.ceitechs.domain.service.domain.UserPreference.PreferenceType;
-import com.ceitechs.domain.service.domain.UserProfile;
-import com.ceitechs.domain.service.domain.UserSearchHistory;
 import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.DateConvertUtility;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.BasicDBObject;
+import org.springframework.test.context.TestExecutionListeners;
 
 /**
  * 
@@ -364,11 +363,82 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
             attachment.setFileName(resource.getFilename());
             attachment.setFileSize(resource.getFile().length());
             attachment.setFileDescription("profile_picture");
-            Map<String, String> metadata = PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.USER, attachment,
-                    "");
+            Map<String, String> metadata = PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.USER, attachment,"");
             gridFsService.storeFiles(resource.getInputStream(), metadata, BasicDBObject::new);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void addPreferenceTest(){
+        userRepository.deleteAll();
+        User user = createUser();
+        User savedOne =  userRepository.save(user);
+       List<Integer> actives = new ArrayList<>();
+        IntStream.range(0,25).forEach(i -> {
+            UserPreference userPreference = createUserPreference();
+            userPreference.setFromDate(LocalDate.now().plusDays(i));
+            userPreference.setToDate(userPreference.getFromDate().plusDays(15));
+            int random = PangoUtility.random(0,10);
+            if(i < 3) {
+                userPreference.setActive(random % 2 == 0);
+            }else{
+                userPreference.setActive(false);
+            }
+
+            if(userPreference.isActive()) actives.add(1);
+
+            userPreference.setSendNotification(true);
+            userPreference.setUserSearchHistory(new UserSearchHistory());
+            userRepository.addUserPreferences(userPreference,savedOne);
+        });
+
+        //retrieve
+        List<UserPreference> preferences = userRepository.retrievePreferencesBy(savedOne.getUserReferenceId());
+        assertTrue(!preferences.isEmpty());
+        assertThat("Active Preferences", preferences.stream().filter(UserPreference::isActive).collect(toList()),hasSize(actives.size()));
+        preferences.forEach(System.out::println);
+        UserPreference oneActive =  preferences.stream().filter(UserPreference::isActive).findAny().get();
+        System.out.println(oneActive);
+
+        //remove test
+        assertTrue(userRepository.removePreferenceBy(oneActive.getPreferenceId(),user).isPresent());
+        List<UserPreference> preferencesz = userRepository.retrievePreferencesBy(savedOne.getUserReferenceId());
+        assertTrue(!preferencesz.isEmpty());
+        assertThat("Active Preferences", preferencesz.stream().filter(UserPreference::isActive).collect(toList()),hasSize(actives.size() - 1));
+
+        //Update
+        UserPreference oneInActive =  preferences.stream().filter(userPreference -> !userPreference.isActive()).findFirst().get();
+        System.out.println(oneInActive);
+        oneInActive.setActive(true);
+        oneInActive.setToDate(oneInActive.getToDate().plusDays(10));
+
+        assertTrue(userRepository.updateUserPreference(oneInActive,user).isPresent());
+        List<UserPreference> preferencesy = userRepository.retrievePreferencesBy(savedOne.getUserReferenceId());
+        assertTrue(!preferencesy.isEmpty());
+        assertThat("Active Preferences", preferencesy.stream().filter(UserPreference::isActive).collect(toList()),hasSize(actives.size()));
+
+
+    }
+
+
+    static User createUser(){
+        User user = new User();
+        user.setUserReferenceId(PangoUtility.generateIdAsString());
+        user.setFirstName("iam");
+        user.setLastName("Iddy");
+        user.setEmailAddress("iam.iddy@pango.com");
+        UserProfile userProfile = new UserProfile();
+        userProfile.setVerified(true);
+        user.setProfile(userProfile);
+        return user;
+    }
+
+    static UserPreference createUserPreference(){
+        UserPreference userPreference = new UserPreference();
+        userPreference.setPreferenceType(PreferenceType.Notification);
+        userPreference.setCategory(PreferenceCategory.USERSET);
+        return  userPreference;
     }
 }

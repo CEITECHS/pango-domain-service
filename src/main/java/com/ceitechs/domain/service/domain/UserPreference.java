@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * @author iddymagohe
@@ -12,6 +13,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@ToString
 public class UserPreference {
 
     public enum PreferenceType {
@@ -49,4 +51,6 @@ public class UserPreference {
     public int hashCode() {
         return preferenceId.hashCode();
     }
+
+
 }

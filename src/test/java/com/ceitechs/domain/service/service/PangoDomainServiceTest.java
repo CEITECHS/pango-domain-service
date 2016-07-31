@@ -7,6 +7,7 @@ import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.gridfs.GridFSDBFile;
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -14,10 +15,15 @@ import org.springframework.data.geo.GeoResult;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
@@ -179,5 +185,79 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         attachment.setContentBase64(PangoUtility.InputStreamToBase64(Optional.of(resource.getInputStream()),attachment.extractExtension()).get());
         return attachment;
     }
+
+    @Test
+    public void userPreferencesInteractionsTest(){
+        userRepository.deleteAll();
+        User user = createUser();
+        User savedOne =  userRepository.save(user);
+        List<Integer> actives = new ArrayList<>();
+        IntStream.range(0,15).forEach(i -> {
+            UserPreference userPreference = createUserPreference();
+            userPreference.setFromDate(LocalDate.now().plusDays(i));
+            userPreference.setToDate(userPreference.getFromDate().plusDays(15));
+            int random = PangoUtility.random(0,9);
+            if(i < 3) {
+                userPreference.setActive(random % 2 == 0);
+            }else{
+                userPreference.setActive(false);
+            }
+
+            if(userPreference.isActive()) actives.add(1);
+
+            userPreference.setSendNotification(true);
+            userPreference.setUserSearchHistory(new UserSearchHistory());
+            userRepository.addUserPreferences(userPreference,savedOne);
+        });
+
+        //retrieve
+        List<UserPreference> preferences = domainService.retrievePreferencesByUserId(savedOne.getUserReferenceId());
+        assertTrue(!preferences.isEmpty());
+        assertThat("Active Preferences", preferences.stream().filter(UserPreference::isActive).collect(toList()), IsCollectionWithSize.hasSize(actives.size()));
+        preferences.forEach(System.out::println);
+        UserPreference oneActive =  preferences.stream().filter(UserPreference::isActive).findAny().get();
+        System.out.println(oneActive);
+
+        //remove test
+        assertTrue(domainService.removeUserPreferenceBy(oneActive.getPreferenceId(),user).isPresent());
+        List<UserPreference> preferencesz = domainService.retrievePreferencesByUserId(savedOne.getUserReferenceId());
+        assertTrue(!preferencesz.isEmpty());
+        assertThat("Active Preferences", preferencesz.stream().filter(UserPreference::isActive).collect(toList()), IsCollectionWithSize.hasSize(actives.size() - 1));
+
+        //Update
+        UserPreference oneInActive =  preferences.stream().filter(userPreference -> !userPreference.isActive()).findFirst().get();
+        System.out.println(oneInActive);
+        oneInActive.setActive(true);
+        oneInActive.setToDate(oneInActive.getToDate().plusDays(10));
+        oneInActive.setUserSearchHistory(new UserSearchHistory(new PropertySearchCriteria(),0));
+
+        assertTrue(domainService.updateUserPreference(oneInActive,user).isPresent());
+        List<UserPreference> preferencesy = domainService.retrievePreferencesByUserId(savedOne.getUserReferenceId());
+        assertTrue(!preferencesy.isEmpty());
+        assertThat("Active Preferences", preferencesy.stream().filter(UserPreference::isActive).collect(toList()), IsCollectionWithSize.hasSize(actives.size()));
+
+
+    }
+
+    static User createUser(){
+        User user = new User();
+        user.setUserReferenceId(PangoUtility.generateIdAsString());
+        user.setFirstName("iam");
+        user.setLastName("magohe");
+        user.setEmailAddress("iam.magohe@pango.com");
+        UserProfile userProfile = new UserProfile();
+        userProfile.setVerified(true);
+        user.setProfile(userProfile);
+        return user;
+    }
+
+    static UserPreference createUserPreference(){
+        UserPreference userPreference = new UserPreference();
+        userPreference.setPreferenceType(UserPreference.PreferenceType.Notification);
+        userPreference.setCategory(UserPreference.PreferenceCategory.USERSET);
+        return  userPreference;
+    }
+
+    //TODO User registration and retrieval test-cases
 
 }
