@@ -78,7 +78,28 @@ public interface PangoDomainService {
      */
     Optional<UserProjection> retrieveUserByIdOrUserName(String userId, String userName);
 
+    /**
+     * retrieve user set preference , limit to 10 active and most recent preferences
+     * @param userId
+     * @return
+     */
     List<UserPreference> retrievePreferencesByUserId(String userId);
+
+    /**
+     *  Add user's preference
+     * @param userPreference
+     * @param user
+     * @return
+     */
+    Optional<UserProjection> addUserPreference(UserPreference userPreference, User user);
+
+    /**
+     *  removes a particular user's preference
+     * @param preferenceId
+     * @param user
+     * @return
+     */
+    Optional<UserProjection> removeUserPreferenceBy(String preferenceId, User user);
 
 }
 
@@ -146,14 +167,16 @@ class PangoDomainServiceImpl implements PangoDomainService {
     public List<GeoResult<PropertyUnit>> searchForProperties(PropertySearchCriteria searchCriteria, User user) {
         Assert.notNull(searchCriteria,"Search criteria can not be null ");
         GeoResults<PropertyUnit> propertyUnitGeoResults = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
+
+        //record user search history
+        recordUserSearchHistory(new UserSearchHistory(searchCriteria, propertyUnitGeoResults.getContent().size()), user);
+
         if(!propertyUnitGeoResults.getContent().isEmpty()){
             // associate cover photos
            List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(propertyUnitGeoResults.getContent().parallelStream()
                     .map(propertyUnitGeoResult -> propertyUnitGeoResult.getContent().getPropertyUnitId())
                     .collect(Collectors.toList()));
             Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
-
-            recordUserSearchHistory(new UserSearchHistory(searchCriteria, propertyUnitGeoResults.getContent().size()), user);
 
             return propertyCoverPhoto.isEmpty()? propertyUnitGeoResults.getContent() : propertyUnitGeoResults.getContent().stream()
                     .map(propertyUnitGeoResult -> {
@@ -242,7 +265,29 @@ class PangoDomainServiceImpl implements PangoDomainService {
 
     @Override
     public List<UserPreference> retrievePreferencesByUserId(String userId) {
-        return null;
+        return userRepository.retrievePreferencesBy(userId);
+    }
+
+    @Override
+    public Optional<UserProjection> addUserPreference(UserPreference userPreference, User user) {
+        userPreference.setCategory(UserPreference.PreferenceCategory.USERSET);
+        if (userPreference.getPreferenceType() == null)
+            userPreference.setPreferenceType(UserPreference.PreferenceType.Notification);
+        Optional<User> resp = userRepository.addUserPreferences(userPreference, user);
+        return resp.isPresent() ? Optional.of(resp.get()) : Optional.empty();
+    }
+
+    /**
+     * removes a particular user's preference
+     *
+     * @param preferenceId
+     * @param user
+     * @return
+     */
+    @Override
+    public Optional<UserProjection> removeUserPreferenceBy(String preferenceId, User user) {
+        Optional<User> removeResponse = userRepository.removePreferenceBy(preferenceId, user);
+        return removeResponse.isPresent() ? Optional.of(removeResponse.get()) : Optional.empty();
     }
 
 

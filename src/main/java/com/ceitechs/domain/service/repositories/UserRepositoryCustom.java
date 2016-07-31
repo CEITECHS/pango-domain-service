@@ -49,7 +49,9 @@ public interface UserRepositoryCustom {
      * @param userPreference
      * @param user
      */
-    Optional<UserProjection> updateUserPreference(UserPreference userPreference, User user);
+    Optional<User> updateUserPreference(UserPreference userPreference, User user);
+
+    Optional<User> removePreferenceBy(String preferenceId, User user);
 }
 
 @Service
@@ -70,7 +72,7 @@ public interface UserRepositoryCustom {
              preference.setPreferenceId(PangoUtility.generateIdAsString());
         Update update = new Update().push("preferences",  preference);
         User usr = mongoOperations.findAndModify(query(Criteria.where("_id").is(user.getUserReferenceId())), update, FindAndModifyOptions.options().returnNew(true), User.class);
-        return Optional.of(usr);
+        return Optional.ofNullable(usr);
 
     }
 
@@ -84,6 +86,7 @@ public interface UserRepositoryCustom {
         return user.getPreferences().isEmpty() ? user.getPreferences() :
                 user.getPreferences().stream().filter(userPreference -> userPreference.getCategory() != UserPreference.PreferenceCategory.SEARCH || userPreference.getPreferenceType() != UserPreference.PreferenceType.NotforDisplay)
                         .sorted(Comparator.comparing(UserPreference::isActive).reversed().thenComparing(UserPreference::getCreatedOn).reversed())
+                        .limit(10)
                         .collect(Collectors.toList());
     }
 
@@ -92,7 +95,7 @@ public interface UserRepositoryCustom {
      * @param user
      */
     @Override
-    public Optional<UserProjection> updateUserPreference(UserPreference userPreference, User user) {
+    public Optional<User> updateUserPreference(UserPreference userPreference, User user) {
         Assert.notNull(userPreference, "user preference to update can not be null");
         Assert.notNull(user, "user  to update preference on can not be null");
         Assert.hasText(user.getUserReferenceId(),"User referenceId can not be empty or null for updating preference");
@@ -106,6 +109,16 @@ public interface UserRepositoryCustom {
                 , update, FindAndModifyOptions.options().returnNew(true), User.class);
 
     return Optional.ofNullable(user);
+    }
+
+    @Override
+    public Optional<User> removePreferenceBy(String preferenceId, User user) {
+        Assert.hasText(preferenceId, "preference Id can not be null or empty");
+        Assert.notNull(user, "User can not be null");
+        Assert.hasText(user.getUserReferenceId(), "user Id can not be null or empty");
+        Update update = new Update().pull("preferences",query( new Criteria().elemMatch(Criteria.where("preferenceId").is(preferenceId))));
+        User usr = mongoOperations.findAndModify(query(Criteria.where("_id").is(user.getUserReferenceId())),update, FindAndModifyOptions.options().returnNew(true), User.class);
+        return Optional.ofNullable(usr);
     }
 
 
