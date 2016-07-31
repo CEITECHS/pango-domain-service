@@ -10,7 +10,7 @@
 
     <name>pango-domain-service</name>
     <description>Pango domain service</description>
-    <url>https://github.com/CEITECHS/mvn-repo</url>
+    <url>https://github.com/CEITECHS/pango-domain-service</url>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -27,8 +27,7 @@
 
     </properties>
     <scm>
-        <url>https://github.com/CEITECHS/mvn-repo</url>
-        <!--<connection>scm:git:git@github-ld:iamiddy/tin-service</connection>-->
+        <url>https://github.com/CEITECHS/pango-domain-service</url>
     </scm>
 
     <developers>
@@ -174,8 +173,7 @@
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
                 <configuration>
-                    <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo
-                    </altDeploymentRepository>
+                    <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
                 </configuration>
             </plugin>
             <plugin>
@@ -188,11 +186,11 @@
                     <noJekyll>true</noJekyll>                                  <!-- disable webpage processing -->
                     <outputDirectory>${project.build.directory}/mvn-repo
                     </outputDirectory> <!-- matches distribution management repository url above -->
-                    <branch>refs/heads/master</branch>                       <!-- remote branch name -->
+                    <branch>refs/heads/mvn-repo</branch>                       <!-- remote branch name -->
                     <includes>
                         <include>**/*</include>
                     </includes>
-                    <repositoryName>mvn-repo</repositoryName>      <!-- github repo name -->
+                    <repositoryName>pango-domain-service</repositoryName>      <!-- github repo name -->
                     <repositoryOwner>ceitechs</repositoryOwner>    <!-- github username  -->
 
 
