@@ -1,7 +1,9 @@
 package com.ceitechs.domain.service.domain;
 
+import com.ceitechs.domain.service.util.MetadataFields;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.util.StringUtils;
 
 /**
  * @author iddymagohe
@@ -12,7 +14,7 @@ import lombok.Setter;
 @Setter
 public class Attachment implements Cloneable{
 
-    private String fileType;
+    private String fileType; // Possible values are PHOTO, VIDEO, DOCUMENT
     private String fileName;
     private long fileSize;
     private String contentBase64;
@@ -52,5 +54,14 @@ public class Attachment implements Cloneable{
                 ", fileDescription='" + fileDescription + '\'' +
                 ", profilePicture=" + profilePicture +
                 '}';
+    }
+
+    public String getFileType(){
+            try {
+                fileType = FileMetadata.FILETYPE.valueOf(fileType.toUpperCase()).name();
+            }catch (Exception ex){
+                fileType = FileMetadata.FILETYPE.PHOTO.name();
+            }
+        return FileMetadata.FILETYPE.valueOf(fileType).name();
     }
 }

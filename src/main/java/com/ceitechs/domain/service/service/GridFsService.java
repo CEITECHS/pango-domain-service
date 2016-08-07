@@ -24,6 +24,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -156,7 +157,9 @@ class PangoGridFsServiceImpl implements GridFsService {
         if(deleteSiblings && StringUtils.hasText(searchCriteria.getParentReferenceId())){
            referenceIdFor.getParentField().ifPresent( p -> criteria.and(getMetaFieldWrapper(p.getMetadataField())).is(searchCriteria.getReferenceId()) );
         }else{
+            Assert.hasText(searchCriteria.getFileType(), "File type can not be null");
             criteria.and(getMetaFieldWrapper(referenceIdFor.getMetadataField())).is(searchCriteria.getReferenceId());
+            criteria.and(getMetaFieldWrapper(MetadataFields.TYPE)).is(searchCriteria.getFileType());
         }
         operations.delete(query(criteria));
     }

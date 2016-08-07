@@ -40,7 +40,7 @@ public class FileMetadata {
     private String referenceId;
     private String parentReferenceId;
     private String grandParentReferenceId; // applicable to correspondence attachment.
-    private String fileType; //PHOTO or VIDEO,Attachment
+    private String fileType; //PHOTO or VIDEO,Document
     private boolean thumbnail; // applicable to properties
     private String fileName;
     private String contentType;

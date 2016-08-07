@@ -56,7 +56,7 @@ public interface PangoDomainService {
     Optional<PropertyUnit> retrievePropertyBy(String propertyReferenceId, User user);
 
     /**
-     *
+     * User registration, trigger verification email
      * @param user
      * @return
      */
@@ -109,6 +109,14 @@ public interface PangoDomainService {
      * @return
      */
     Optional<UserProjection> updateUserPreference(UserPreference userPreference, User user);
+
+
+    /**
+     * updates user information based on {@link UserUpdating } value
+     * @param user
+     * @return {@link Optional<UserProjection>}
+     */
+    Optional<UserProjection> updateUserInformation(User user, UserUpdating updating);
 
 }
 
@@ -305,6 +313,74 @@ class PangoDomainServiceImpl implements PangoDomainService {
          removeUserPreferenceBy(userPreference.getPreferenceId(),user);
         // 2. Add new preference to User
         return addUserPreference(userPreference, user);
+    }
+
+    /**
+     * updates user information based on {@link UserUpdating } value
+     *
+     * @param user
+     * @param updating
+     * @return {@link Optional < UserProjection >}
+     */
+    @Override
+    public Optional<UserProjection> updateUserInformation(User user, UserUpdating updating) {
+        Assert.notNull(user, "User to update can not be null or empty");
+        Assert.hasText(user.getUserReferenceId(), "User Id can not be empty or null");
+        Assert.notNull(updating, "User updating can nnot be null or empty");
+        // only update existing users
+        if (userRepository.exists(user.getUserReferenceId())) {
+            switch (updating) {
+                case PROFILE_PICTURE:
+                    updateUserProfilePicture(user);
+                    break;
+                case PASSWORD_CHANGE:
+                    userChangePassword(user);
+                    break;
+                case BASIC_INFO:
+                    return Optional.ofNullable(updateUserBasicInfo(user));
+                default:
+                    break;
+            }
+            return Optional.ofNullable(user);
+        }
+        return Optional.empty();
+    }
+
+
+    private User updateUserBasicInfo(User user) {
+        if (user != null) {
+            User savedUsr = userRepository.findOne(user.getUserReferenceId());
+            //TODO update the basic info and save
+            return savedUsr;
+        }
+
+        return user;
+    }
+
+    private void userChangePassword(User user){
+        if(user != null && user.getProfile() !=null) {
+            if (StringUtils.hasText(user.getProfile().getPassword())){
+                User savedUsr = userRepository.findOne(user.getUserReferenceId());
+                savedUsr.getProfile().setPassword(user.getProfile().getPassword());
+                userRepository.save(savedUsr);
+            }
+        }
+    }
+    private void updateUserProfilePicture(User user) {
+        if (user != null && user.getProfile() != null) {
+            if (user.getProfile().getProfilePicture() != null) {
+                // 1. Delete an existing Profile picture
+                FileMetadata fileMetadata = new FileMetadata();
+                fileMetadata.setReferenceId(user.getUserReferenceId());
+                fileMetadata.setFileType(FileMetadata.FILETYPE.PHOTO.name());
+                gridFsService.deleteAllAttachmentsFor(fileMetadata, ReferenceIdFor.USER, false);
+
+                // 2. Publish attachment upload event to upload the new photo
+                user.getProfile().getProfilePicture().setProfilePicture(true); // make sure it's a profile pic
+                AttachmentToUpload attachmentToUpload = new AttachmentToUpload(user.getUserReferenceId(), ReferenceIdFor.USER, user.getProfile().getProfilePicture(), "");
+                eventsPublisher.publishAttachmentEvent(new OnAttachmentUploadEvent(attachmentToUpload));
+            }
+        }
     }
 
     private void recordUserSearchHistory(UserSearchHistory searchCriteria, User user){
