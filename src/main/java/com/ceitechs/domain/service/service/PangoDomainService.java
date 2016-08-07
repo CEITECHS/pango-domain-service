@@ -334,7 +334,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
                     updateUserProfilePicture(user);
                     break;
                 case PASSWORD_CHANGE:
-                    userChangePassword(user);
+                    changeUserPassword(user);
                     break;
                 case BASIC_INFO:
                     return Optional.ofNullable(updateUserBasicInfo(user));
@@ -357,7 +357,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
         return user;
     }
 
-    private void userChangePassword(User user){
+    private void changeUserPassword(User user){
         if(user != null && user.getProfile() !=null) {
             if (StringUtils.hasText(user.getProfile().getPassword())){
                 User savedUsr = userRepository.findOne(user.getUserReferenceId());
