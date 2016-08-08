@@ -261,7 +261,6 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         return  userPreference;
     }
 
-    //TODO User registration and retrieval test-cases
 
     @Test
     public void userRegistrationTest() throws EntityExists {
@@ -350,6 +349,7 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         FileMetadata fileMetadata2 = FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(gridFsService.getProfilePicture(fileMetadata,ReferenceIdFor.USER)),ReferenceIdFor.USER);
         assertEquals(profilePicture.getFileDescription(),fileMetadata2.getCaption());
 
+        //test retrieval with associated user profile picture
         Optional<UserProjection> userProjection = domainService.retrieveUserByIdOrUserName("",usr.getEmailAddress());
         assertTrue(userProjection.isPresent());
         assertNotNull(userProjection.get().getProfilePicture());
