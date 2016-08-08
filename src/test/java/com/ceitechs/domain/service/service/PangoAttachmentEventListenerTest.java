@@ -44,7 +44,7 @@ public class PangoAttachmentEventListenerTest extends AbstractPangoDomainService
         operations.delete(null);
         assertTrue(operations.find(null).size() == 0);
         AttachmentToUpload attachmentToUpload = new AttachmentToUpload("1",ReferenceIdFor.PROPERTY,buildAttachment(), "");
-        pangoEventsPublisher.publishAttachmentEvent(new OnAttachmentUploadEvent(attachmentToUpload) );
+        pangoEventsPublisher.publishPangoEvent(new OnAttachmentUploadEvent(attachmentToUpload) );
 
         List<GridFSDBFile> files = operations.find(null);
         assertTrue(files.size() > 0);

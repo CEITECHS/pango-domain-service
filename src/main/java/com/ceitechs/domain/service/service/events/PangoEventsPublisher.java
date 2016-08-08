@@ -25,7 +25,7 @@ public class PangoEventsPublisher {
      * @param onPangoEvent
      * @param <T>
      */
-    public <T> void publishAttachmentEvent(OnPangoEvent<T> onPangoEvent){
+    public <T> void publishPangoEvent(OnPangoEvent<T> onPangoEvent){
         publisher.publishEvent(onPangoEvent);
     }
 }

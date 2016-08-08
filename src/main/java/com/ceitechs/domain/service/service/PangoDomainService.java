@@ -2,6 +2,7 @@ package com.ceitechs.domain.service.service;
 
 
 import com.ceitechs.domain.service.domain.*;
+import com.ceitechs.domain.service.domain.Annotations.Updatable;
 import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.service.events.*;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.beans.IntrospectionException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -163,7 +165,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
             if(savedUnit !=null && !propertyUnit.getAttachments().isEmpty()){
                 OnAttachmentUploadEvent attachmentEvent = new OnAttachmentUploadEvent(
                        propertyUnit.getAttachments() .stream().map((attachment) ->  new AttachmentToUpload(savedUnit.getPropertyUnitId(), ReferenceIdFor.PROPERTY, attachment,"")).collect(Collectors.toList()));
-                        eventsPublisher.publishAttachmentEvent(attachmentEvent);
+                        eventsPublisher.publishPangoEvent(attachmentEvent);
                 logger.info("published event to store attachments");
                 return Optional.of(savedUnit);
             }
@@ -240,11 +242,12 @@ class PangoDomainServiceImpl implements PangoDomainService {
         Assert.hasText(user.getProfile().getPassword(), "user password can not be null or Empty");
         Assert.notEmpty(user.getProfile().getRoles(), "User roles can not be null");
         // check that user by email doesn't exists
-        User existingUser = userRepository.findByEmailAddressIgnoreCaseAndProfileVerifiedTrue(user.getEmailAddress());
+        User existingUser = userRepository.findByEmailAddressIgnoreCase(user.getEmailAddress());
         if (existingUser != null && StringUtils.hasText(existingUser.getEmailAddress())) {
-            if (!existingUser.getProfile().isVerified())
+            if (!existingUser.getProfile().isVerified()) {
                 triggerUserInteractionEvent(user, UserInteraction.VERIFICATION);
-            throw new EntityExists("User with Email address exists");
+            }
+            throw new EntityExists(String.format("User with Email : %s  address exists",user.getEmailAddress()), new IllegalArgumentException(String.format("User with Email : %s  address exists",user.getEmailAddress())));
 
         }
         user.getProfile().setVerified(false);
@@ -350,12 +353,25 @@ class PangoDomainServiceImpl implements PangoDomainService {
     private User updateUserBasicInfo(User user) {
         if (user != null) {
             User savedUsr = userRepository.findOne(user.getUserReferenceId());
-            //TODO update the basic info and save
+
+            // Extract fields to update
+            List<String> fieldsForUpdate = PangoUtility.fieldNamesByAnnotation(User.class, Updatable.class);
+            try {
+                boolean update =  PangoUtility.updatedSomeObjectProperties(savedUsr,user,fieldsForUpdate,User.class); // perform the update
+                if (update) {
+                    savedUsr = userRepository.save(savedUsr); // persist the updates
+                }
+            } catch (IntrospectionException e) {
+                logger.error(e.getMessage(),e.getCause());
+            }
+
             return savedUsr;
         }
 
         return user;
     }
+
+
 
     private void changeUserPassword(User user){
         if(user != null && user.getProfile() !=null) {
@@ -378,7 +394,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
                 // 2. Publish attachment upload event to upload the new photo
                 user.getProfile().getProfilePicture().setProfilePicture(true); // make sure it's a profile pic
                 AttachmentToUpload attachmentToUpload = new AttachmentToUpload(user.getUserReferenceId(), ReferenceIdFor.USER, user.getProfile().getProfilePicture(), "");
-                eventsPublisher.publishAttachmentEvent(new OnAttachmentUploadEvent(attachmentToUpload));
+                eventsPublisher.publishPangoEvent(new OnAttachmentUploadEvent(attachmentToUpload));
             }
         }
     }
@@ -389,7 +405,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
             if( user != null) {
                 OnPropertySearchEvent onPropertySearchEvent = new OnPropertySearchEvent(searchCriteria, user);
                 logger.info("publishing Property Search event for user " + user.getUserReferenceId());
-                eventsPublisher.publishAttachmentEvent(onPropertySearchEvent);
+                eventsPublisher.publishPangoEvent(onPropertySearchEvent);
             }
         });
         return;
@@ -398,10 +414,10 @@ class PangoDomainServiceImpl implements PangoDomainService {
     private void triggerUserInteractionEvent(User user, UserInteraction userInteraction){
         if (user == null || !StringUtils.hasText(user.getEmailAddress())) return;
         executorService.submit(() -> {
-             if (userInteraction == UserInteraction.VERIFICATION){
+             if (userInteraction == UserInteraction.VERIFICATION || userInteraction == UserInteraction.REGISTRATION ){
                  UserVerificationEvent verificationEvent = new UserVerificationEvent(user);
                  logger.info("publishing User email verification for user " + user.getUserReferenceId());
-                 eventsPublisher.publishAttachmentEvent(verificationEvent);
+                 eventsPublisher.publishPangoEvent(verificationEvent);
              }
         });
         return;

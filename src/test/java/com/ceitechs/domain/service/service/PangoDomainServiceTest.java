@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
@@ -246,6 +248,7 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         user.setLastName("magohe");
         user.setEmailAddress("iam.magohe@pango.com");
         UserProfile userProfile = new UserProfile();
+        userProfile.setPassword("123456");
         userProfile.setVerified(true);
         user.setProfile(userProfile);
         return user;
@@ -259,5 +262,104 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
     }
 
     //TODO User registration and retrieval test-cases
+
+    @Test
+    public void userRegistrationTest() throws EntityExists {
+        userRepository.deleteAll();
+        User usr = createUser();
+        usr.getProfile().getRoles().add(PangoUserRole.USER);
+        Optional<UserProjection> savedUsr = domainService.registerUser(usr);
+        assertTrue(savedUsr.isPresent());
+        assertEquals("firstName must match",usr.getFirstName(),savedUsr.get().getFirstName());
+        assertEquals("lastName must match",usr.getLastName(),savedUsr.get().getLastName());
+
+    }
+
+    @Test
+    public void userRegistrationTestExists() throws EntityExists {
+        userRepository.deleteAll();
+        User usr = createUser();
+        usr.getProfile().getRoles().add(PangoUserRole.USER);
+        Optional<UserProjection> savedUsr = domainService.registerUser(usr);
+
+        usr.setUserReferenceId(savedUsr.get().getUserReferenceId());
+        assertThatThrownBy(() -> domainService.registerUser(usr))
+                .isInstanceOf(EntityExists.class)
+                .hasMessage(String.format("User with Email : %s  address exists",usr.getEmailAddress()))
+                .hasCauseInstanceOf(IllegalArgumentException.class);
+
+    }
+
+    @Test
+    public void updateBasicInfoTest() throws EntityExists {
+        userRepository.deleteAll();
+        User usr = createUser();
+        usr.getProfile().getRoles().add(PangoUserRole.USER);
+        assertNull(usr.getAddress());
+        Optional<UserProjection> savedUsr = domainService.registerUser(usr);
+        usr.setUserReferenceId(savedUsr.get().getUserReferenceId());
+        usr.setEmailAddress("updated.emailAddress@pango.com");
+        Address address = new Address();
+        address.setAddressLine1("10000 Palace VCT");
+        address.setCity("Richmond");
+        address.setCountry("US");
+        usr.setAddress(address);
+
+        Optional<UserProjection> updatedUser = domainService.updateUserInformation(usr,UserUpdating.BASIC_INFO);
+        assertTrue(updatedUser.isPresent());
+        assertNotNull(updatedUser.get().getAddress());
+    }
+
+    @Test
+    public void updateUserPasswordTest() throws EntityExists {
+        userRepository.deleteAll();
+        User usr = createUser();
+        usr.getProfile().getRoles().add(PangoUserRole.USER);
+        assertNull(usr.getAddress());
+        Optional<UserProjection> savedUsr = domainService.registerUser(usr);
+        usr.setUserReferenceId(savedUsr.get().getUserReferenceId());
+        usr.getProfile().setPassword("updated password");
+        assertTrue(domainService.updateUserInformation(usr,UserUpdating.PASSWORD_CHANGE).isPresent());
+        assertEquals("password must match",usr.getProfile().getPassword(),userRepository.findOne(usr.getUserReferenceId()).getProfile().getPassword());
+
+
+    }
+
+    @Test
+    public void updateUserProfilePictureTest() throws EntityExists, IOException {
+        operations.delete(null);
+        userRepository.deleteAll();
+        User usr = createUser();
+        usr.getProfile().getRoles().add(PangoUserRole.USER);
+        assertNull(usr.getAddress());
+        Optional<UserProjection> savedUsr = domainService.registerUser(usr);
+        usr.setUserReferenceId(savedUsr.get().getUserReferenceId());
+        Attachment profilePicture = buildAttachment();
+        profilePicture.setFileDescription("profile picture");
+        usr.getProfile().setProfilePicture(profilePicture);
+        assertTrue(domainService.updateUserInformation(usr,UserUpdating.PROFILE_PICTURE).isPresent());
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setReferenceId(usr.getUserReferenceId());
+        fileMetadata.setFileType(FileMetadata.FILETYPE.PHOTO.name());
+        GridFSDBFile profilePic = gridFsService.getProfilePicture(fileMetadata,ReferenceIdFor.USER);
+        assertNotNull(profilePic);
+        FileMetadata fileMetadata1 = FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(profilePic),ReferenceIdFor.USER);
+        assertEquals(profilePicture.getFileDescription(),fileMetadata1.getCaption());
+        usr.getProfile().getProfilePicture().setFileDescription("Updated profile picture");
+        assertTrue(domainService.updateUserInformation(usr,UserUpdating.PROFILE_PICTURE).isPresent());
+        FileMetadata fileMetadata2 = FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(gridFsService.getProfilePicture(fileMetadata,ReferenceIdFor.USER)),ReferenceIdFor.USER);
+        assertEquals(profilePicture.getFileDescription(),fileMetadata2.getCaption());
+
+        Optional<UserProjection> userProjection = domainService.retrieveUserByIdOrUserName("",usr.getEmailAddress());
+        assertTrue(userProjection.isPresent());
+        assertNotNull(userProjection.get().getProfilePicture());
+        assertEquals(fileMetadata2.getCaption(), userProjection.get().getProfilePicture().getFileDescription());
+
+        Optional<UserProjection> userProjection2 = domainService.retrieveUserByIdOrUserName(usr.getUserReferenceId(),"");
+        assertTrue(userProjection2.isPresent());
+        assertNotNull(userProjection2.get().getProfilePicture());
+        assertEquals(userProjection.get().getProfilePicture().getFileDescription(),userProjection2.get().getProfilePicture().getFileDescription());
+        assertEquals(userProjection.get().getEmailAddress(),userProjection2.get().getEmailAddress());
+    }
 
 }

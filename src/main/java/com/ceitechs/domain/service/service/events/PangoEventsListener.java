@@ -75,6 +75,8 @@ public class PangoEventsListener{
 
     }
 
+    @Async
+    @EventListener
     public void HandleUserInteractionEvents(OnPangoEvent<User> userOnPangoEvent){
         if (userOnPangoEvent instanceof UserVerificationEvent){
             //TODO - generate verification code (check for existing of expired ) and trigger email to user

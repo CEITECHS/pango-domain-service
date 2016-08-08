@@ -3,24 +3,33 @@
  */
 package com.ceitechs.domain.service.util;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
+import com.ceitechs.domain.service.domain.Address;
+import com.ceitechs.domain.service.domain.Annotations.Updatable;
+import com.ceitechs.domain.service.domain.User;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
+
+import static org.junit.Assert.*;
 
 /**
  * @author iddymagohe
@@ -126,6 +135,48 @@ public class PangoUtililityBeanTest extends AbstractPangoDomainServiceIntegratio
         System.out.println(PangoUtility.remainingDurationBtnDateTimes(LocalDateTime.now(), LocalDateTime.now().plusDays(2)));
         System.out.println(PangoUtility.remainingDurationBtnDateTimes(LocalDateTime.now(), LocalDateTime.now().plusDays(2).plusHours(1)));
         System.out.println(PangoUtility.remainingDurationBtnDateTimes(LocalDateTime.now(), LocalDateTime.now().plusDays(2).plusHours(1).plusMinutes(24)));
+    }
+
+    @Ignore
+    public void reftest() throws IntrospectionException, InvocationTargetException, IllegalAccessException {
+        User usr = new User();
+        usr.setEmailAddress("iddy85@gmail.com");
+        String value = (String)new PropertyDescriptor("emailAddress", User.class).getReadMethod().invoke(usr);
+        System.out.println(value);
+
+        for (PropertyDescriptor pd : Introspector.getBeanInfo(User.class).getPropertyDescriptors()) {
+            if (pd.getReadMethod() != null && !"class".equals(pd.getName()))
+                System.out.println(pd.getName());
+                //System.out.println(pd.getReadMethod().invoke(foo));
+        }
+    }
+
+    @Test
+    public void updateSomeObjectProperties() throws IntrospectionException {
+        User usr = new User();
+        usr.setEmailAddress("iddy85@gmail.com");
+        usr.setFirstName("iddy");
+        assertNull(usr.getAddress());
+
+        User user1 = new User();
+        user1.setEmailAddress("iddy.magohe@pango.com");
+        Address address = new Address();
+        address.setAddressLine1("10000 Palace VCT");
+        address.setCity("Richmond");
+        address.setCountry("US");
+        user1.setAddress(address);
+        user1.setFirstName("Magohe");
+
+        assertTrue(PangoUtility.updatedSomeObjectProperties(usr,user1, Arrays.asList("emailAddress","address"),User.class));
+        assertEquals("Emails must be equals",user1.getEmailAddress(),usr.getEmailAddress());
+        assertEquals("First Name must not be changed","iddy",usr.getFirstName());
+        assertNotNull(usr.getAddress());
+        System.out.println(usr);
+    }
+
+    @Test
+    public void testAnnotaionExtraction(){
+        System.out.println(PangoUtility.fieldNamesByAnnotation(User.class,Updatable.class));
     }
 
 }

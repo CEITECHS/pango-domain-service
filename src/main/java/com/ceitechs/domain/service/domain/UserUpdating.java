@@ -13,7 +13,7 @@ public enum UserUpdating {
      */
     PASSWORD_CHANGE,
     /***
-     * Basic information including but not limited to names, address , phone.
+     * Basic information including but not limited to names, address , phone etc annotated by {@link com.ceitechs.domain.service.domain.Annotations.Updatable}.
      */
     BASIC_INFO
 }

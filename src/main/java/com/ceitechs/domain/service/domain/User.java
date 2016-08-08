@@ -1,8 +1,10 @@
 package com.ceitechs.domain.service.domain;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.ceitechs.domain.service.domain.Annotations.Updatable;
 import com.ceitechs.domain.service.service.UserProjection;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
@@ -25,14 +27,19 @@ public class User implements UserProjection {
     @Id
     private String userReferenceId;
 
+    @Updatable
     private String firstName;
 
+    @Updatable
     private String lastName;
 
+    @Updatable
     private String phoneNumber;
 
+    @Updatable
     private String emailAddress;
 
+    @Updatable
     private Address address;
 
     private UserProfile profile;

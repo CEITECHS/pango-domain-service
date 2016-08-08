@@ -3,9 +3,11 @@
  */
 package com.ceitechs.domain.service.util;
 
+import com.ceitechs.domain.service.domain.Annotations.Updatable;
 import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.domain.FileMetadata;
 import com.ceitechs.domain.service.domain.AttachmentToUpload;
+import com.ceitechs.domain.service.domain.User;
 import lombok.Getter;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
@@ -16,15 +18,23 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -222,4 +232,45 @@ public class PangoUtility {
             long minutes = ChronoUnit.MINUTES.between(lastDate.plusDays(days).plusHours(hours),toDateTime);
             return String.format("%dd %dh %dm",days, hours, minutes);
     }
+
+    public static <T> boolean updatedSomeObjectProperties(T originalObject, T updatedObject, List<String> updatableProperties, Class<T> clazz) throws IntrospectionException {
+        if (originalObject == null || updatedObject == null || (updatableProperties == null || updatableProperties.isEmpty()))
+            return false; // null parameters were passed.
+        if (originalObject != updatedObject) { //only go through the process if objects are not same reference
+            Arrays.stream(Introspector.getBeanInfo(clazz).getPropertyDescriptors())
+                    .filter(propertyDescriptor -> updatableProperties.contains(propertyDescriptor.getName()))
+                    .forEach(propertyDescriptor -> {
+                        updateProperty(originalObject, updatedObject, propertyDescriptor);
+
+                    });
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     *
+     * @param originalObject
+     * @param updatedObject
+     * @param descriptor
+     */
+    private static void updateProperty(Object originalObject, Object updatedObject, PropertyDescriptor descriptor) {
+        try {
+            Method readMethod = descriptor.getReadMethod();
+            Object newValue = readMethod.invoke(updatedObject);
+            if (newValue != null && !newValue.equals(readMethod.invoke(originalObject))) {
+                Method writeMethod = descriptor.getWriteMethod();
+                writeMethod.invoke(originalObject, newValue);
+            }
+        }catch (Exception ex){
+            ex.printStackTrace(); //log this exception
+        }
+    }
+
+
+    public static List<String> fieldNamesByAnnotation(Class clazz, Class<? extends Annotation> annotationClass){
+        Field[] fieldList = clazz.getDeclaredFields();
+       return Arrays.stream(fieldList).filter(field -> field.isAnnotationPresent(Updatable.class)).map(Field::getName).collect(Collectors.toList());
+    }
+
 }

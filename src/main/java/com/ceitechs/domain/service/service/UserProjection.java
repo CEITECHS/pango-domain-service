@@ -9,6 +9,8 @@ import com.ceitechs.domain.service.domain.Attachment;
  */
 public interface UserProjection {
     String getUserReferenceId();
+    String getFirstName();
+    String getLastName();
     String getFullName();
     String getEmailAddress();
     String getPhoneNumber();
