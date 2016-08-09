@@ -120,6 +120,7 @@ public interface PangoDomainService {
      */
     Optional<UserProjection> updateUserInformation(User user, UserUpdating updating);
 
+
 }
 
 @Service
@@ -187,7 +188,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
         Assert.notNull(searchCriteria,"Search criteria can not be null ");
         GeoResults<PropertyUnit> propertyUnitGeoResults = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
 
-        //record user search history
+        //record user search rentingHistory
         recordUserSearchHistory(new UserSearchHistory(searchCriteria, propertyUnitGeoResults.getContent().size()), user);
 
         if(!propertyUnitGeoResults.getContent().isEmpty()){

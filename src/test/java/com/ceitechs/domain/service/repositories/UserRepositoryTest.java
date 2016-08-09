@@ -345,7 +345,7 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
         user.setPreferences(preferencesList);
         User savedUser = userRepository.save(user);
 
-        assertThat("The returned search history shoud not be null",
+        assertThat("The returned search rentingHistory shoud not be null",
                 savedUser.getPreferences().get(0).getUserSearchHistory(), notNullValue());
     }
 

@@ -66,7 +66,7 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
 
     @Before
     public void setUp() {
-        // Delete all unit holding history
+        // Delete all unit holding rentingHistory
         unitHoldingHistoryRepository.deleteAll();
 
         UnitHoldingHistory unitHoldingHistory = new UnitHoldingHistory();
@@ -155,7 +155,7 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
         // Save property unit
         propertyUnitRepository.save(propertyUnit);
 
-        // Create a new holding history
+        // Create a new holding rentingHistory
         unitHoldingHistoryId = PangoUtility.generateIdAsString();
         unitHoldingHistory.setHoldingReferenceId(unitHoldingHistoryId);
         unitHoldingHistory.setUser(user);
@@ -174,47 +174,47 @@ public class UnitHoldingHistoryRepositoryTest extends AbstractPangoDomainService
         transactionHistory.setTransactionType(TransactionType.HOLDING);
         unitHoldingHistory.setTransactionHistory(transactionHistory);
 
-        // save unit holding history
+        // save unit holding rentingHistory
         savedUnitHoldingHistory = unitHoldingHistoryRepository.save(unitHoldingHistory);
     }
 
     @Test
     public void testSaveUnitHoldingHistory() {
-        assertNotNull("The saved unit holding history should not be null", savedUnitHoldingHistory);
+        assertNotNull("The saved unit holding rentingHistory should not be null", savedUnitHoldingHistory);
         assertEquals("The unit holding Id should match", unitHoldingHistoryId,
                 savedUnitHoldingHistory.getHoldingReferenceId());
     }
 
     @Test
     public void testGetUnitHoldingHistoryByUser() {
-        // Get all the unit holding history for the user
+        // Get all the unit holding rentingHistory for the user
         User newUser = new User();
         newUser.setUserReferenceId(userReferenceId);
         Page<UnitHoldingHistory> results = unitHoldingHistoryRepository.findByUserOrderByStartDateDesc(newUser,
                 new PageRequest(0, 10));
-        assertNotNull("The returned unit holding history should not be null", results);
-        assertThat("The returned unit holding history should match the expected list", results.getContent(),
+        assertNotNull("The returned unit holding rentingHistory should not be null", results);
+        assertThat("The returned unit holding rentingHistory should match the expected list", results.getContent(),
                 hasSize(1));
     }
 
     @Test
     public void testGetUnitHoldingHistoryByOwner() {
-        // Get all the unit holding history for the owners property
+        // Get all the unit holding rentingHistory for the owners property
         Optional<List<UnitHoldingHistory>> results = unitHoldingHistoryRepository
                 .getUnitHoldingHistory(ownerReferenceId);
-        assertNotNull("The returned unit holding history should not be null", results);
-        assertThat("The returned unit holding history should match the expected list", results.get(), hasSize(1));
+        assertNotNull("The returned unit holding rentingHistory should not be null", results);
+        assertThat("The returned unit holding rentingHistory should match the expected list", results.get(), hasSize(1));
         assertEquals("The owner id should from the results should match the expected owner id", ownerReferenceId,
                 results.get().get(0).getPropertyUnit().getOwner().getUserReferenceId());
     }
 
     @Test
     public void testGetUnitHoldingHistoryByOwnerWithNoProperty() {
-        // Get all the unit holding history for the owners property
+        // Get all the unit holding rentingHistory for the owners property
         String ownerId = PangoUtility.generateIdAsString();
         Optional<List<UnitHoldingHistory>> results = unitHoldingHistoryRepository.getUnitHoldingHistory(ownerId);
-        assertNotNull("The returned unit holding history should be null", results);
-        assertFalse("The returned unit holding history should match the expected", results.isPresent());
+        assertNotNull("The returned unit holding rentingHistory should be null", results);
+        assertFalse("The returned unit holding rentingHistory should match the expected", results.isPresent());
     }
 
     @After

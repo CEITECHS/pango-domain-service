@@ -69,9 +69,9 @@ public class PangoEventsListener{
         userPreference.setUserSearchHistory(searchHistoryOnPangoEvent.get());
         Optional<User> resp = userRepository.addUserPreferences(userPreference, searchHistoryOnPangoEvent.getUser());
         if (resp.isPresent())
-            logger.info("Updated search history for user : " + searchHistoryOnPangoEvent.getUser().getUserReferenceId());
+            logger.info("Updated search rentingHistory for user : " + searchHistoryOnPangoEvent.getUser().getUserReferenceId());
         else
-            logger.info("Could not update search history for user : " + searchHistoryOnPangoEvent.getUser().getUserReferenceId());
+            logger.info("Could not update search rentingHistory for user : " + searchHistoryOnPangoEvent.getUser().getUserReferenceId());
 
     }
 

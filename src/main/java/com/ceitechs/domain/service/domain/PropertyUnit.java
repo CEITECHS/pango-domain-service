@@ -66,10 +66,13 @@ public class PropertyUnit {
     @Transient
     private Attachment coverPhoto;
 
-    private List<UnitRentalHistory> history;
+    @Transient
+    private List<UnitRentalHistory> rentingHistory;
 
+    @Transient
     private List<PropertyUnitEnquiry> enquiries;
 
+    @Transient
     private List<UnitHoldingHistory> holdingHistory;
 
     private boolean active = true;

@@ -77,7 +77,7 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
 
     @Before
     public void setUp() {
-        // Delete all unit rental history
+        // Delete all unit rental rentingHistory
         unitRentalHistoryRepository.deleteAll();
 
         UnitRentalHistory unitRentalHistory = new UnitRentalHistory();
@@ -155,7 +155,7 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         // Save property unit
         propertyUnitRepository.save(propertyUnit);
 
-        // Create a new rental history
+        // Create a new rental rentingHistory
         unitRentalHistoryId = PangoUtility.generateIdAsString();
         unitRentalHistory.setRentalReferenceId(unitRentalHistoryId);
         unitRentalHistory.setUser(user);
@@ -191,13 +191,13 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         // Rental History active flag
         unitRentalHistory.setActive(true);
 
-        // save unit holding history
+        // save unit holding rentingHistory
         savedUnitRentalHistory = unitRentalHistoryRepository.save(unitRentalHistory);
     }
 
     @Test
     public void testSaveUnitRentalHistory() {
-        assertNotNull("The saved unit rental history should not be null", savedUnitRentalHistory);
+        assertNotNull("The saved unit rental rentingHistory should not be null", savedUnitRentalHistory);
         assertEquals("The unit rental Id should match", unitRentalHistoryId,
                 savedUnitRentalHistory.getRentalReferenceId());
     }
@@ -208,8 +208,8 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         newUser.setUserReferenceId(userReferenceId);
         Page<UnitRentalHistory> results = unitRentalHistoryRepository.findByUserOrderByIsActiveDescStartDateDesc(newUser,
                 new PageRequest(0, 10));
-        assertNotNull("The returned unit rental history should not be null", results);
-        assertThat("The returned unit rental history should match the expected list", results.getContent(), hasSize(1));
+        assertNotNull("The returned unit rental rentingHistory should not be null", results);
+        assertThat("The returned unit rental rentingHistory should match the expected list", results.getContent(), hasSize(1));
     }
 
     @Test
@@ -218,8 +218,8 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         propertyUnit.setPropertyUnitId(propertyUnitId);
         Page<UnitRentalHistory> results = unitRentalHistoryRepository
                 .findByPropertyUnitOrderByIsActiveDescStartDateDesc(propertyUnit, new PageRequest(0, 10));
-        assertNotNull("The returned unit rental history should not be null", results);
-        assertThat("The returned unit rental history should match the expected list", results.getContent(), hasSize(1));
+        assertNotNull("The returned unit rental rentingHistory should not be null", results);
+        assertThat("The returned unit rental rentingHistory should match the expected list", results.getContent(), hasSize(1));
         assertEquals("The property unit id from the results should match the expected property unit id", propertyUnitId,
                 results.getContent().get(0).getPropertyUnit().getPropertyUnitId());
     }
@@ -231,8 +231,8 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         propertyUnit.setPropertyUnitId(propertyUnitId);
         Page<UnitRentalHistory> results = unitRentalHistoryRepository
                 .findByPropertyUnitOrderByIsActiveDescStartDateDesc(propertyUnit, new PageRequest(0, 10));
-        assertNotNull("The returned unit rental history should not be null", results);
-        assertThat("The returned unit rental history should match the expected list", results.getContent(), hasSize(2));
+        assertNotNull("The returned unit rental rentingHistory should not be null", results);
+        assertThat("The returned unit rental rentingHistory should match the expected list", results.getContent(), hasSize(2));
         assertTrue("The active property should be first", results.getContent().get(0).isActive());
     }
 
@@ -244,7 +244,7 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         PropertyUnit newPropertyUnit = new PropertyUnit();
         newPropertyUnit.setPropertyUnitId(propertyUnitId);
 
-        // Create a new rental history
+        // Create a new rental rentingHistory
         String newunitRentalHistoryId = PangoUtility.generateIdAsString();
         unitRentalHistory.setRentalReferenceId(newunitRentalHistoryId);
         unitRentalHistory.setUser(newUser);
@@ -280,7 +280,7 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         // Rental History active flag
         unitRentalHistory.setActive(false);
 
-        // save unit holding history
+        // save unit holding rentingHistory
         unitRentalHistoryRepository.save(unitRentalHistory);
     }
 
