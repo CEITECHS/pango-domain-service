@@ -3,7 +3,6 @@ package com.ceitechs.domain.service.repositories;
 
 import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.domain.UserPreference;
-import com.ceitechs.domain.service.service.UserProjection;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.mongodb.BasicDBObject;
 import com.mysema.commons.lang.Assert;
@@ -19,7 +18,6 @@ import org.springframework.util.StringUtils;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.query.Query.query;
