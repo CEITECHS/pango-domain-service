@@ -15,4 +15,5 @@ public interface PropertyUnitEnquiryRepository extends MongoRepository<PropertyU
 
     Page <PropertyUnitEnquiry> findByPropertyUnitOrderByEnquiryDateDesc(PropertyUnit propertyUnit, Pageable page);
     Page <PropertyUnitEnquiry> findByProspectiveTenantOrderByEnquiryDateDesc(User prospectiveTenant,Pageable page);
+    PropertyUnitEnquiry findByProspectiveTenantAndPropertyUnitOrderByEnquiryDateDesc(User prospectiveTenant, PropertyUnit propertyUnit);
 }

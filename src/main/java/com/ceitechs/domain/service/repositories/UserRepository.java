@@ -16,7 +16,7 @@ public interface UserRepository extends MongoRepository<User, String> , UserRepo
 
     User findByEmailAddressIgnoreCase(String emailAddress);
 
-    User findByEmailAddressOrUserReferenceIdAllIgnoreCase(String emailAddress, String userReferenceId);
+    User findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue(String emailAddress, String userReferenceId);
 
 
 }

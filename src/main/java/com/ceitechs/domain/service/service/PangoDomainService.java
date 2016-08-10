@@ -272,7 +272,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
     @Override
     public Optional<UserProjection> retrieveUserByIdOrUserName(String userId, String userName) {
         Assert.isTrue(StringUtils.hasText(userId) || StringUtils.hasText(userName), "UserId or UserName can not be empty or null");
-        User user = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCase(userName, userId);
+        User user = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue(userName, userId);
         // associate user's profile picture
         if (user != null) {
             FileMetadata fileMetadata = new FileMetadata();
@@ -281,7 +281,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
             user.getProfile().setProfilePicture(userProfilePicture);
         }
 
-        return Optional.of(user);
+        return Optional.ofNullable(user);
     }
 
     @Override

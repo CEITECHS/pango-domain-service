@@ -8,6 +8,7 @@ import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.hamcrest.collection.IsCollectionWithSize;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -324,6 +325,7 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
 
     }
 
+    @Ignore // Requires a verified user.
     @Test
     public void updateUserProfilePictureTest() throws EntityExists, IOException {
         operations.delete(null);

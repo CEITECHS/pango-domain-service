@@ -81,6 +81,7 @@ public class PangoEventsListener{
         if (userOnPangoEvent instanceof UserVerificationEvent){
             //TODO - generate verification code (check for existing of expired ) and trigger email to user
             logger.info("generating verfication code for user");
+
         }
     }
 }
