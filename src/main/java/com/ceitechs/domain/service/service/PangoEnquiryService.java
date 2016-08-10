@@ -115,7 +115,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         if (savedUser == null)
             throw new EntityNotFound(String.format("User : %s  does not exist or account has not been verified", user.getUserReferenceId()), new IllegalArgumentException(String.format("User : %s  does not exist or account has not been verified", user.getUserReferenceId())));
 
-        //2. Check that a property ecists
+        //2. Check that a property exists
         PropertyUnit propertyUnit = propertyUnitRepository.findOne(propertyReferenceId);
          if (propertyUnit == null )
              throw new EntityNotFound(String.format("Property : %s  does not exist", propertyReferenceId), new IllegalArgumentException(String.format("Property : %s  does not exist", propertyReferenceId)));
