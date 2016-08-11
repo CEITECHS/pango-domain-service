@@ -132,10 +132,11 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
 
         //3. check that the user doesn't have an open enquiry to this property
         PropertyUnitEnquiry existingEnquiry = enquiryRepository.findByProspectiveTenantAndPropertyUnitOrderByEnquiryDateDesc(savedUser, propertyUnit);
-        LocalDateTime sixtyDays = LocalDateTime.of(existingEnquiry.getEnquiryDate().toLocalDate(), existingEnquiry.getEnquiryDate().toLocalTime()).plusDays(60);
-        if (existingEnquiry != null && existingEnquiry.getEnquiryDate().isBefore(sixtyDays))
-            throw new EntityExists(String.format("There is an open Enquiry : %s for this user on this property : %s", existingEnquiry.getEnquiryReferenceId(), existingEnquiry.getPropertyUnit().getPropertyUnitId()), new IllegalStateException("there is an open Enquiry"));
-
+        if (existingEnquiry != null) {
+            LocalDateTime sixtyDays = LocalDateTime.of(existingEnquiry.getEnquiryDate().toLocalDate(), existingEnquiry.getEnquiryDate().toLocalTime()).plusDays(60);
+            if (existingEnquiry.getEnquiryDate().isBefore(sixtyDays))
+                throw new EntityExists(String.format("There is an open Enquiry : %s for this user on this property : %s", existingEnquiry.getEnquiryReferenceId(), existingEnquiry.getPropertyUnit().getPropertyUnitId()), new IllegalStateException("there is an open Enquiry"));
+        }
         //4. Create a new enquiry to a property
         enquiry.setEnquiryReferenceId(PangoUtility.generateIdAsString());
         enquiry.setPropertyUnit(propertyUnit);
@@ -196,7 +197,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      */
     @Override
     public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User prospectiveTenant, int count) {
-        return Collections.EMPTY_LIST; //TODO pending impl
+        return Collections.EMPTY_LIST; //TODO pending impl this continues today
     }
 
     /**
