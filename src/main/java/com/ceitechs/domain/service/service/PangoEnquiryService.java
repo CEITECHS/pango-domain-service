@@ -1,13 +1,13 @@
 package com.ceitechs.domain.service.service;
 
-import com.ceitechs.domain.service.domain.EnquiryCorrespondence;
-import com.ceitechs.domain.service.domain.PropertyUnit;
-import com.ceitechs.domain.service.domain.PropertyUnitEnquiry;
-import com.ceitechs.domain.service.domain.User;
+import com.ceitechs.domain.service.domain.*;
 import com.ceitechs.domain.service.repositories.PropertyUnitEnquiryRepository;
 import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
+import com.ceitechs.domain.service.service.events.OnAttachmentUploadEvent;
+import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
 import com.ceitechs.domain.service.util.PangoUtility;
+import com.ceitechs.domain.service.util.ReferenceIdFor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,51 +19,56 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * @author  by iddymagohe on 8/9/16.
+ * @author by iddymagohe on 8/9/16.
  */
 public interface PangoEnquiryService {
 
     /**
-     *
      * @param user
      * @param propertyReferenceId
      * @param enquiry
      * @return
      */
-    Optional<PropertyUnitEnquiry> createUserEnquiryToProperty(User user, String propertyReferenceId, PropertyUnitEnquiry enquiry) throws EntityExists,EntityNotFound;
+    Optional<PropertyUnitEnquiry> createUserEnquiryToProperty(User user, String propertyReferenceId, PropertyUnitEnquiry enquiry) throws EntityExists, EntityNotFound;
 
     /**
-     *  adds a {@link EnquiryCorrespondence}  to an existing {@link PropertyUnitEnquiry}
-     * @param user prospective tenant or property owner
+     * adds a {@link EnquiryCorrespondence}  to an existing {@link PropertyUnitEnquiry}
+     *
+     * @param user               prospective tenant or property owner
      * @param enquiryReferenceId
      * @param correspondence
-     * @throws EntityExists if there is 60days old open enquiry - otherwise.
      * @return
+     * @throws EntityExists if there is 60days old open enquiry - otherwise.
      */
-    Optional<PropertyUnitEnquiry> addEnquiryCorrespondence(User user, String enquiryReferenceId, EnquiryCorrespondence correspondence);
+    Optional<PropertyUnitEnquiry> addEnquiryCorrespondence(User user, String enquiryReferenceId, EnquiryCorrespondence correspondence) throws EntityNotFound;
 
     /**
-     *  retrieves recent  enquiries made by the user to various properties
+     * retrieves recent  enquiries made by the user to various properties
+     *
      * @param prospectiveTenant
-     * @param count total enquiries to return
+     * @param count             total enquiries to return
      * @return
      */
     List<PropertyUnitEnquiry> retrieveEnquiriesBy(User prospectiveTenant, int count);
 
     /**
-     *  retrieve all enquiries made to a property optionalPropertyReferenceId when passed,
-     *  Otherwise returns all enquiries made to properties owned by the by Owner.
+     * retrieve all enquiries made to a property optionalPropertyReferenceId when passed,
+     * Otherwise returns all enquiries made to properties owned by the by Owner.
+     *
      * @param owner
      * @param optionalPropertyReferenceId
-     * @param count recent enquiries count to return per property in-case of optionalPropertyReferenceId is not passed
+     * @param count                       recent enquiries count to return per property in-case of optionalPropertyReferenceId is not passed
      * @return
      */
     List<PropertyUnitEnquiry> retrieveEnquiriesBy(User owner, Optional<String> optionalPropertyReferenceId, int count);
 
     /**
-     *  retrieves all  enquires made by a user to property
+     * retrieves all  enquires made by a user to property
+     *
      * @param user
      * @param propertyReferenceId
      * @return
@@ -74,6 +79,8 @@ public interface PangoEnquiryService {
 
 @Service
 class PangoEnquiryServiceImpl implements PangoEnquiryService {
+
+    private final PangoEventsPublisher eventsPublisher;
 
     private static final Logger logger = LoggerFactory.getLogger(PangoEnquiryServiceImpl.class);
 
@@ -86,20 +93,23 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
 
     private final PropertyUnitEnquiryRepository enquiryRepository;
 
+    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
+
     @Autowired
-    public PangoEnquiryServiceImpl(UserRepository userRepository, PropertyUnitRepository propertyUnitRepository, PropertyUnitEnquiryRepository enquiryRepository) {
+    public PangoEnquiryServiceImpl(UserRepository userRepository, PropertyUnitRepository propertyUnitRepository, PropertyUnitEnquiryRepository enquiryRepository, PangoEventsPublisher eventsPublisher) {
         this.userRepository = userRepository;
         this.propertyUnitRepository = propertyUnitRepository;
         this.enquiryRepository = enquiryRepository;
+        this.eventsPublisher = eventsPublisher;
     }
 
     /**
      * @param user
      * @param propertyReferenceId
      * @param enquiry
-     * @throws EntityNotFound for property or user
-     * @throws EntityExists for an open 60 days old enquiry by the user to the property
      * @return
+     * @throws EntityNotFound for property or user
+     * @throws EntityExists   for an open 60 days old enquiry by the user to the property
      */
     @Override
     public Optional<PropertyUnitEnquiry> createUserEnquiryToProperty(User user, String propertyReferenceId, PropertyUnitEnquiry enquiry) throws EntityExists, EntityNotFound {
@@ -117,12 +127,12 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
 
         //2. Check that a property exists
         PropertyUnit propertyUnit = propertyUnitRepository.findOne(propertyReferenceId);
-         if (propertyUnit == null )
-             throw new EntityNotFound(String.format("Property : %s  does not exist", propertyReferenceId), new IllegalArgumentException(String.format("Property : %s  does not exist", propertyReferenceId)));
+        if (propertyUnit == null)
+            throw new EntityNotFound(String.format("Property : %s  does not exist", propertyReferenceId), new IllegalArgumentException(String.format("Property : %s  does not exist", propertyReferenceId)));
 
         //3. check that the user doesn't have an open enquiry to this property
-        PropertyUnitEnquiry existingEnquiry = enquiryRepository.findByProspectiveTenantAndPropertyUnitOrderByEnquiryDateDesc(savedUser,propertyUnit);
-        LocalDateTime sixtyDays = LocalDateTime.of(existingEnquiry.getEnquiryDate().toLocalDate(),existingEnquiry.getEnquiryDate().toLocalTime()).plusDays(60);
+        PropertyUnitEnquiry existingEnquiry = enquiryRepository.findByProspectiveTenantAndPropertyUnitOrderByEnquiryDateDesc(savedUser, propertyUnit);
+        LocalDateTime sixtyDays = LocalDateTime.of(existingEnquiry.getEnquiryDate().toLocalDate(), existingEnquiry.getEnquiryDate().toLocalTime()).plusDays(60);
         if (existingEnquiry != null && existingEnquiry.getEnquiryDate().isBefore(sixtyDays))
             throw new EntityExists(String.format("There is an open Enquiry : %s for this user on this property : %s", existingEnquiry.getEnquiryReferenceId(), existingEnquiry.getPropertyUnit().getPropertyUnitId()), new IllegalStateException("there is an open Enquiry"));
 
@@ -144,8 +154,37 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      * @return
      */
     @Override
-    public Optional<PropertyUnitEnquiry> addEnquiryCorrespondence(User user, String enquiryReferenceId, EnquiryCorrespondence correspondence) {
-        return Optional.empty(); //TODO pending impl
+    public Optional<PropertyUnitEnquiry> addEnquiryCorrespondence(User user, String enquiryReferenceId, EnquiryCorrespondence correspondence) throws EntityNotFound {
+        Assert.notNull(user, "user can not be null for adding correspondence to an exiting Enquiry");
+        Assert.hasText(user.getUserReferenceId(), "User referenceId can not be null");
+        Assert.hasText(enquiryReferenceId, "enquiryReferenceId can not be null or empty");
+        Assert.notNull(correspondence, "correspondence can not be null");
+        Assert.hasText(correspondence.getMessage(), "correspondence type can not be empty");
+        Assert.notNull(correspondence.getCorrespondenceType(), "Correspondence type can not be null");
+        PropertyUnitEnquiry propertyUnitEnquiry = enquiryRepository.findOne(enquiryReferenceId);
+
+        //1. check that Enquiry with exists.
+        if (propertyUnitEnquiry == null)
+            throw new EntityNotFound(String.format("Enquiry with ID: %s not found", enquiryReferenceId), new IllegalArgumentException(String.format("Enquiry with ID: %s not found", enquiryReferenceId)));
+
+        //2. Ensure that correspondence can only be added by property owner or a user who initiated the enquiry
+        Assert.isTrue((propertyUnitEnquiry.getProspectiveTenant().getUserReferenceId().equals(user.getUserReferenceId())) ||
+                (propertyUnitEnquiry.getPropertyUnit().getOwner().getUserReferenceId().equals(user.getUserReferenceId())), String.format("User : %s not allowed to modify the  Enquiry", user.getUserReferenceId()));
+
+        //3. add correspondence to the enquiry
+        correspondence.setCorrespondenceReferenceId(PangoUtility.generateIdAsLong());
+        Optional<PropertyUnitEnquiry> enquiryOptional = enquiryRepository.updateEnquiryWith(enquiryReferenceId, correspondence);
+
+        //4. upload associated attachment if any.
+        if (enquiryOptional.isPresent() && correspondence.getAttachment() != null) {
+            logger.info("initiating attachment uplaod event for Correspondence");
+            correspondence.getAttachment().setFileType(FileMetadata.FILETYPE.DOCUMENT.name());
+            AttachmentToUpload attachmentToUpload = new AttachmentToUpload(enquiryReferenceId + correspondence.getCorrespondenceReferenceId(), ReferenceIdFor.ENQUIRY, correspondence.getAttachment(), propertyUnitEnquiry.getPropertyUnit().getPropertyUnitId());
+            eventsPublisher.publishPangoEvent(new OnAttachmentUploadEvent(attachmentToUpload));
+
+        }
+
+        return enquiryOptional;
     }
 
     /**
@@ -175,7 +214,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
     }
 
     @Override
-    public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User user, String  propertyReferenceId) {
+    public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User user, String propertyReferenceId) {
         return Collections.EMPTY_LIST; //TODO pending impl
     }
 }

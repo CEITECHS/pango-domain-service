@@ -132,7 +132,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
     private final PropertyUnitRepository propertyUnitRepository;
     private final UserRepository userRepository;
     private final GridFsService gridFsService;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
 
     @Autowired

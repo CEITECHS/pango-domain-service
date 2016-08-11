@@ -26,7 +26,7 @@ public class FileMetadata {
 
     public enum FILETYPE {
         PHOTO("image/"),
-        DOCUMENT("application/"),
+        DOCUMENT("image/"),
         VIDEO("application/");
 
         @Getter

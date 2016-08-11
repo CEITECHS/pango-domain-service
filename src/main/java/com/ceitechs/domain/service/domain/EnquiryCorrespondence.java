@@ -19,7 +19,7 @@ public class EnquiryCorrespondence {
     private long correspondenceReferenceId;
     private String message;
     @Transient
-    private FileMetadata attachment;
+    private Attachment attachment;
     private LocalDateTime correspondenceDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType correspondenceType;
     private boolean owner;

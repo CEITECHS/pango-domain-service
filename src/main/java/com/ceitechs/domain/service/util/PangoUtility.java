@@ -137,6 +137,13 @@ public class PangoUtility {
         return codefrom.replaceAll("-", "");
     }
 
+    public static long generateIdAsLong(){
+        Random randomno = new Random();
+
+        // get next long value
+        return randomno.nextLong();
+    }
+
     public static <T> ArrayList<T> toArrayList(final Iterator<T> iterator) {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
                 .collect(Collectors.toCollection(ArrayList::new));
