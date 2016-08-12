@@ -160,7 +160,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         Assert.hasText(user.getUserReferenceId(), "User referenceId can not be null");
         Assert.hasText(enquiryReferenceId, "enquiryReferenceId can not be null or empty");
         Assert.notNull(correspondence, "correspondence can not be null");
-        Assert.hasText(correspondence.getMessage(), "correspondence type can not be empty");
+        Assert.hasText(correspondence.getMessage(), "correspondence message can not be empty");
         Assert.notNull(correspondence.getCorrespondenceType(), "Correspondence type can not be null");
         PropertyUnitEnquiry propertyUnitEnquiry = enquiryRepository.findOne(enquiryReferenceId);
 
@@ -172,15 +172,17 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         Assert.isTrue((propertyUnitEnquiry.getProspectiveTenant().getUserReferenceId().equals(user.getUserReferenceId())) ||
                 (propertyUnitEnquiry.getPropertyUnit().getOwner().getUserReferenceId().equals(user.getUserReferenceId())), String.format("User : %s not allowed to modify the  Enquiry", user.getUserReferenceId()));
 
+
         //3. add correspondence to the enquiry
         correspondence.setCorrespondenceReferenceId(PangoUtility.generateIdAsLong());
+        correspondence.setOwner(propertyUnitEnquiry.getPropertyUnit().getOwner().getUserReferenceId().equals(user.getUserReferenceId()));
         Optional<PropertyUnitEnquiry> enquiryOptional = enquiryRepository.updateEnquiryWith(enquiryReferenceId, correspondence);
 
         //4. upload associated attachment if any.
         if (enquiryOptional.isPresent() && correspondence.getAttachment() != null) {
             logger.info("initiating attachment uplaod event for Correspondence");
             correspondence.getAttachment().setFileType(FileMetadata.FILETYPE.DOCUMENT.name());
-            AttachmentToUpload attachmentToUpload = new AttachmentToUpload(enquiryReferenceId + correspondence.getCorrespondenceReferenceId(), ReferenceIdFor.ENQUIRY, correspondence.getAttachment(), propertyUnitEnquiry.getPropertyUnit().getPropertyUnitId());
+            AttachmentToUpload attachmentToUpload = new AttachmentToUpload(enquiryReferenceId +"-"+ correspondence.getCorrespondenceReferenceId(), ReferenceIdFor.ENQUIRY, correspondence.getAttachment(), propertyUnitEnquiry.getPropertyUnit().getPropertyUnitId());
             eventsPublisher.publishPangoEvent(new OnAttachmentUploadEvent(attachmentToUpload));
 
         }

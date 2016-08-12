@@ -137,11 +137,12 @@ public class PangoUtility {
         return codefrom.replaceAll("-", "");
     }
 
-    public static long generateIdAsLong(){
+    public static long generateIdAsLong() {
         Random randomno = new Random();
 
         // get next long value
-        return randomno.nextLong();
+        long value = randomno.nextLong();
+        return value < 0 ? -1 * value : value;
     }
 
     public static <T> ArrayList<T> toArrayList(final Iterator<T> iterator) {
@@ -195,11 +196,11 @@ public class PangoUtility {
                  metadataMap.put(p.getMetadataField(),parentReferenceIds[0]);
             }
 
-            p.getParentField().ifPresent(gp -> {
-                if (org.springframework.util.StringUtils.hasText(parentReferenceIds[1])){
-                    metadataMap.put(gp.getMetadataField(),parentReferenceIds[1]);
-                }
-            });
+//            p.getParentField().ifPresent(gp -> {
+//                if (org.springframework.util.StringUtils.hasText(parentReferenceIds[1])){
+//                    metadataMap.put(gp.getMetadataField(),parentReferenceIds[1]);
+//                }
+//            });
         });
         return metadataMap;
 
