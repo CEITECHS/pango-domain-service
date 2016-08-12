@@ -75,6 +75,22 @@ public interface PangoEnquiryService {
      */
     List<PropertyUnitEnquiry> retrieveEnquiriesBy(User user, String propertyReferenceId);
 
+    /**
+     *  retrieves enquiry details with correspondence and urls to get to attachments if available
+     * @param user
+     * @param enquiryReferenceId
+     * @return
+     */
+    Optional<PropertyUnitEnquiry> retrieveEnquiryBy(User user, String enquiryReferenceId);
+
+    /**
+     *
+     * @param user
+     * @param attachmentReferenceId
+     * @return
+     */
+    Optional<Attachment> retrieveCorrespondenceAttachmentBy(User user, String attachmentReferenceId);
+
 }
 
 @Service
@@ -219,6 +235,28 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
     @Override
     public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User user, String propertyReferenceId) {
         return Collections.EMPTY_LIST; //TODO pending impl
+    }
+
+    /**
+     * retrieves enquiry details with correspondence and urls to get to attachments if available
+     *
+     * @param user
+     * @param enquiryReferenceId
+     * @return
+     */
+    @Override
+    public Optional<PropertyUnitEnquiry> retrieveEnquiryBy(User user, String enquiryReferenceId) {
+        return null; //TODO pending impl
+    }
+
+    /**
+     * @param user
+     * @param attachmentReferenceId
+     * @return
+     */
+    @Override
+    public Optional<Attachment> retrieveCorrespondenceAttachmentBy(User user, String attachmentReferenceId) {
+        return null; // TODO pending Impl
     }
 }
 
