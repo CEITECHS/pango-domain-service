@@ -1,6 +1,7 @@
 package com.ceitechs.domain.service.domain;
 
 
+import com.ceitechs.domain.service.service.EnquiryProjection;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -13,6 +14,7 @@ import org.springframework.util.Assert;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,7 +28,7 @@ import java.util.List;
 @ToString
 @Document(collection = "property_unit_enquiry")
 @TypeAlias(value = "property_unit_enquiry")
-public class PropertyUnitEnquiry {
+public class PropertyUnitEnquiry implements EnquiryProjection {
     @Id
     private String enquiryReferenceId;
     @DBRef
@@ -38,10 +40,15 @@ public class PropertyUnitEnquiry {
     private String message;
     private LocalDateTime enquiryDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType enquiryType;
-    List<EnquiryCorrespondence> correspondences = Collections.emptyList();
+    List<EnquiryCorrespondence> correspondences = new ArrayList<>();
 
     public void addCorrespondence(EnquiryCorrespondence e){
         Assert.notNull(e, "Correspondence object can not be null");
          correspondences.add(e);
+    }
+
+    @Override
+    public int getCorrespondenceCount() {
+        return correspondences.size();
     }
 }

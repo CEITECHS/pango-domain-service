@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ceitechs.domain.service.service.PropertyProjection;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
@@ -22,7 +23,7 @@ import lombok.ToString;
 @ToString
 @Document(collection = "propertyunit")
 @TypeAlias("propertyunit")
-public class PropertyUnit {
+public class PropertyUnit  implements PropertyProjection {
     public enum PropertyPurpose {
         HOME,
         BUSINESS

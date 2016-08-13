@@ -55,7 +55,7 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
         enquiry.setMessage("Interested in one of your properties");
         enquiry.setEnquiryType(CorrespondenceType.INTERESTED);
 
-       Optional<PropertyUnitEnquiry> propertyUnitEnquiry =  enquiryService.createUserEnquiryToProperty(usr,savedPrt.getPropertyUnitId(),enquiry);
+       Optional<EnquiryProjection> propertyUnitEnquiry =  enquiryService.createUserEnquiryToProperty(usr,savedPrt.getPropertyUnitId(),enquiry);
         assertTrue(propertyUnitEnquiry.isPresent());
         assertEquals(enquiry.getMessage(),propertyUnitEnquiry.get().getMessage());
     }
@@ -80,7 +80,7 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
         enquiry.setMessage("Interested in one of your properties");
         enquiry.setEnquiryType(CorrespondenceType.INTERESTED);
 
-        Optional<PropertyUnitEnquiry> propertyUnitEnquiry =  enquiryService.createUserEnquiryToProperty(usr,savedPrt.getPropertyUnitId(),enquiry);
+        Optional<EnquiryProjection> propertyUnitEnquiry =  enquiryService.createUserEnquiryToProperty(usr,savedPrt.getPropertyUnitId(),enquiry);
         assertTrue(propertyUnitEnquiry.isPresent());
         assertEquals(enquiry.getMessage(),propertyUnitEnquiry.get().getMessage());
         enquiryService.createUserEnquiryToProperty(usr,savedPrt.getPropertyUnitId(),enquiry);
@@ -106,7 +106,7 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
         enquiry.setMessage("Interested in one of your properties");
         enquiry.setEnquiryType(CorrespondenceType.INTERESTED);
 
-        Optional<PropertyUnitEnquiry> propertyUnitEnquiry =  enquiryService.createUserEnquiryToProperty(usr,propertyUnit.getPropertyUnitId(),enquiry);
+        Optional<EnquiryProjection> propertyUnitEnquiry =  enquiryService.createUserEnquiryToProperty(usr,propertyUnit.getPropertyUnitId(),enquiry);
 
 
     }
@@ -133,7 +133,7 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
         enquiry.setMessage("Interested in one of your properties");
         enquiry.setEnquiryType(CorrespondenceType.REQUEST_INFO);
 
-        Optional<PropertyUnitEnquiry> propertyUnitEnquiry =  enquiryService.createUserEnquiryToProperty(usr,savedPrt.getPropertyUnitId(),enquiry);
+        Optional<EnquiryProjection> propertyUnitEnquiry =  enquiryService.createUserEnquiryToProperty(usr,savedPrt.getPropertyUnitId(),enquiry);
         assertTrue(propertyUnitEnquiry.isPresent());
         assertEquals(enquiry.getMessage(),propertyUnitEnquiry.get().getMessage());
         assertThat("Collection size should be one", propertyUnitEnquiry.get().getCorrespondences(), hasSize(0));

@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
+
 /**
  * @author iddymagohe
  * @since 0.1
@@ -16,4 +18,5 @@ public interface PropertyUnitEnquiryRepository extends MongoRepository<PropertyU
     Page <PropertyUnitEnquiry> findByPropertyUnitOrderByEnquiryDateDesc(PropertyUnit propertyUnit, Pageable page);
     Page <PropertyUnitEnquiry> findByProspectiveTenantOrderByEnquiryDateDesc(User prospectiveTenant,Pageable page);
     PropertyUnitEnquiry findByProspectiveTenantAndPropertyUnitOrderByEnquiryDateDesc(User prospectiveTenant, PropertyUnit propertyUnit);
+    Page <PropertyUnitEnquiry> findByPropertyUnitOwnerOrderByEnquiryDateDesc(User owner, Pageable pageable);
 }

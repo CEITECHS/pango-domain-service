@@ -23,4 +23,6 @@ public class EnquiryCorrespondence {
     private LocalDateTime correspondenceDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType correspondenceType;
     private boolean owner;
+    @Transient
+    String attachmentId;
 }

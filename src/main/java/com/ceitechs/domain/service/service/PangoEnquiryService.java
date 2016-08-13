@@ -8,19 +8,21 @@ import com.ceitechs.domain.service.service.events.OnAttachmentUploadEvent;
 import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
+import com.mongodb.gridfs.GridFSDBFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * @author by iddymagohe on 8/9/16.
@@ -33,7 +35,7 @@ public interface PangoEnquiryService {
      * @param enquiry
      * @return
      */
-    Optional<PropertyUnitEnquiry> createUserEnquiryToProperty(User user, String propertyReferenceId, PropertyUnitEnquiry enquiry) throws EntityExists, EntityNotFound;
+    Optional<EnquiryProjection> createUserEnquiryToProperty(User user, String propertyReferenceId, PropertyUnitEnquiry enquiry) throws EntityExists, EntityNotFound;
 
     /**
      * adds a {@link EnquiryCorrespondence}  to an existing {@link PropertyUnitEnquiry}
@@ -44,16 +46,16 @@ public interface PangoEnquiryService {
      * @return
      * @throws EntityExists if there is 60days old open enquiry - otherwise.
      */
-    Optional<PropertyUnitEnquiry> addEnquiryCorrespondence(User user, String enquiryReferenceId, EnquiryCorrespondence correspondence) throws EntityNotFound;
+    Optional<EnquiryProjection> addEnquiryCorrespondence(User user, String enquiryReferenceId, EnquiryCorrespondence correspondence) throws EntityNotFound;
 
     /**
      * retrieves recent  enquiries made by the user to various properties
      *
      * @param prospectiveTenant
      * @param count             total enquiries to return
-     * @return
+     * @return EnquiryProjection
      */
-    List<PropertyUnitEnquiry> retrieveEnquiriesBy(User prospectiveTenant, int count);
+    List<? extends EnquiryProjection> retrieveEnquiriesBy(User prospectiveTenant, int count) throws EntityNotFound;
 
     /**
      * retrieve all enquiries made to a property optionalPropertyReferenceId when passed,
@@ -64,16 +66,16 @@ public interface PangoEnquiryService {
      * @param count                       recent enquiries count to return per property in-case of optionalPropertyReferenceId is not passed
      * @return
      */
-    List<PropertyUnitEnquiry> retrieveEnquiriesBy(User owner, Optional<String> optionalPropertyReferenceId, int count);
+    List<? extends EnquiryProjection> retrieveEnquiriesBy(User owner, Optional<String> optionalPropertyReferenceId, int count);
 
     /**
      * retrieves all  enquires made by a user to property
      *
      * @param user
-     * @param propertyReferenceId
+     * @param property
      * @return
      */
-    List<PropertyUnitEnquiry> retrieveEnquiriesBy(User user, String propertyReferenceId);
+    Optional<EnquiryProjection> retrieveEnquiriesBy(User user, PropertyUnit property);
 
     /**
      *  retrieves enquiry details with correspondence and urls to get to attachments if available
@@ -81,7 +83,7 @@ public interface PangoEnquiryService {
      * @param enquiryReferenceId
      * @return
      */
-    Optional<PropertyUnitEnquiry> retrieveEnquiryBy(User user, String enquiryReferenceId);
+    Optional<EnquiryProjection> retrieveEnquiryBy(User user, String enquiryReferenceId);
 
     /**
      *
@@ -109,7 +111,10 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
 
     private final PropertyUnitEnquiryRepository enquiryRepository;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
+    @Autowired
+    private GridFsService gridFsService;
+
+
 
     @Autowired
     public PangoEnquiryServiceImpl(UserRepository userRepository, PropertyUnitRepository propertyUnitRepository, PropertyUnitEnquiryRepository enquiryRepository, PangoEventsPublisher eventsPublisher) {
@@ -128,7 +133,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      * @throws EntityExists   for an open 60 days old enquiry by the user to the property
      */
     @Override
-    public Optional<PropertyUnitEnquiry> createUserEnquiryToProperty(User user, String propertyReferenceId, PropertyUnitEnquiry enquiry) throws EntityExists, EntityNotFound {
+    public Optional<EnquiryProjection> createUserEnquiryToProperty(User user, String propertyReferenceId, PropertyUnitEnquiry enquiry) throws EntityExists, EntityNotFound {
         Assert.notNull(user, " for creating an enquiry user can not be null");
         Assert.hasText(user.getUserReferenceId(), "for creating an enquiry user reference id can not be null or empty");
         Assert.hasText(propertyReferenceId, "for creating an enquiry to a property: propertyReferenceId can not be null or empty");
@@ -171,7 +176,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      * @return
      */
     @Override
-    public Optional<PropertyUnitEnquiry> addEnquiryCorrespondence(User user, String enquiryReferenceId, EnquiryCorrespondence correspondence) throws EntityNotFound {
+    public Optional<EnquiryProjection> addEnquiryCorrespondence(User user, String enquiryReferenceId, EnquiryCorrespondence correspondence) throws EntityNotFound {
         Assert.notNull(user, "user can not be null for adding correspondence to an exiting Enquiry");
         Assert.hasText(user.getUserReferenceId(), "User referenceId can not be null");
         Assert.hasText(enquiryReferenceId, "enquiryReferenceId can not be null or empty");
@@ -203,7 +208,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
 
         }
 
-        return enquiryOptional;
+        return enquiryOptional.isPresent()?Optional.of(enquiryOptional.get()):Optional.empty();
     }
 
     /**
@@ -214,8 +219,32 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      * @return
      */
     @Override
-    public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User prospectiveTenant, int count) {
-        return Collections.EMPTY_LIST; //TODO pending impl this continues today
+    public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User prospectiveTenant, int count) throws EntityNotFound {
+        Assert.notNull(prospectiveTenant, "User can not be null");
+        Assert.hasText(prospectiveTenant.getUserReferenceId(), "User Identifier can not be null or empty");
+
+        User savedUsr = userRepository.findOne(prospectiveTenant.getUserReferenceId());
+        if (savedUsr == null)
+            throw new EntityNotFound(String.format("Unknown user %s  ", prospectiveTenant.toString()), new IllegalArgumentException(String.format("Unkown user %s  ", prospectiveTenant.toString())));
+        Page<PropertyUnitEnquiry> result = enquiryRepository.findByProspectiveTenantOrderByEnquiryDateDesc(savedUsr, new PageRequest(0, count > 0 ? count : 50));
+
+        //Associate cover photos to properties.
+        if (result.getContent() != null || !result.getContent().isEmpty()) {
+            List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(result.getContent().parallelStream()
+                    .map(enquiry -> enquiry.getPropertyUnit().getPropertyUnitId()).collect(Collectors.toList()));
+
+            Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
+
+            return propertyCoverPhoto.isEmpty() ? result.getContent() : result.getContent().parallelStream().map(enquiry -> {
+                PropertyUnitEnquiry propertyUnitEnquiry = enquiry;
+                if (propertyCoverPhoto.containsKey(enquiry.getPropertyUnit().getPropertyUnitId()))
+                    propertyUnitEnquiry.getPropertyUnit().setCoverPhoto(new Attachment(propertyCoverPhoto.get(enquiry.getPropertyUnit().getPropertyUnitId())));
+                return propertyUnitEnquiry;
+            }).collect(Collectors.toList());
+        }
+
+
+        return result.getContent();
     }
 
     /**
@@ -229,12 +258,45 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      */
     @Override
     public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User owner, Optional<String> optionalPropertyReferenceId, int count) {
-        return Collections.EMPTY_LIST; //TODO pending impl
+        Assert.notNull(owner, "Owner can not be null");
+        Assert.hasText(owner.getUserReferenceId(), " Owner referenceId can not be null or empty");
+
+        List<PropertyUnitEnquiry> enquiries = new ArrayList<>();
+        // Enquiries made to a property
+        if (optionalPropertyReferenceId.isPresent()) {
+            PropertyUnit propertyUnit = propertyUnitRepository.findOne(optionalPropertyReferenceId.get());
+            if (propertyUnit != null && propertyUnit.getOwner().getUserReferenceId().equals(owner.getUserReferenceId()))
+                enquiries = enquiryRepository.findByPropertyUnitOrderByEnquiryDateDesc(propertyUnit, new PageRequest(0, count > 0 ? count : 50)).getContent();
+
+        } else {
+            User savedOwner = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", owner.getUserReferenceId());
+            if (savedOwner != null)
+                enquiries = enquiryRepository.findByPropertyUnitOwnerOrderByEnquiryDateDesc(savedOwner, new PageRequest(0, count > 0 ? count : 50)).getContent();
+
+        }
+        return enquiries;
     }
 
     @Override
-    public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User user, String propertyReferenceId) {
-        return Collections.EMPTY_LIST; //TODO pending impl
+    public Optional<EnquiryProjection> retrieveEnquiriesBy(User user, PropertyUnit property) {
+        Assert.notNull(user, "User can not be null");
+        Assert.notNull(property, "Property can not be null");
+        Assert.hasText(user.getUserReferenceId(), "User referenceId can not be null or empty");
+        Assert.hasText(property.getPropertyUnitId(), "property referenceId can not be null ot empty");
+
+        CompletableFuture<User> prospectiveTenantFuture = CompletableFuture.supplyAsync(() -> userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("",user.getUserReferenceId()));
+        CompletableFuture<PropertyUnit> propertyUnitFuture = CompletableFuture.supplyAsync(() -> propertyUnitRepository.findOne(property.getPropertyUnitId()));
+        if (propertyUnitFuture.isDone() && propertyUnitFuture.isDone()){
+            try {
+                User usr = prospectiveTenantFuture.get();
+                PropertyUnit prt = propertyUnitFuture.get();
+                return Optional.ofNullable(enquiryRepository.findByProspectiveTenantAndPropertyUnitOrderByEnquiryDateDesc(user,prt));
+            } catch (InterruptedException | ExecutionException e) {
+               logger.error("while tretriveling a user and property" +e.getMessage(), e.getCause());
+            }
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -245,8 +307,21 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      * @return
      */
     @Override
-    public Optional<PropertyUnitEnquiry> retrieveEnquiryBy(User user, String enquiryReferenceId) {
-        return null; //TODO pending impl
+    public Optional<EnquiryProjection> retrieveEnquiryBy(User user, String enquiryReferenceId) {
+        Assert.notNull(user, "user can not be null");
+        Assert.hasText(user.getUserReferenceId(),"user reference Id can not be null");
+        Assert.hasText(enquiryReferenceId, " Enquiry referenceId can not be null or empty");
+
+        PropertyUnitEnquiry enquiry = enquiryRepository.findOne(enquiryReferenceId);
+
+      if (enquiry != null) {
+          //ensure that a right user is accessing the enquiry
+          Assert.isTrue((enquiry.getProspectiveTenant().getUserReferenceId().equals(user.getUserReferenceId())) ||
+                  (enquiry.getPropertyUnit().getOwner().getUserReferenceId().equals(user.getUserReferenceId())), String.format("User : %s not allowed to retrieve the  Enquiry Details", user.getUserReferenceId()));
+          enquiry.getCorrespondences().forEach(correspondence -> correspondence.setAttachmentId(enquiry.getEnquiryReferenceId() + "-" + correspondence.getCorrespondenceReferenceId())); // associate attachmentId
+          enquiry.getCorrespondences().sort(Comparator.comparing(EnquiryCorrespondence::getCorrespondenceDate).reversed()); // sort by most recent
+      }
+        return Optional.ofNullable(enquiry);
     }
 
     /**
@@ -256,7 +331,14 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      */
     @Override
     public Optional<Attachment> retrieveCorrespondenceAttachmentBy(User user, String attachmentReferenceId) {
-        return null; // TODO pending Impl
+        Assert.notNull(user, "user can not be null");
+        Assert.hasText(attachmentReferenceId, "attachment referenceId can not be null or empty");
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setFileType(FileMetadata.FILETYPE.DOCUMENT.name());
+        fileMetadata.setReferenceId(attachmentReferenceId);
+        List<GridFSDBFile> attachments = gridFsService.getAllAttachments(fileMetadata, ReferenceIdFor.ENQUIRY);
+        FileMetadata fetchedData = FileMetadata.getFileMetadataFromGridFSDBFile(Optional.ofNullable(attachments.get(0)),ReferenceIdFor.ENQUIRY);
+        return attachments.isEmpty()? Optional.empty() : Optional.of(new Attachment(fetchedData));
     }
 }
 
