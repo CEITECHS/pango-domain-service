@@ -6,6 +6,7 @@ import com.ceitechs.domain.service.domain.Annotations.Updatable;
 import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.service.events.*;
+import com.ceitechs.domain.service.util.DistanceCalculator;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.gridfs.GridFSDBFile;
@@ -19,9 +20,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.beans.IntrospectionException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -48,6 +47,13 @@ public interface PangoDomainService {
      * @return
      */
     List<GeoResult<PropertyUnit>> searchForProperties(PropertySearchCriteria searchCriteria, User user);
+
+    /**
+     *  retrieve user's favorite properties
+     * @param user
+     * @return
+     */
+    List<PropertyProjection> retrieveFavoritePropertiesBy(User user) throws EntityNotFound;
 
     /**
      *
@@ -119,6 +125,15 @@ public interface PangoDomainService {
      * @return {@link Optional<UserProjection>}
      */
     Optional<UserProjection> updateUserInformation(User user, UserUpdating updating);
+
+    /**
+     *  add/remove a property by referenceId as a user's favorite depending favourable flag
+     * @param user
+     * @param propertyReferenceId
+     * @param favourable true/false for add/remove
+     * @return
+     */
+    Optional<UserProjection> updateUserFavoriteProperties(User user, String propertyReferenceId, boolean favourable) throws EntityNotFound;
 
 
 }
@@ -207,6 +222,42 @@ class PangoDomainServiceImpl implements PangoDomainService {
                     }).collect(Collectors.toList());
         }
         return propertyUnitGeoResults.getContent();
+    }
+
+    /**
+     * retrieve user's favorite properties
+     *
+     * @param user
+     * @return
+     */
+    @Override
+    public List<PropertyProjection> retrieveFavoritePropertiesBy(User user) throws EntityNotFound {
+        Assert.notNull(user, "User can not be null");
+        Assert.hasText(user.getUserReferenceId(), "user referenceId can not be null");
+        User savedUsr = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", user.getUserReferenceId());
+        if (savedUsr == null)
+            throw new EntityNotFound(String.format("User : %s  does not exist", user.getUserReferenceId()), new IllegalArgumentException(String.format("User : %s  does not exist", user.getUserReferenceId())));
+
+        if (!savedUsr.getFavouredProperties().isEmpty()) {
+            List<PropertyUnit> propertyUnits = PangoUtility.toList(propertyUnitRepository.findAll(savedUsr.getFavouredProperties()));
+
+            List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(propertyUnits.parallelStream().map(propertyUnit -> propertyUnit.getPropertyUnitId()).collect(Collectors.toList()));
+            Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
+
+            List<PropertyUnit> units = propertyUnits.parallelStream().map(propertyUnit -> {
+                if (user.getLatitude() != 0.0 && user.getLongitude() != 0.0) { // calculate distance from user
+                    double distance = DistanceCalculator.distance(user.getLatitude(), user.getLongitude(), propertyUnit.getLocation()[1], propertyUnit.getLocation()[0], "K");
+                    propertyUnit.setDistance(distance);
+                }
+                //associate cover photos
+                if (propertyCoverPhoto.containsKey(propertyUnit.getPropertyUnitId()))
+                    propertyUnit.setCoverPhoto(new Attachment(propertyCoverPhoto.get(propertyUnit.getPropertyUnitId())));
+                return propertyUnit;
+            }).collect(Collectors.toList());
+            units.sort(Comparator.comparing(PropertyUnit::getDistance));
+            return new ArrayList<>(units);
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -350,6 +401,31 @@ class PangoDomainServiceImpl implements PangoDomainService {
         return Optional.empty();
     }
 
+    /**
+     * add/remove a property by referenceId as a user's favorite depending favourable flag
+     *
+     * @param user
+     * @param propertyReferenceId
+     * @param favourable   true/false for add/remove
+     * @return
+     */
+    @Override
+    public Optional<UserProjection> updateUserFavoriteProperties(User user, String propertyReferenceId, boolean favourable) throws EntityNotFound {
+        Assert.notNull(user, "user can not be null");
+        Assert.hasText(user.getUserReferenceId(), "user reference Id ca not be null or empty");
+        Assert.hasText(propertyReferenceId, "property referenceId can not null or empty");
+        // Ensure that user exists
+        User savedUsr = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", user.getUserReferenceId());
+        if (savedUsr == null)
+            throw new EntityNotFound(String.format("User : %s  does not exist", user.getUserReferenceId()), new IllegalArgumentException(String.format("User : %s  does not exist", user.getUserReferenceId())));
+
+        //Ensure that property exists
+        PropertyUnit propertyUnit = propertyUnitRepository.findOne(propertyReferenceId);
+        if (propertyUnit == null)
+            throw new EntityNotFound(String.format("Property : %s  does not exist", propertyReferenceId), new IllegalArgumentException(String.format("Property : %s  does not exist", propertyReferenceId)));
+
+        return Optional.ofNullable(userRepository.updateFavouredProperties(savedUsr,propertyUnit,favourable).get());
+    }
 
     private User updateUserBasicInfo(User user) {
         if (user != null) {

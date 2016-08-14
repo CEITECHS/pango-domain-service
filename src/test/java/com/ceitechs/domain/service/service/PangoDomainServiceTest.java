@@ -7,6 +7,7 @@ import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.gridfs.GridFSDBFile;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -362,6 +363,92 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         assertNotNull(userProjection2.get().getProfilePicture());
         assertEquals(userProjection.get().getProfilePicture().getFileDescription(),userProjection2.get().getProfilePicture().getFileDescription());
         assertEquals(userProjection.get().getEmailAddress(),userProjection2.get().getEmailAddress());
+    }
+
+    @Test
+    public void updateUserFavoritePropertiesTest() throws IOException, EntityNotFound {
+        userRepository.deleteAll();
+        unitRepository.deleteAll();
+        User user = createUser();
+        user.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        user.setLastName(RandomStringUtils.randomAlphabetic(10));
+        user.setEmailAddress(user.getFirstName()+'@'+ user.getLastName());
+        userRepository.save(user);
+        List<String> prtIds = new ArrayList<>();
+
+        PropertyUnit propertyUnit = createPropertyUnit();
+        propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
+        propertyUnit.setPropertyUnitDesc(RandomStringUtils.randomAlphabetic(20));
+        unitRepository.save(propertyUnit);
+
+        assertThat(user.getFavouredProperties(), hasSize(0));
+        domainService.updateUserFavoriteProperties(user,propertyUnit.getPropertyUnitId(),true);
+        User savedUsr = userRepository.findOne(user.getUserReferenceId());
+        assertThat(savedUsr.getFavouredProperties(), hasSize(1));
+        domainService.updateUserFavoriteProperties(user,propertyUnit.getPropertyUnitId(),false);
+        savedUsr = userRepository.findOne(user.getUserReferenceId());
+        assertThat(savedUsr.getFavouredProperties(), hasSize(0));
+
+
+        IntStream.range(0,3).forEach(i -> {
+            PropertyUnit unit = new PropertyUnit();
+            unit.setPropertyUnitId(PangoUtility.generateIdAsString() + i);
+            unitRepository.save(unit);
+            prtIds.add(unit.getPropertyUnitId());
+
+            try {
+                domainService.updateUserFavoriteProperties(user,unit.getPropertyUnitId(),true);
+            } catch (EntityNotFound entityNotFound) {
+                entityNotFound.printStackTrace();
+            }
+        });
+
+        savedUsr = userRepository.findOne(user.getUserReferenceId());
+        assertThat(savedUsr.getFavouredProperties(), IsCollectionWithSize.hasSize(3));
+
+        propertyUnit.setPropertyUnitId(prtIds.get(0));
+        domainService.updateUserFavoriteProperties(user,propertyUnit.getPropertyUnitId(),false);
+
+        savedUsr = userRepository.findOne(user.getUserReferenceId());
+        assertThat(savedUsr.getFavouredProperties(), IsCollectionWithSize.hasSize(2));
+
+    }
+
+    @Test
+    public void retrieveFavoritePropertiesByUserTest() throws EntityNotFound {
+        userRepository.deleteAll();
+        unitRepository.deleteAll();
+
+        User user = createUser();
+        user.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        user.setLastName(RandomStringUtils.randomAlphabetic(10));
+        user.setEmailAddress(user.getFirstName()+'@'+ user.getLastName());
+        userRepository.save(user);
+
+        IntStream.range(0,5).forEach(i -> {
+            PropertyUnit unit = null;
+            try {
+                unit = createPropertyUnit();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            unit.setPropertyUnitId("");
+           domainService.createProperty(unit,unit.getOwner());
+
+            try {
+                domainService.updateUserFavoriteProperties(user,unit.getPropertyUnitId(),true);
+            } catch (EntityNotFound entityNotFound) {
+                entityNotFound.printStackTrace();
+            }
+        });
+        user.setLatitude(-6.662951);
+        user.setLongitude(39.166650);
+        List<PropertyProjection> favouredProps = domainService.retrieveFavoritePropertiesBy(user);
+        assertThat("A size of five is expected", favouredProps,hasSize(5));
+        favouredProps.forEach(g ->{
+            System.out.println(g.getDistance() + " - " +g.getPropertyUnitDesc());
+            System.out.println(g.getCoverPhoto());
+        });
     }
 
 }
