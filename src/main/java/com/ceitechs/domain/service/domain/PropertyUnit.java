@@ -47,7 +47,7 @@ public class PropertyUnit  implements PropertyProjection {
     private boolean autoListInd;
 
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
-    private double[] location;
+    private double[] location; //location(long,lat)
     private Address address;
 
     private double propertyRating;
