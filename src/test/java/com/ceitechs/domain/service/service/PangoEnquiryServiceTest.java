@@ -179,12 +179,13 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
     }
 
     @Test
-    public void  retrieveEnquiriesByPropsectiveTenantTest() throws EntityNotFound {
+    public void  retrieveEnquiriesByProspectiveTenantTest() throws EntityNotFound {
         Map<User, List<EnquiryProjection>> savedProperties = createSampleSearchData();
         List<User> usrs = savedProperties.keySet().stream().collect(Collectors.toList());
         List<EnquiryProjection> enquiryProjection = enquiryService.retrieveEnquiriesBy(usrs.get(0),0);
         assertThat(enquiryProjection,hasSize(savedProperties.get(usrs.get(0)).size()));
         enquiryProjection.forEach(enquiryProjection1 -> assertEquals(usrs.get(0),enquiryProjection1.getProspectiveTenant()));
+        enquiryProjection.forEach(enquiryProjection1 -> System.out.println("Distance " + enquiryProjection1.getPropertyUnit().getDistance()));
     }
 
     @Test
@@ -212,6 +213,8 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
         List<EnquiryProjection> enquiryProjectionList = enquiryService.retrieveEnquiriesBy(unit.getOwner(), Optional.of(unit.getPropertyUnitId()),100);
         assertThat(enquiryProjectionList,hasSize(enquiryProjectionListbyOwner.size()));
         enquiryProjectionList.forEach(enquiryProjection -> assertEquals(unit.getPropertyUnitId(),enquiryProjection.getPropertyUnit().getPropertyUnitId()));
+
+
     }
 
     @Test
@@ -328,6 +331,8 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
         userProfile.setPassword("123456");
         userProfile.setVerified(true);
         user.setProfile(userProfile);
+        user.setLatitude(-6.662951);
+        user.setLongitude(39.166650);
         return user;
     }
 

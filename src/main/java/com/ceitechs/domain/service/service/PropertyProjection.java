@@ -25,4 +25,6 @@ public interface PropertyProjection {
 
     Address getAddress();
     User getOwner();
+    double getDistance();
+    void setDistance(double distance);
 }

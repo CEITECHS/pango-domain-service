@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import com.ceitechs.domain.service.domain.*;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -419,6 +420,48 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
         assertTrue(!preferencesy.isEmpty());
         assertThat("Active Preferences", preferencesy.stream().filter(UserPreference::isActive).collect(toList()),hasSize(actives.size()));
 
+
+    }
+
+    @Test
+    public void favouredPropertiesTest(){
+        userRepository.deleteAll();
+        User user = createUser();
+        user.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        user.setLastName(RandomStringUtils.randomAlphabetic(10));
+        user.setEmailAddress(user.getFirstName()+'@'+ user.getLastName());
+        userRepository.save(user);
+        List<String> prtIds = new ArrayList<>();
+
+        PropertyUnit propertyUnit = new PropertyUnit();
+        propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
+
+        assertThat(user.getFavouredProperties(),hasSize(0));
+        userRepository.updateFavouredProperties(user,propertyUnit,true);
+        userRepository.updateFavouredProperties(user,propertyUnit,true);
+        userRepository.updateFavouredProperties(user,propertyUnit,true);
+        User savedUsr = userRepository.findOne(user.getUserReferenceId());
+        assertThat(savedUsr.getFavouredProperties(),hasSize(1));
+        userRepository.updateFavouredProperties(user,propertyUnit,false);
+        savedUsr = userRepository.findOne(user.getUserReferenceId());
+        assertThat(savedUsr.getFavouredProperties(),hasSize(0));
+
+
+        IntStream.range(0,5).forEach(i -> {
+            PropertyUnit unit = new PropertyUnit();
+            unit.setPropertyUnitId(PangoUtility.generateIdAsString() + i);
+            prtIds.add(unit.getPropertyUnitId());
+            userRepository.updateFavouredProperties(user,unit,true);
+        });
+
+        savedUsr = userRepository.findOne(user.getUserReferenceId());
+        assertThat(savedUsr.getFavouredProperties(),hasSize(5));
+
+        propertyUnit.setPropertyUnitId(prtIds.get(0));
+        userRepository.updateFavouredProperties(user,propertyUnit,false);
+
+        savedUsr = userRepository.findOne(user.getUserReferenceId());
+        assertThat(savedUsr.getFavouredProperties(),hasSize(4));
 
     }
 

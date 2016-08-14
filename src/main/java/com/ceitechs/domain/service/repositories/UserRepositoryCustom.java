@@ -1,6 +1,8 @@
 package com.ceitechs.domain.service.repositories;
 
 
+import com.ceitechs.domain.service.domain.Annotations.Updatable;
+import com.ceitechs.domain.service.domain.PropertyUnit;
 import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.domain.UserPreference;
 import com.ceitechs.domain.service.util.PangoUtility;
@@ -51,6 +53,8 @@ public interface UserRepositoryCustom {
     Optional<User> updateUserPreference(UserPreference userPreference, User user);
 
     Optional<User> removePreferenceBy(String preferenceId, User user);
+
+    Optional<User> updateFavouredProperties(User user, PropertyUnit propertyUnit, boolean favourable);
 }
 
 @Service
@@ -114,5 +118,13 @@ public interface UserRepositoryCustom {
         return Optional.ofNullable(user);
     }
 
-
+    @Override
+    public Optional<User> updateFavouredProperties(User user, PropertyUnit propertyUnit, boolean favourable) {
+        Assert.notNull(user, "user can not be null");
+        Assert.notNull(propertyUnit, "property can not be null");
+        Assert.hasText(propertyUnit.getPropertyUnitId(),"property reference id can not be null or empty");
+        Update update = favourable ? new Update().addToSet("favouredProperties",propertyUnit.getPropertyUnitId()) : new Update().pull("favouredProperties", propertyUnit.getPropertyUnitId());
+         mongoOperations.updateFirst(query(Criteria.where("_id").is(user.getUserReferenceId())), update, User.class);
+        return Optional.of(user);
+    }
 }

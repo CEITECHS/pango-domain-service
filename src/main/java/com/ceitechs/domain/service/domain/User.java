@@ -1,8 +1,6 @@
 package com.ceitechs.domain.service.domain;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import com.ceitechs.domain.service.domain.Annotations.Updatable;
 import com.ceitechs.domain.service.service.UserProjection;
@@ -51,6 +49,8 @@ public class User implements UserProjection {
     private double latitude; //when passed used to calculate distance btn user and property
 
     private List<UserPreference> preferences = new ArrayList<>();
+
+    private Set<String> favouredProperties = new HashSet<>();
 
     @Override
     public String getFullName() {

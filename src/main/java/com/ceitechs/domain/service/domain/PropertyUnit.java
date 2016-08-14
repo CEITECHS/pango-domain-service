@@ -76,6 +76,9 @@ public class PropertyUnit  implements PropertyProjection {
     @Transient
     private List<UnitHoldingHistory> holdingHistory;
 
+    @Transient
+    private double distance;
+
     private boolean active = true;
 
     private LocalDateTime createdDate = LocalDateTime.now(Clock.systemUTC());

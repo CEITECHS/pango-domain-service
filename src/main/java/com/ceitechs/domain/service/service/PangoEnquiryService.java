@@ -6,6 +6,7 @@ import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.service.events.OnAttachmentUploadEvent;
 import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
+import com.ceitechs.domain.service.util.DistanceCalculator;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.gridfs.GridFSDBFile;
@@ -217,7 +218,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      * retrieves recent  enquiries made by the user to various properties
      *
      * @param prospectiveTenant
-     * @param count             total enquiries to return
+     * @param count total enquiries to return
      * @return
      */
     @Override
@@ -225,19 +226,27 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         Assert.notNull(prospectiveTenant, "User can not be null");
         Assert.hasText(prospectiveTenant.getUserReferenceId(), "User Identifier can not be null or empty");
 
-        User savedUsr = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("",prospectiveTenant.getUserReferenceId());
+        User savedUsr = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", prospectiveTenant.getUserReferenceId());
         if (savedUsr == null)
             throw new EntityNotFound(String.format("Unknown user %s  ", prospectiveTenant.toString()), new IllegalArgumentException(String.format("Unkown user %s  ", prospectiveTenant.toString())));
         Page<PropertyUnitEnquiry> result = enquiryRepository.findByProspectiveTenantOrderByEnquiryDateDesc(savedUsr, new PageRequest(0, count > 0 ? count : 50));
 
         //Associate cover photos to properties.
         if (result.getContent() != null || !result.getContent().isEmpty()) {
+            result.getContent().forEach(enquiry -> { // calculate and associate distance btn a user and properties they're enquired
+                if (prospectiveTenant.getLatitude() != 0.0 && prospectiveTenant.getLongitude() != 0.0) { // calculate distance from user
+                    double distance = DistanceCalculator.distance(prospectiveTenant.getLatitude(), prospectiveTenant.getLongitude(), enquiry.getPropertyUnit().getLocation()[1], enquiry.getPropertyUnit().getLocation()[0], "K");
+                    enquiry.getPropertyUnit().setDistance(distance);
+                }
+            });
+
             List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(result.getContent().parallelStream()
                     .map(enquiry -> enquiry.getPropertyUnit().getPropertyUnitId()).collect(Collectors.toList()));
 
             Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
 
-            return propertyCoverPhoto.isEmpty() ? new ArrayList<>(result.getContent())  : result.getContent().parallelStream().map(enquiry -> {
+
+            return propertyCoverPhoto.isEmpty() ? new ArrayList<>(result.getContent()) : result.getContent().parallelStream().map(enquiry -> {
                 PropertyUnitEnquiry propertyUnitEnquiry = enquiry;
                 if (propertyCoverPhoto.containsKey(enquiry.getPropertyUnit().getPropertyUnitId()))
                     propertyUnitEnquiry.getPropertyUnit().setCoverPhoto(new Attachment(propertyCoverPhoto.get(enquiry.getPropertyUnit().getPropertyUnitId())));
@@ -286,15 +295,22 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         Assert.hasText(user.getUserReferenceId(), "User referenceId can not be null or empty");
         Assert.hasText(property.getPropertyUnitId(), "property referenceId can not be null ot empty");
 
-        CompletableFuture<User> prospectiveTenantFuture = CompletableFuture.supplyAsync(() -> userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("",user.getUserReferenceId()));
+        CompletableFuture<User> prospectiveTenantFuture = CompletableFuture.supplyAsync(() -> userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", user.getUserReferenceId()));
         CompletableFuture<PropertyUnit> propertyUnitFuture = CompletableFuture.supplyAsync(() -> propertyUnitRepository.findOne(property.getPropertyUnitId()));
-        if (propertyUnitFuture.isDone() && propertyUnitFuture.isDone()){
+        if (propertyUnitFuture.isDone() && propertyUnitFuture.isDone()) {
             try {
                 User usr = prospectiveTenantFuture.get();
                 PropertyUnit prt = propertyUnitFuture.get();
-                return Optional.ofNullable(enquiryRepository.findByProspectiveTenantAndPropertyUnitOrderByEnquiryDateDesc(user,prt));
+                Optional<EnquiryProjection> enquiryProjection = Optional.ofNullable(enquiryRepository.findByProspectiveTenantAndPropertyUnitOrderByEnquiryDateDesc(user, prt));
+
+                if (user.getLatitude() != 0.0 && user.getLongitude() != 0.0) {
+                    double distance = DistanceCalculator.distance(user.getLatitude(), user.getLongitude(), prt.getLocation()[1], prt.getLocation()[0], "K");
+                    enquiryProjection.ifPresent(enquiryProjection1 -> enquiryProjection1.getPropertyUnit().setDistance(distance));
+
+                }
+                return enquiryProjection;
             } catch (InterruptedException | ExecutionException e) {
-               logger.error("while tretriveling a user and property" +e.getMessage(), e.getCause());
+                logger.error("while retrieveling a user and property" + e.getMessage(), e.getCause());
             }
         }
 
@@ -311,18 +327,24 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
     @Override
     public Optional<EnquiryProjection> retrieveEnquiryBy(User user, String enquiryReferenceId) {
         Assert.notNull(user, "user can not be null");
-        Assert.hasText(user.getUserReferenceId(),"user reference Id can not be null");
+        Assert.hasText(user.getUserReferenceId(), "user reference Id can not be null");
         Assert.hasText(enquiryReferenceId, " Enquiry referenceId can not be null or empty");
 
         PropertyUnitEnquiry enquiry = enquiryRepository.findOne(enquiryReferenceId);
 
-      if (enquiry != null) {
-          //ensure that a right user is accessing the enquiry
-          Assert.isTrue((enquiry.getProspectiveTenant().getUserReferenceId().equals(user.getUserReferenceId())) ||
-                  (enquiry.getPropertyUnit().getOwner().getUserReferenceId().equals(user.getUserReferenceId())), String.format("User : %s not allowed to retrieve the  Enquiry Details", user.getUserReferenceId()));
-          enquiry.getCorrespondences().forEach(correspondence -> correspondence.setAttachmentId(enquiry.getEnquiryReferenceId() + "-" + correspondence.getCorrespondenceReferenceId())); // associate attachmentId
-          enquiry.getCorrespondences().sort(Comparator.comparing(EnquiryCorrespondence::getCorrespondenceDate).reversed()); // sort by most recent
-      }
+        if (enquiry != null) {
+            //ensure that a right user is accessing the enquiry
+            Assert.isTrue((enquiry.getProspectiveTenant().getUserReferenceId().equals(user.getUserReferenceId())) ||
+                    (enquiry.getPropertyUnit().getOwner().getUserReferenceId().equals(user.getUserReferenceId())), String.format("User : %s not allowed to retrieve the  Enquiry Details", user.getUserReferenceId()));
+            enquiry.getCorrespondences().forEach(correspondence -> correspondence.setAttachmentId(enquiry.getEnquiryReferenceId() + "-" + correspondence.getCorrespondenceReferenceId())); // associate attachmentId
+            enquiry.getCorrespondences().sort(Comparator.comparing(EnquiryCorrespondence::getCorrespondenceDate).reversed()); // sort by most recent
+
+            if (user.getLatitude() != 0.0 && user.getLongitude() != 0.0) { // calculate distance from user
+                double distance = DistanceCalculator.distance(user.getLatitude(), user.getLongitude(), enquiry.getPropertyUnit().getLocation()[1], enquiry.getPropertyUnit().getLocation()[0], "K");
+                enquiry.getPropertyUnit().setDistance(distance);
+
+            }
+        }
         return Optional.ofNullable(enquiry);
     }
 

@@ -43,8 +43,6 @@ public class PropertyUnitEnquiry implements EnquiryProjection {
     private LocalDateTime enquiryDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType enquiryType;
     List<EnquiryCorrespondence> correspondences = new ArrayList<>();
-    @Transient
-    private  double distance;
 
     public void addCorrespondence(EnquiryCorrespondence e){
         Assert.notNull(e, "Correspondence object can not be null");
