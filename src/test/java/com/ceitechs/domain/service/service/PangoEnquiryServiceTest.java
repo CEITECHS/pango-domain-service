@@ -8,14 +8,16 @@ import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.gridfs.GridFSDBFile;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
@@ -32,6 +34,8 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
     @Autowired GridFsService gridFsService;
     @Autowired
     private GridFsOperations operations;
+
+
 
 
     @Test
@@ -174,6 +178,135 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
 
     }
 
+    @Test
+    public void  retrieveEnquiriesByPropsectiveTenantTest() throws EntityNotFound {
+        Map<User, List<EnquiryProjection>> savedProperties = createSampleSearchData();
+        List<User> usrs = savedProperties.keySet().stream().collect(Collectors.toList());
+        List<EnquiryProjection> enquiryProjection = enquiryService.retrieveEnquiriesBy(usrs.get(0),0);
+        assertThat(enquiryProjection,hasSize(savedProperties.get(usrs.get(0)).size()));
+        enquiryProjection.forEach(enquiryProjection1 -> assertEquals(usrs.get(0),enquiryProjection1.getProspectiveTenant()));
+    }
+
+    @Test
+    public void retrieveEnquiriesByOwnerOfApropertyTest(){
+        Map<User, List<EnquiryProjection>> savedProperties = createSampleSearchData();
+
+        User owner = savedProperties.values().stream().findFirst().get().get(0).getPropertyUnit().getOwner();
+
+        List<EnquiryProjection> enquiryProjectionListbyOwner = savedProperties.values().stream()
+                .flatMap(l->l.stream()).filter(enquiryProjection -> enquiryProjection.getPropertyUnit().getOwner().equals(owner))
+                .collect(Collectors.toList());
+        List<EnquiryProjection> enquiryProjectionList = enquiryService.retrieveEnquiriesBy(owner, Optional.empty(),100);
+        assertThat(enquiryProjectionList,hasSize(enquiryProjectionListbyOwner.size()));
+        enquiryProjectionList.forEach(enquiryProjection -> assertEquals(owner,enquiryProjection.getPropertyUnit().getOwner()));
+    }
+
+    @Test
+    public void retrieveEnquiriesByOwnerOfPropertiesTest(){
+        Map<User, List<EnquiryProjection>> savedProperties = createSampleSearchData();
+        PropertyProjection unit = savedProperties.values().stream().findFirst().get().get(0).getPropertyUnit();
+
+        List<EnquiryProjection> enquiryProjectionListbyOwner = savedProperties.values().stream()
+                .flatMap(l->l.stream()).filter(enquiryProjection -> enquiryProjection.getPropertyUnit().getPropertyUnitId().equals(unit.getPropertyUnitId()))
+                .collect(Collectors.toList());
+        List<EnquiryProjection> enquiryProjectionList = enquiryService.retrieveEnquiriesBy(unit.getOwner(), Optional.of(unit.getPropertyUnitId()),100);
+        assertThat(enquiryProjectionList,hasSize(enquiryProjectionListbyOwner.size()));
+        enquiryProjectionList.forEach(enquiryProjection -> assertEquals(unit.getPropertyUnitId(),enquiryProjection.getPropertyUnit().getPropertyUnitId()));
+    }
+
+    @Test
+    public void retrieveCorrespondenceAttachmentTest(){
+        Map<User, List<EnquiryProjection>> savedProperties = createSampleSearchData();
+
+        List<User> usrs = savedProperties.keySet().stream().collect(Collectors.toList());
+
+        List<EnquiryProjection> enquiryProjectionListbyUsr = savedProperties.values().stream()
+                .flatMap(l->l.stream()).filter(enquiryProjection -> enquiryProjection.getProspectiveTenant().equals(usrs.get(0)))
+                .collect(Collectors.toList());
+
+        Optional<EnquiryProjection> optional = enquiryService.retrieveEnquiryBy(usrs.get(0),enquiryProjectionListbyUsr.get(0).getEnquiryReferenceId());
+        assertTrue(optional.isPresent());
+        Optional<Attachment> attachment = enquiryService.retrieveCorrespondenceAttachmentBy(usrs.get(0),optional.get().getCorrespondences().get(0).getAttachmentId());
+        assertTrue(attachment.isPresent());
+        System.out.println(attachment);
+
+    }
+
+    private Map<User, List<EnquiryProjection>> createSampleSearchData(){
+        Map<User, List<EnquiryProjection>> userListMap = new HashMap<>();
+        userRepository.deleteAll();
+        propertyUnitRepository.deleteAll();
+        enquiryRepository.deleteAll();
+        operations.delete(null);
+
+        List<User> prospectiveTenants = new ArrayList<>();
+        List<PropertyUnit> propertyUnits = new ArrayList<>();
+        IntStream.range(0, 10).forEach(i -> {
+            User user = createLoggedInUser();
+            user.setFirstName(RandomStringUtils.random(10));
+            user.setLastName(RandomStringUtils.random(10));
+            user.setEmailAddress(user.getFirstName() + '@' + user.getLastName());
+            prospectiveTenants.add(user);
+
+            try {
+                PropertyUnit propertyUnit = createPropertyUnit();
+                propertyUnit.setPropertyUnitDesc(RandomStringUtils.randomAlphabetic(30));
+                Address address= new Address();
+                address.setAddressLine1(RandomStringUtils.random(10));
+                address.setCountry("TZ");
+                address.setCity("Dar es Salaam");
+                propertyUnit.setAddress(address);
+                propertyUnits.add(propertyUnit);
+            } catch (IOException e) {
+                //Ignore attachment
+            }
+        });
+        List<User>  savedUsers = userRepository.save(prospectiveTenants); // saved users
+        List<PropertyUnit> propertyUnitList = propertyUnitRepository.save(propertyUnits);
+
+        // create a bunch of Enquiries.
+
+        IntStream.range(0,10).forEach(i -> {
+
+            propertyUnitList.forEach(propertyUnit -> {
+                PropertyUnitEnquiry enquiry= new PropertyUnitEnquiry();
+                //enquiry.setProspectiveTenant(savedUsers.get(i));
+                //enquiry.setPropertyUnit(propertyUnitList.get(i));
+                enquiry.setMessage(RandomStringUtils.randomAlphanumeric(100));
+                enquiry.setEnquiryType(CorrespondenceType.INTERESTED);
+                User usr = savedUsers.get(i);
+
+                try {
+                    Optional<EnquiryProjection> enquiryProjection = enquiryService.createUserEnquiryToProperty(usr,propertyUnit.getPropertyUnitId(),enquiry);
+                    EnquiryCorrespondence correspondence2 = new EnquiryCorrespondence();
+                    correspondence2.setMessage("I thought I should pass along a few more pics");
+                    correspondence2.setCorrespondenceType(CorrespondenceType.REQUEST_INFO);
+                    correspondence2.setAttachment(buildAttachment());
+                    enquiryService.addEnquiryCorrespondence(usr,enquiryProjection.get().getEnquiryReferenceId(),correspondence2);
+                    if (userListMap.containsKey(usr)){
+                        userListMap.get(usr).add(enquiryProjection.get());
+
+                    }else{
+                        List<EnquiryProjection> enquiryProjectionList = new ArrayList<>();
+                        enquiryProjectionList.add(enquiryProjection.get());
+                        userListMap.put(usr, enquiryProjectionList);
+                    }
+                } catch (EntityExists | IOException entityExists) {
+                    entityExists.printStackTrace();
+                } catch (EntityNotFound entityNotFound) {
+                    entityNotFound.printStackTrace();
+                }
+            });
+
+        });
+
+
+
+
+
+        return userListMap;
+    }
+
     private static Attachment buildAttachment() throws IOException {
         Attachment attachment = new Attachment();
         attachment.setFileType(FileMetadata.FILETYPE.DOCUMENT.name());
@@ -214,6 +347,12 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
         user.setFirstName("fName");
         user.setLastName("lName");
         user.setEmailAddress("fName.lName@pango.com");
+
+        UserProfile userProfile = new UserProfile();
+        userProfile.setPassword("123456");
+        userProfile.setVerified(true);
+        user.setProfile(userProfile);
+
 
         // Save the user
         userRepository.save(user);

@@ -1,9 +1,6 @@
 package com.ceitechs.domain.service.service;
 
-import com.ceitechs.domain.service.domain.Address;
-import com.ceitechs.domain.service.domain.Attachment;
-import com.ceitechs.domain.service.domain.PropertyFeature;
-import com.ceitechs.domain.service.domain.PropertyUnit;
+import com.ceitechs.domain.service.domain.*;
 
 import java.time.LocalDateTime;
 
@@ -27,4 +24,5 @@ public interface PropertyProjection {
     LocalDateTime getNextAvailableDate();
 
     Address getAddress();
+    User getOwner();
 }

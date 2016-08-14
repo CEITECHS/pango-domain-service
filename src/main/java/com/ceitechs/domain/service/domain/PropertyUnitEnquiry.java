@@ -35,6 +35,7 @@ public class PropertyUnitEnquiry implements EnquiryProjection {
     private User prospectiveTenant;
     @DBRef
     private PropertyUnit propertyUnit;
+    private String ownerReferenceId;
     private String subject;
     private String introduction;
     private String message;

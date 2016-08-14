@@ -55,7 +55,7 @@ public interface PangoEnquiryService {
      * @param count             total enquiries to return
      * @return EnquiryProjection
      */
-    List<? extends EnquiryProjection> retrieveEnquiriesBy(User prospectiveTenant, int count) throws EntityNotFound;
+    List<EnquiryProjection> retrieveEnquiriesBy(User prospectiveTenant, int count) throws EntityNotFound;
 
     /**
      * retrieve all enquiries made to a property optionalPropertyReferenceId when passed,
@@ -66,7 +66,7 @@ public interface PangoEnquiryService {
      * @param count                       recent enquiries count to return per property in-case of optionalPropertyReferenceId is not passed
      * @return
      */
-    List<? extends EnquiryProjection> retrieveEnquiriesBy(User owner, Optional<String> optionalPropertyReferenceId, int count);
+    List<EnquiryProjection> retrieveEnquiriesBy(User owner, Optional<String> optionalPropertyReferenceId, int count);
 
     /**
      * retrieves all  enquires made by a user to property
@@ -162,6 +162,8 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         enquiry.setEnquiryReferenceId(PangoUtility.generateIdAsString());
         enquiry.setPropertyUnit(propertyUnit);
         enquiry.setProspectiveTenant(savedUser);
+        enquiry.setOwnerReferenceId(propertyUnit.getOwner().getUserReferenceId());
+
         PropertyUnitEnquiry savedEnquiry = enquiryRepository.save(enquiry);
         //TODO Trigger a push notification event to the owners
         return Optional.ofNullable(savedEnquiry);
@@ -219,11 +221,11 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      * @return
      */
     @Override
-    public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User prospectiveTenant, int count) throws EntityNotFound {
+    public List<EnquiryProjection> retrieveEnquiriesBy(User prospectiveTenant, int count) throws EntityNotFound {
         Assert.notNull(prospectiveTenant, "User can not be null");
         Assert.hasText(prospectiveTenant.getUserReferenceId(), "User Identifier can not be null or empty");
 
-        User savedUsr = userRepository.findOne(prospectiveTenant.getUserReferenceId());
+        User savedUsr = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("",prospectiveTenant.getUserReferenceId());
         if (savedUsr == null)
             throw new EntityNotFound(String.format("Unknown user %s  ", prospectiveTenant.toString()), new IllegalArgumentException(String.format("Unkown user %s  ", prospectiveTenant.toString())));
         Page<PropertyUnitEnquiry> result = enquiryRepository.findByProspectiveTenantOrderByEnquiryDateDesc(savedUsr, new PageRequest(0, count > 0 ? count : 50));
@@ -235,7 +237,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
 
             Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
 
-            return propertyCoverPhoto.isEmpty() ? result.getContent() : result.getContent().parallelStream().map(enquiry -> {
+            return propertyCoverPhoto.isEmpty() ? new ArrayList<>(result.getContent())  : result.getContent().parallelStream().map(enquiry -> {
                 PropertyUnitEnquiry propertyUnitEnquiry = enquiry;
                 if (propertyCoverPhoto.containsKey(enquiry.getPropertyUnit().getPropertyUnitId()))
                     propertyUnitEnquiry.getPropertyUnit().setCoverPhoto(new Attachment(propertyCoverPhoto.get(enquiry.getPropertyUnit().getPropertyUnitId())));
@@ -244,7 +246,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         }
 
 
-        return result.getContent();
+        return new ArrayList<>(result.getContent());
     }
 
     /**
@@ -257,7 +259,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      * @return
      */
     @Override
-    public List<PropertyUnitEnquiry> retrieveEnquiriesBy(User owner, Optional<String> optionalPropertyReferenceId, int count) {
+    public List<EnquiryProjection> retrieveEnquiriesBy(User owner, Optional<String> optionalPropertyReferenceId, int count) {
         Assert.notNull(owner, "Owner can not be null");
         Assert.hasText(owner.getUserReferenceId(), " Owner referenceId can not be null or empty");
 
@@ -271,10 +273,10 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         } else {
             User savedOwner = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", owner.getUserReferenceId());
             if (savedOwner != null)
-                enquiries = enquiryRepository.findByPropertyUnitOwnerOrderByEnquiryDateDesc(savedOwner, new PageRequest(0, count > 0 ? count : 50)).getContent();
+                enquiries = enquiryRepository.findByOwnerReferenceIdOrderByEnquiryDateDesc(savedOwner.getUserReferenceId(), new PageRequest(0, count > 0 ? count : 50)).getContent();
 
         }
-        return enquiries;
+        return new ArrayList<>(enquiries);
     }
 
     @Override

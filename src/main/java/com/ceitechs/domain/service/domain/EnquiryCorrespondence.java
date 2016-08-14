@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.annotation.Transient;
 
 /**
@@ -15,6 +16,7 @@ import org.springframework.data.annotation.Transient;
  */
 @Getter
 @Setter
+@ToString
 public class EnquiryCorrespondence {
     private long correspondenceReferenceId;
     private String message;

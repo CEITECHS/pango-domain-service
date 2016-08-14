@@ -42,6 +42,7 @@ public class Attachment implements Cloneable{
             this.setFileType(fileMetadata.getFileType());
             this.setFileDescription(fileMetadata.getCaption());
             this.setProfilePicture(fileMetadata.isThumbnail());
+            this.setFileName(fileMetadata.getFileName());
         }
     }
 

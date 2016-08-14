@@ -55,4 +55,24 @@ public class User implements UserProjection {
     public Attachment getProfilePicture() {
         return profile.getProfilePicture();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        if (userReferenceId != null ? !userReferenceId.equals(user.userReferenceId) : user.userReferenceId != null)
+            return false;
+        return emailAddress != null ? emailAddress.equals(user.emailAddress) : user.emailAddress == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userReferenceId != null ? userReferenceId.hashCode() : 0;
+        result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
+        return result;
+    }
 }
