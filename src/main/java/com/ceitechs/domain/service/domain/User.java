@@ -7,6 +7,7 @@ import java.util.List;
 import com.ceitechs.domain.service.domain.Annotations.Updatable;
 import com.ceitechs.domain.service.service.UserProjection;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -43,6 +44,11 @@ public class User implements UserProjection {
     private Address address;
 
     private UserProfile profile;
+
+    @Transient
+    private double longitude; // when passed used to calculate distance btn user and property
+    @Transient
+    private double latitude; //when passed used to calculate distance btn user and property
 
     private List<UserPreference> preferences = new ArrayList<>();
 

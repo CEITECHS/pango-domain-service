@@ -79,4 +79,6 @@ public class PropertyUnit  implements PropertyProjection {
     private boolean active = true;
 
     private LocalDateTime createdDate = LocalDateTime.now(Clock.systemUTC());
+
+
 }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -42,6 +43,8 @@ public class PropertyUnitEnquiry implements EnquiryProjection {
     private LocalDateTime enquiryDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType enquiryType;
     List<EnquiryCorrespondence> correspondences = new ArrayList<>();
+    @Transient
+    private  double distance;
 
     public void addCorrespondence(EnquiryCorrespondence e){
         Assert.notNull(e, "Correspondence object can not be null");
@@ -52,4 +55,7 @@ public class PropertyUnitEnquiry implements EnquiryProjection {
     public int getCorrespondenceCount() {
         return correspondences.size();
     }
+
+
+
 }

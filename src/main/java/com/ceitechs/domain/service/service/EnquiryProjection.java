@@ -17,4 +17,5 @@ public interface EnquiryProjection {
     int getCorrespondenceCount();
     List<EnquiryCorrespondence> getCorrespondences();
     LocalDateTime getEnquiryDate();
+    double getDistance(); //TODO Calculate distance in results.
 }
