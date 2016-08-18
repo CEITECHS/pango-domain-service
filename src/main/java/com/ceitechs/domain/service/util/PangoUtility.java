@@ -278,7 +278,7 @@ public class PangoUtility {
 
     public static List<String> fieldNamesByAnnotation(Class clazz, Class<? extends Annotation> annotationClass){
         Field[] fieldList = clazz.getDeclaredFields();
-       return Arrays.stream(fieldList).filter(field -> field.isAnnotationPresent(Updatable.class)).map(Field::getName).collect(Collectors.toList());
+       return Arrays.stream(fieldList).filter(field -> field.isAnnotationPresent(annotationClass)).map(Field::getName).collect(Collectors.toList());
     }
 
 }
