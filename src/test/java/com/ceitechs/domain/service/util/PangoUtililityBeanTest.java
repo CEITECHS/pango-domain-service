@@ -115,12 +115,21 @@ public class PangoUtililityBeanTest extends AbstractPangoDomainServiceIntegratio
         System.out.println("Secret Key: " + secretKey);
     }
 
+    @Ignore
     @Test
     public void testSecretKeyTextEncryptDecryptBean() throws Exception {
         String secretKey = PangoUtility.secretKeyText();
-        String encryptedText = PangoUtility.encrypt("Emefana2014", secretKey);
-        assertTrue("Emefana2014".equals(PangoUtility.decrypt(encryptedText, secretKey)));
+       // String encryptedText = PangoUtility.encrypt("Emefana2014", secretKey); ceitechsender@gmail.com
+       // assertTrue("Emefana2014".equals(PangoUtility.decrypt(encryptedText, secretKey)));Ceitechs2015
+
        // System.out.println("Encrypted : " + encryptedText);
+//        String encryptedText = PangoUtility.encrypt("ceitechsender@gmail.com", secretKey);
+//        String encryptedString = PangoUtility.encrypt("Ceitechs2015", secretKey);
+//        assertTrue("ceitechsender@gmail.com".equals(PangoUtility.decrypt(encryptedText, secretKey)));
+//        assertTrue("Ceitechs2015".equals(PangoUtility.decrypt(encryptedString, secretKey)));
+//        System.out.println(secretKey);
+//        System.out.println(encryptedText);
+//        System.out.println(encryptedString);
     }
 
     @Test
