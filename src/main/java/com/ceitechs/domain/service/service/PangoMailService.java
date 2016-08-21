@@ -78,9 +78,8 @@ class PangoMailServiceImpl implements PangoMailService {
                 emailText = new StringBuilder((String) emailModel.getModel());
             } else if (StringUtils.hasText(emailModel.getTemplate())){
                 // sending email using a template
-                String templatePath = new String("templates/" + emailModel.getTemplate() + ".vm");
+                String templatePath = new String(emailModel.getTemplate() + ".vm");
                 Map model = new HashMap();
-                model.put("logo", getBase64Logo());
                 model.put("model", emailModel.getModel());
                 emailText = new StringBuilder(VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, templatePath, "UTF-8",model));
             }
@@ -88,15 +87,5 @@ class PangoMailServiceImpl implements PangoMailService {
             message.setText(emailText.toString(),true);
 
         });
-    }
-
-      static String getBase64Logo(){
-        String logo="";
-        try {
-            logo =	PangoUtility.InputStreamToBase64(Optional.of(resource.getInputStream()), "image/png").get();
-        } catch (IOException e) {
-            logger.error("base64ing logo "+ e.getMessage(), e.getCause());
-        }
-        return logo;
     }
 }

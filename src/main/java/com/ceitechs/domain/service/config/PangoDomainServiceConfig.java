@@ -43,6 +43,9 @@ public class PangoDomainServiceConfig {
      @Value("${magic.key}")
      private String appliedKey;
 
+     @Value("${templates.root.uri}")
+     private String templatesRoot;
+
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigurer() {
@@ -73,8 +76,11 @@ public class PangoDomainServiceConfig {
     public VelocityEngineFactoryBean velocityEngine() {
         VelocityEngineFactoryBean velocityEngineFactoryBean = new VelocityEngineFactoryBean();
         Properties velocityProperties = new Properties();
-        velocityProperties.setProperty("resource.loader", "class");
-        velocityProperties.setProperty("class.resource.loader.class","org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        velocityProperties.setProperty("resource.loader", "url"); //jar, class, file
+        velocityProperties.setProperty("url.resource.loader.class","org.apache.velocity.runtime.resource.loader.URLResourceLoader");//ClasspathResourceLoader
+        velocityProperties.setProperty("url.resource.loader.root",templatesRoot);
+        velocityProperties.setProperty("url.resource.loader.cache","true");
+        //velocityProperties.setProperty("url.resource.loader.modificationCheckInterval","5");
         velocityEngineFactoryBean.setVelocityProperties(velocityProperties);
         return velocityEngineFactoryBean;
     }

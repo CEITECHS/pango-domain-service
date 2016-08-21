@@ -38,7 +38,7 @@ public class EmailModel<T> {
     private T model;
 
     /**
-     * to send HTML like emails. this file is expected to be in resources/template
+     * to send HTML like emails. this file is expected to be in root uri ${templates.root.uri}
      * this is a template file name without file extension. Ex.accountActivationMessage should be passed for accountActivationMessage.vm
      */
     private String template;
