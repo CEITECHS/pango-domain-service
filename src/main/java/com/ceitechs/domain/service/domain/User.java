@@ -52,10 +52,15 @@ public class User implements UserProjection {
 
     private Set<String> favouredProperties = new HashSet<>();
 
+    @Transient
+    private String verificationPathParam;
+
     @Override
     public String getFullName() {
         return firstName + " " + lastName;
     }
+
+
 
     @Override
     public Attachment getProfilePicture() {

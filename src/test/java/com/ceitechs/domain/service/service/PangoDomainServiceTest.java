@@ -12,6 +12,7 @@ import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
@@ -52,6 +53,9 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
     @Autowired
     @Lazy(true)
     PangoDomainService domainService;
+
+    @Value("${user.verification.uri}")
+    private String verificationUri;
 
     @Test
     public void createPropertyTest() throws IOException {
@@ -246,11 +250,11 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
     static User createUser(){
         User user = new User();
         user.setUserReferenceId(PangoUtility.generateIdAsString());
-        user.setFirstName("iam");
-        user.setLastName("magohe");
-        user.setEmailAddress("iam.magohe@pango.com");
+        user.setFirstName("Iddy");
+        user.setLastName("Magohe");
+        user.setEmailAddress("iddy85@gmail.com");
         UserProfile userProfile = new UserProfile();
-        userProfile.setPassword("123456");
+        userProfile.setPassword("someStrongPassword");
         userProfile.setVerified(true);
         user.setProfile(userProfile);
         return user;
@@ -265,16 +269,37 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
 
 
     @Test
-    public void userRegistrationTest() throws EntityExists {
+    public void userRegistrationTest() throws EntityExists, InterruptedException {
+        userRepository.deleteAll();
+        User usr = createUser();
+        usr.getProfile().getRoles().add(PangoUserRole.USER);
+        Optional<UserProjection> savedUsr = domainService.registerUser(usr);
+
+        assertTrue(savedUsr.isPresent());
+        assertEquals("firstName must match",usr.getFirstName(),savedUsr.get().getFirstName());
+        assertEquals("lastName must match",usr.getLastName(),savedUsr.get().getLastName());
+        Thread.sleep(1500);
+
+    }
+
+    @Test
+    public void verifyAccountByTokenTest() throws EntityExists, Exception {
         userRepository.deleteAll();
         User usr = createUser();
         usr.getProfile().getRoles().add(PangoUserRole.USER);
         Optional<UserProjection> savedUsr = domainService.registerUser(usr);
         assertTrue(savedUsr.isPresent());
-        assertEquals("firstName must match",usr.getFirstName(),savedUsr.get().getFirstName());
-        assertEquals("lastName must match",usr.getLastName(),savedUsr.get().getLastName());
-
+        User savedWithCode = userRepository.findOne(savedUsr.get().getUserReferenceId());
+        assertNotNull(savedWithCode);
+        assertNotNull(savedWithCode.getProfile().getVerificationCode());
+        assertFalse(savedWithCode.getProfile().isVerified());
+        Optional<UserProjection> verifiedUser = domainService.verifyUserAccountBy(savedUsr.get().getVerificationPathParam().replace(verificationUri,""));
+        System.out.println(savedUsr.get().getVerificationPathParam());
+        assertTrue(verifiedUser.isPresent());
+        User verifiedWithCode = userRepository.findOne(verifiedUser.get().getUserReferenceId());
+        assertTrue(verifiedWithCode.getProfile().isVerified());
     }
+
 
     @Test
     public void userRegistrationTestExists() throws EntityExists {

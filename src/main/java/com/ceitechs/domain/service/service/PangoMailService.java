@@ -16,6 +16,7 @@ import org.springframework.ui.velocity.VelocityEngineUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,11 +59,13 @@ class PangoMailServiceImpl implements PangoMailService {
      */
     @Override
     public <T> void sendEmail(EmailModel<T> emailModel) {
+
         Assert.notNull(emailModel, "EmailModel can not be null");
         Assert.hasText(emailModel.getSubject(), "email subject can not be empty or null");
         Assert.isTrue(emailModel.getBccRecipients().length > 0 || emailModel.getRecipients().length >0 ,"recipient list can not be null or empty");
         Assert.notNull(emailModel.getModel() , "model can not be null ");
         Assert.isTrue(emailModel.getModel() instanceof String || StringUtils.hasText(emailModel.getTemplate()));
+
 
         mailSender.send(mimeMessage -> {
             MimeMessageHelper message = new MimeMessageHelper(mimeMessage);
@@ -76,15 +79,15 @@ class PangoMailServiceImpl implements PangoMailService {
             if (emailModel.getModel() instanceof String) {
                 // sending plain text message without template
                 emailText = new StringBuilder((String) emailModel.getModel());
-            } else if (StringUtils.hasText(emailModel.getTemplate())){
+            } else if (StringUtils.hasText(emailModel.getTemplate())) {
                 // sending email using a template
                 String templatePath = new String(emailModel.getTemplate() + ".vm");
                 Map model = new HashMap();
                 model.put("model", emailModel.getModel());
-                emailText = new StringBuilder(VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, templatePath, "UTF-8",model));
+                emailText = new StringBuilder(VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, templatePath, "UTF-8", model));
             }
 
-            message.setText(emailText.toString(),true);
+            message.setText(emailText.toString(), true);
 
         });
     }

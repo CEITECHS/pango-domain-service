@@ -17,6 +17,7 @@ public class TokensUtil {
     private static final String SEPARATOR ="_";
 
     public static String createAccountVerificationToken(User user) throws Exception {
+
         long expires = System.currentTimeMillis() + 1000L * 60 * 60 *72; //expires in three days
         StringBuilder signatureBuilder = new StringBuilder();
         signatureBuilder.append(user.getEmailAddress());

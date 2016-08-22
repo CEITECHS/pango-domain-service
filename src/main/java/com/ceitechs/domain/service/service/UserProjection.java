@@ -14,6 +14,7 @@ public interface UserProjection {
     String getFullName();
     String getEmailAddress();
     String getPhoneNumber();
+    String getVerificationPathParam();
     Address getAddress();
     Attachment getProfilePicture();
 }

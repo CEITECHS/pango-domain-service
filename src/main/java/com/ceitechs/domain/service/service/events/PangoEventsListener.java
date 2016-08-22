@@ -2,12 +2,17 @@ package com.ceitechs.domain.service.service.events;
 
 import com.ceitechs.domain.service.domain.*;
 import com.ceitechs.domain.service.repositories.UserRepository;
+import com.ceitechs.domain.service.service.EmailModel;
 import com.ceitechs.domain.service.service.GridFsService;
+import com.ceitechs.domain.service.service.PangoMailService;
+import com.ceitechs.domain.service.service.UserProjection;
 import com.ceitechs.domain.service.util.PangoUtility;
+import com.ceitechs.domain.service.util.TokensUtil;
 import com.mongodb.BasicDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -17,6 +22,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author iddymagohe
@@ -27,11 +33,17 @@ import java.util.Optional;
 public class PangoEventsListener{
     private static final Logger logger = LoggerFactory.getLogger(PangoEventsListener.class);
 
+    @Value("${user.verification.uri}")
+    private String verificationUri;
+
     @Autowired
     private GridFsService gridFsService;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    PangoMailService mailService;
 
     /**
      * Listen for <code>OnPangoEvent<List<AttachmentToUpload>> types of events</code> and fires to stores the respective attachments;
@@ -77,11 +89,28 @@ public class PangoEventsListener{
 
     @Async
     @EventListener
-    public void HandleUserInteractionEvents(OnPangoEvent<User> userOnPangoEvent){
-        if (userOnPangoEvent instanceof UserVerificationEvent){
-            //TODO - generate verification code (check for existing of expired ) and trigger email to user
-            logger.info("generating verfication code for user");
+    public void HandleUserInteractionEvents(OnPangoEvent<User> userOnPangoEvent) {
+        if (userOnPangoEvent instanceof UserVerificationEvent) {
+            logger.info("generating verification code for user: " + userOnPangoEvent.get().getEmailAddress());
+
+            User user = userOnPangoEvent.get();
+
+            user.setVerificationPathParam(verificationUri + user.getVerificationPathParam());
+            UserProjection usr = user;
+            //initiate email verification to user.
+
+            EmailModel<UserProjection> emailModel = new EmailModel<>();
+            emailModel.setTemplate("registration-confirmation");//TODO: externalize this and subject-line.
+            emailModel.setRecipients(new String[]{usr.getEmailAddress()});
+            emailModel.setSubject("Pango - Registration confirmation"); //
+            emailModel.setModel(usr);
+            logger.info("sending registration confirmation email to User :" + usr.getEmailAddress());
+            mailService.sendEmail(emailModel);
+            logger.info("Completed - sending registration confirmation email to User :" + usr.getEmailAddress());
 
         }
+
     }
+
+
 }

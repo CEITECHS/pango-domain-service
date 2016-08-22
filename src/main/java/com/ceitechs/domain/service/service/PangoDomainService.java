@@ -9,10 +9,13 @@ import com.ceitechs.domain.service.service.events.*;
 import com.ceitechs.domain.service.util.DistanceCalculator;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
+import com.ceitechs.domain.service.util.TokensUtil;
 import com.mongodb.gridfs.GridFSDBFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.beans.IntrospectionException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -135,6 +139,14 @@ public interface PangoDomainService {
      */
     Optional<UserProjection> updateUserFavoriteProperties(User user, String propertyReferenceId, boolean favourable) throws EntityNotFound;
 
+    /**
+     *  Verifies user account token
+     *  @see TokensUtil#createAccountVerificationToken(User) for the expected token
+     * @param verificationToken
+     * @return Optional<UserProjection>
+     */
+    Optional<UserProjection> verifyUserAccountBy(String verificationToken) throws Exception;
+
 
 }
 
@@ -148,6 +160,10 @@ class PangoDomainServiceImpl implements PangoDomainService {
     private final UserRepository userRepository;
     private final GridFsService gridFsService;
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
+
+    @Autowired
+    PangoMailService mailService;
+
 
 
     @Autowired
@@ -284,6 +300,32 @@ class PangoDomainServiceImpl implements PangoDomainService {
     }
 
     /**
+     * Verifies user account token
+     *
+     * @param verificationToken
+     * @return Optional<UserProjection>
+     * @see TokensUtil#createAccountVerificationToken(User) for the expected token
+     */
+    @Override
+    public Optional<UserProjection> verifyUserAccountBy(String verificationToken) throws Exception {
+        Assert.hasText(verificationToken, "Verification token can not be null or empty");
+        Optional<User> validatedToken = TokensUtil.validateToken(verificationToken);
+        User savedUsr = null;
+        if (validatedToken.isPresent()) {
+            savedUsr = userRepository.findByEmailAddressIgnoreCase(validatedToken.get().getEmailAddress());
+            if (!savedUsr.getProfile().isVerified()) {
+                if (validatedToken.get().getProfile().getVerificationCode().equals(savedUsr.getProfile().getVerificationCode())
+                        && validatedToken.get().getProfile().getPassword().equals(savedUsr.getProfile().getPassword())) {
+                    savedUsr.getProfile().setVerified(true);
+                    savedUsr.getProfile().setVerificationDate(LocalDate.now());
+                    savedUsr = userRepository.save(savedUsr);
+                }
+            }
+        }
+        return Optional.ofNullable(savedUsr);
+    }
+
+    /**
      * @param user
      * @return
      */
@@ -299,14 +341,28 @@ class PangoDomainServiceImpl implements PangoDomainService {
             if (!existingUser.getProfile().isVerified()) {
                 triggerUserInteractionEvent(user, UserInteraction.VERIFICATION);
             }
-            throw new EntityExists(String.format("User with Email : %s  address exists",user.getEmailAddress()), new IllegalArgumentException(String.format("User with Email : %s  address exists",user.getEmailAddress())));
+            throw new EntityExists(String.format("User with Email : %s  address exists", user.getEmailAddress()), new IllegalArgumentException(String.format("User with Email : %s  address exists", user.getEmailAddress())));
 
         }
         user.getProfile().setVerified(false);
-        User savedUser = userRepository.save(user);
-        savedUser.getProfile().setPassword("**********");
-        if(savedUser != null) triggerUserInteractionEvent(savedUser, UserInteraction.REGISTRATION);
-        return Optional.of(savedUser);
+        User savedUser = null;
+        String verificationToken = null;
+        try {
+            // generate account verification code
+            verificationToken =  TokensUtil.createAccountVerificationToken(user);
+            Optional<User> userWithTokenOptional = TokensUtil.validateToken(verificationToken);
+            if (userWithTokenOptional.isPresent()) {
+                User userWithToken = userWithTokenOptional.get();
+                user.getProfile().setVerificationCode(userWithToken.getProfile().getVerificationCode());
+                savedUser = userRepository.save(user); // persist user details
+                savedUser.setVerificationPathParam(verificationToken); // for email template use.
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e); //TODO deal with these exception scenario.
+        }
+
+        if (savedUser != null) triggerUserInteractionEvent(savedUser, UserInteraction.REGISTRATION);
+        return Optional.ofNullable(savedUser);
     }
 
     @Override
@@ -491,10 +547,14 @@ class PangoDomainServiceImpl implements PangoDomainService {
     private void triggerUserInteractionEvent(User user, UserInteraction userInteraction){
         if (user == null || !StringUtils.hasText(user.getEmailAddress())) return;
         executorService.submit(() -> {
-             if (userInteraction == UserInteraction.VERIFICATION || userInteraction == UserInteraction.REGISTRATION ){
+             if (userInteraction == UserInteraction.REGISTRATION ){
                  UserVerificationEvent verificationEvent = new UserVerificationEvent(user);
                  logger.info("publishing User email verification for user " + user.getUserReferenceId());
                  eventsPublisher.publishPangoEvent(verificationEvent);
+             }
+             if (userInteraction == UserInteraction.VERIFICATION ) {
+                 //do nothing
+                 logger.info("User : " + user.getEmailAddress() + " can not be allowed to login before verifyong his/her account " );
              }
         });
         return;
