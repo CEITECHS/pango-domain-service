@@ -8,6 +8,7 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.util.Assert;
@@ -36,6 +37,7 @@ public class PropertyUnitEnquiry implements EnquiryProjection {
     private User prospectiveTenant;
     @DBRef
     private PropertyUnit propertyUnit;
+    @Indexed
     private String ownerReferenceId;
     private String subject;
     private String introduction;

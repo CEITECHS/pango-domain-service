@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -24,6 +25,9 @@ public class UnitRentalHistory {
     @DBRef
     private PropertyUnit propertyUnit;
 
+    @Indexed
+    private String ownerReferenceId;
+
     @DBRef
     private User user;
 
@@ -36,4 +40,5 @@ public class UnitRentalHistory {
     private List<PendingPayment> pendingPayments;
 
     private boolean isActive;
+
 }

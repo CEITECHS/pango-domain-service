@@ -74,7 +74,7 @@ public class PropertyUnit  implements PropertyProjection {
     private List<PropertyUnitEnquiry> enquiries;
 
     @Transient
-    private List<UnitHoldingHistory> holdingHistory;
+    private List<PropertyHoldingHistory> holdingHistory;
 
     @Transient
     private double distance;

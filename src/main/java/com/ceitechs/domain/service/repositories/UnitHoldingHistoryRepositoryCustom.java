@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.ceitechs.domain.service.domain.PropertyUnit;
-import com.ceitechs.domain.service.domain.UnitHoldingHistory;
+import com.ceitechs.domain.service.domain.PropertyHoldingHistory;
 import com.ceitechs.domain.service.domain.User;
 
 /**
@@ -22,7 +22,7 @@ import com.ceitechs.domain.service.domain.User;
  */
 public interface UnitHoldingHistoryRepositoryCustom {
 
-    Optional<List<UnitHoldingHistory>> getUnitHoldingHistory(String ownerId);
+    Optional<List<PropertyHoldingHistory>> getUnitHoldingHistory(String ownerId);
 }
 
 /**
@@ -40,7 +40,7 @@ class UnitHoldingHistoryRepositoryImpl implements UnitHoldingHistoryRepositoryCu
     private PropertyUnitRepository propertyUnitRepository;
 
     @Override
-    public Optional<List<UnitHoldingHistory>> getUnitHoldingHistory(String ownerId) {
+    public Optional<List<PropertyHoldingHistory>> getUnitHoldingHistory(String ownerId) {
         User user = new User();
         user.setUserReferenceId(ownerId);
         List<PropertyUnit> propertyUnitList = propertyUnitRepository.findByOwner(user);
@@ -50,7 +50,7 @@ class UnitHoldingHistoryRepositoryImpl implements UnitHoldingHistoryRepositoryCu
             LocalDateTime dateTime = LocalDateTime.now();
             Criteria criteria = Criteria.where("propertyUnit.$id").in(propertyUnitIds).and("startDate").lte(dateTime)
                     .and("endDate").gte(dateTime);
-            return Optional.of(mongoTemplate.find(Query.query(criteria), UnitHoldingHistory.class));
+            return Optional.of(mongoTemplate.find(Query.query(criteria), PropertyHoldingHistory.class));
         } else {
             return Optional.empty();
         }

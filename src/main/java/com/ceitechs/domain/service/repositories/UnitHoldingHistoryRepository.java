@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import com.ceitechs.domain.service.domain.UnitHoldingHistory;
+import com.ceitechs.domain.service.domain.PropertyHoldingHistory;
 import com.ceitechs.domain.service.domain.User;
 
 /**
@@ -13,7 +13,7 @@ import com.ceitechs.domain.service.domain.User;
  * @since 1.0
  */
 public interface UnitHoldingHistoryRepository
-        extends MongoRepository<UnitHoldingHistory, String>, UnitHoldingHistoryRepositoryCustom {
+        extends MongoRepository<PropertyHoldingHistory, String>, UnitHoldingHistoryRepositoryCustom {
 
-    Page<UnitHoldingHistory> findByUserOrderByStartDateDesc(User user, Pageable page);
+    Page<PropertyHoldingHistory> findByUserOrderByStartDateDesc(User user, Pageable page);
 }

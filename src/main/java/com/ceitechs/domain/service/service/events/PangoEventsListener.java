@@ -1,13 +1,13 @@
 package com.ceitechs.domain.service.service.events;
 
 import com.ceitechs.domain.service.domain.*;
+import com.ceitechs.domain.service.domain.PropertyHoldingHistory.HoldingPhase;
 import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.service.EmailModel;
 import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.service.PangoMailService;
 import com.ceitechs.domain.service.service.UserProjection;
 import com.ceitechs.domain.service.util.PangoUtility;
-import com.ceitechs.domain.service.util.TokensUtil;
 import com.mongodb.BasicDBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,6 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author iddymagohe
@@ -89,7 +88,7 @@ public class PangoEventsListener{
 
     @Async
     @EventListener
-    public void HandleUserInteractionEvents(OnPangoEvent<User> userOnPangoEvent) {
+    public void handleUserInteractionEvents(OnPangoEvent<User> userOnPangoEvent) {
         if (userOnPangoEvent instanceof UserVerificationEvent) {
             logger.info("generating verification code for user: " + userOnPangoEvent.get().getEmailAddress());
 
@@ -111,6 +110,28 @@ public class PangoEventsListener{
         }
 
     }
+
+    @Async
+    @EventListener
+    public void handlePropertyHoldingEvents(OnPangoEvent<PropertyHoldingHistory> holdingHistoryOnPangoEvent){
+        //TODO holding events implementation
+        PropertyHoldingHistory propertyHoldingHistory = holdingHistoryOnPangoEvent.get();
+
+        switch(propertyHoldingHistory.getHoldingPhase()){
+            case INITIATED:
+                //1 . notify (email, push )the property owner
+                break;
+            case DECIDED:
+                //2. if accepted initiate payment for the duration (X) days this must go through.
+                //2.1.0 update the holding with payments, holding start/end date.
+                //2.1.1 notify the users about the accepted/declined holding decision
+                break;
+            default:
+                break;
+        }
+    }
+
+
 
 
 }
