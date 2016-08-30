@@ -17,9 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
@@ -157,7 +155,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         if (existingEnquiry != null) {
             LocalDateTime sixtyDays = LocalDateTime.of(existingEnquiry.getEnquiryDate().toLocalDate(), existingEnquiry.getEnquiryDate().toLocalTime()).plusDays(60);
             if (existingEnquiry.getEnquiryDate().isBefore(sixtyDays))
-                throw new EntityExists(String.format("There is an open Enquiry : %s for this user on this property : %s", existingEnquiry.getEnquiryReferenceId(), existingEnquiry.getPropertyUnit().getPropertyUnitId()), new IllegalStateException("there is an open Enquiry"));
+                throw new EntityExists(String.format("There is an open Enquiry : %s for this user on this property : %s", existingEnquiry.getEnquiryReferenceId(), existingEnquiry.getPropertyUnit().getPropertyId()), new IllegalStateException("there is an open Enquiry"));
         }
         //4. Create a new enquiry to a property
         enquiry.setEnquiryReferenceId(PangoUtility.generateIdAsString());
@@ -206,7 +204,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         if (enquiryOptional.isPresent() && correspondence.getAttachment() != null) {
             logger.info("initiating attachment uplaod event for Correspondence");
             correspondence.getAttachment().setFileType(FileMetadata.FILETYPE.DOCUMENT.name());
-            AttachmentToUpload attachmentToUpload = new AttachmentToUpload(enquiryReferenceId +"-"+ correspondence.getCorrespondenceReferenceId(), ReferenceIdFor.ENQUIRY, correspondence.getAttachment(), propertyUnitEnquiry.getPropertyUnit().getPropertyUnitId());
+            AttachmentToUpload attachmentToUpload = new AttachmentToUpload(enquiryReferenceId +"-"+ correspondence.getCorrespondenceReferenceId(), ReferenceIdFor.ENQUIRY, correspondence.getAttachment(), propertyUnitEnquiry.getPropertyUnit().getPropertyId());
             eventsPublisher.publishPangoEvent(new OnAttachmentUploadEvent(attachmentToUpload));
 
         }
@@ -241,15 +239,15 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
             });
 
             List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(result.getContent().parallelStream()
-                    .map(enquiry -> enquiry.getPropertyUnit().getPropertyUnitId()).collect(Collectors.toList()));
+                    .map(enquiry -> enquiry.getPropertyUnit().getPropertyId()).collect(Collectors.toList()));
 
             Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
 
 
             return propertyCoverPhoto.isEmpty() ? new ArrayList<>(result.getContent()) : result.getContent().parallelStream().map(enquiry -> {
                 PropertyUnitEnquiry propertyUnitEnquiry = enquiry;
-                if (propertyCoverPhoto.containsKey(enquiry.getPropertyUnit().getPropertyUnitId()))
-                    propertyUnitEnquiry.getPropertyUnit().setCoverPhoto(new Attachment(propertyCoverPhoto.get(enquiry.getPropertyUnit().getPropertyUnitId())));
+                if (propertyCoverPhoto.containsKey(enquiry.getPropertyUnit().getPropertyId()))
+                    propertyUnitEnquiry.getPropertyUnit().setCoverPhoto(new Attachment(propertyCoverPhoto.get(enquiry.getPropertyUnit().getPropertyId())));
                 return propertyUnitEnquiry;
             }).collect(Collectors.toList());
         }
@@ -293,10 +291,10 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         Assert.notNull(user, "User can not be null");
         Assert.notNull(property, "Property can not be null");
         Assert.hasText(user.getUserReferenceId(), "User referenceId can not be null or empty");
-        Assert.hasText(property.getPropertyUnitId(), "property referenceId can not be null ot empty");
+        Assert.hasText(property.getPropertyId(), "property referenceId can not be null ot empty");
 
         CompletableFuture<User> prospectiveTenantFuture = CompletableFuture.supplyAsync(() -> userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", user.getUserReferenceId()));
-        CompletableFuture<PropertyUnit> propertyUnitFuture = CompletableFuture.supplyAsync(() -> propertyUnitRepository.findOne(property.getPropertyUnitId()));
+        CompletableFuture<PropertyUnit> propertyUnitFuture = CompletableFuture.supplyAsync(() -> propertyUnitRepository.findOne(property.getPropertyId()));
         if (propertyUnitFuture.isDone() && propertyUnitFuture.isDone()) {
             try {
                 User usr = prospectiveTenantFuture.get();

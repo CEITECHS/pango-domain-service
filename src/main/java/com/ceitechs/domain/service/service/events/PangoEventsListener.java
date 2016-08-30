@@ -1,7 +1,6 @@
 package com.ceitechs.domain.service.service.events;
 
 import com.ceitechs.domain.service.domain.*;
-import com.ceitechs.domain.service.domain.PropertyHoldingHistory.HoldingPhase;
 import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.service.EmailModel;
 import com.ceitechs.domain.service.service.GridFsService;
@@ -116,8 +115,9 @@ public class PangoEventsListener{
     public void handlePropertyHoldingEvents(OnPangoEvent<PropertyHoldingHistory> holdingHistoryOnPangoEvent){
         //TODO holding events implementation
         PropertyHoldingHistory propertyHoldingHistory = holdingHistoryOnPangoEvent.get();
+        if (propertyHoldingHistory == null ) return;
 
-        switch(propertyHoldingHistory.getHoldingPhase()){
+        switch(propertyHoldingHistory.getPhase()){
             case INITIATED:
                 //1 . notify (email, push )the property owner
                 break;

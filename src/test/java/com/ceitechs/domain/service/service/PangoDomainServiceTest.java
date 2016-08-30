@@ -27,7 +27,6 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
@@ -69,7 +68,7 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         Optional<PropertyUnit> propertyUnitOptional = domainService.createProperty(unit, usr);
         assertTrue(propertyUnitOptional.isPresent());
         FileMetadata meta = new FileMetadata();
-        meta.setReferenceId(propertyUnitOptional.get().getPropertyUnitId());
+        meta.setReferenceId(propertyUnitOptional.get().getPropertyId());
         GridFSDBFile file = gridFsService.getProfilePicture(meta, ReferenceIdFor.PROPERTY);
         assertNotNull(file);
     }
@@ -113,7 +112,7 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
 
         Optional<PropertyUnit> propertyUnitOptional = domainService.createProperty(unit, usr);
         assertTrue(propertyUnitOptional.isPresent());
-       Optional<PropertyUnit> propertyUnit = domainService.retrievePropertyBy(propertyUnitOptional.get().getPropertyUnitId(),usr);
+       Optional<PropertyUnit> propertyUnit = domainService.retrievePropertyBy(propertyUnitOptional.get().getPropertyId(),usr);
         assertTrue(propertyUnit.isPresent());
         assertThat("Attachments", propertyUnit.get().getAttachments(),hasSize(unit.getAttachments().size()));
         System.out.println(propertyUnit.get());
@@ -143,8 +142,8 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
 
         // Create a new property unit
         PropertyUnit propertyUnit = new PropertyUnit();
-       // String propertyUnitId=PangoUtility.generateIdAsString();
-       // propertyUnit.setPropertyUnitId(propertyUnitId);
+       // String propertyId=PangoUtility.generateIdAsString();
+       // propertyUnit.setPropertyId(propertyId);
         propertyUnit.setPropertyUnitDesc("Amazing 2 bedrooms appartment");
 
         // Adding listing
@@ -402,27 +401,27 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         List<String> prtIds = new ArrayList<>();
 
         PropertyUnit propertyUnit = createPropertyUnit();
-        propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
+        propertyUnit.setPropertyId(PangoUtility.generateIdAsString());
         propertyUnit.setPropertyUnitDesc(RandomStringUtils.randomAlphabetic(20));
         unitRepository.save(propertyUnit);
 
         assertThat(user.getFavouredProperties(), hasSize(0));
-        domainService.updateUserFavoriteProperties(user,propertyUnit.getPropertyUnitId(),true);
+        domainService.updateUserFavoriteProperties(user,propertyUnit.getPropertyId(),true);
         User savedUsr = userRepository.findOne(user.getUserReferenceId());
         assertThat(savedUsr.getFavouredProperties(), hasSize(1));
-        domainService.updateUserFavoriteProperties(user,propertyUnit.getPropertyUnitId(),false);
+        domainService.updateUserFavoriteProperties(user,propertyUnit.getPropertyId(),false);
         savedUsr = userRepository.findOne(user.getUserReferenceId());
         assertThat(savedUsr.getFavouredProperties(), hasSize(0));
 
 
         IntStream.range(0,3).forEach(i -> {
             PropertyUnit unit = new PropertyUnit();
-            unit.setPropertyUnitId(PangoUtility.generateIdAsString() + i);
+            unit.setPropertyId(PangoUtility.generateIdAsString() + i);
             unitRepository.save(unit);
-            prtIds.add(unit.getPropertyUnitId());
+            prtIds.add(unit.getPropertyId());
 
             try {
-                domainService.updateUserFavoriteProperties(user,unit.getPropertyUnitId(),true);
+                domainService.updateUserFavoriteProperties(user,unit.getPropertyId(),true);
             } catch (EntityNotFound entityNotFound) {
                 entityNotFound.printStackTrace();
             }
@@ -431,8 +430,8 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         savedUsr = userRepository.findOne(user.getUserReferenceId());
         assertThat(savedUsr.getFavouredProperties(), IsCollectionWithSize.hasSize(3));
 
-        propertyUnit.setPropertyUnitId(prtIds.get(0));
-        domainService.updateUserFavoriteProperties(user,propertyUnit.getPropertyUnitId(),false);
+        propertyUnit.setPropertyId(prtIds.get(0));
+        domainService.updateUserFavoriteProperties(user,propertyUnit.getPropertyId(),false);
 
         savedUsr = userRepository.findOne(user.getUserReferenceId());
         assertThat(savedUsr.getFavouredProperties(), IsCollectionWithSize.hasSize(2));
@@ -457,11 +456,11 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            unit.setPropertyUnitId("");
+            unit.setPropertyId("");
            domainService.createProperty(unit,unit.getOwner());
 
             try {
-                domainService.updateUserFavoriteProperties(user,unit.getPropertyUnitId(),true);
+                domainService.updateUserFavoriteProperties(user,unit.getPropertyId(),true);
             } catch (EntityNotFound entityNotFound) {
                 entityNotFound.printStackTrace();
             }

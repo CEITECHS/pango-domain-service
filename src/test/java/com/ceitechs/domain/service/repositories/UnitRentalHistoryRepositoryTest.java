@@ -118,7 +118,7 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         // Create a new property unit
         PropertyUnit propertyUnit = new PropertyUnit();
         propertyUnitId = PangoUtility.generateIdAsString();
-        propertyUnit.setPropertyUnitId(propertyUnitId);
+        propertyUnit.setPropertyId(propertyUnitId);
         // Adding listing
         propertyUnit.setListingFor(ListingFor.RENT);
         // Adding property purpose
@@ -215,20 +215,20 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
     @Test
     public void testGetUnitRentalHistoryByPropertyUnit() {
         PropertyUnit propertyUnit = new PropertyUnit();
-        propertyUnit.setPropertyUnitId(propertyUnitId);
+        propertyUnit.setPropertyId(propertyUnitId);
         Page<UnitRentalHistory> results = unitRentalHistoryRepository
                 .findByPropertyUnitOrderByIsActiveDescStartDateDesc(propertyUnit, new PageRequest(0, 10));
         assertNotNull("The returned unit rental rentingHistory should not be null", results);
         assertThat("The returned unit rental rentingHistory should match the expected list", results.getContent(), hasSize(1));
         assertEquals("The property unit id from the results should match the expected property unit id", propertyUnitId,
-                results.getContent().get(0).getPropertyUnit().getPropertyUnitId());
+                results.getContent().get(0).getPropertyUnit().getPropertyId());
     }
 
     @Test
     public void testGetUnitRentalHistoryByPropertyUnitOrderByActive() {
         createNewRentalHistory();
         PropertyUnit propertyUnit = new PropertyUnit();
-        propertyUnit.setPropertyUnitId(propertyUnitId);
+        propertyUnit.setPropertyId(propertyUnitId);
         Page<UnitRentalHistory> results = unitRentalHistoryRepository
                 .findByPropertyUnitOrderByIsActiveDescStartDateDesc(propertyUnit, new PageRequest(0, 10));
         assertNotNull("The returned unit rental rentingHistory should not be null", results);
@@ -242,7 +242,7 @@ public class UnitRentalHistoryRepositoryTest extends AbstractPangoDomainServiceI
         newUser.setUserReferenceId(userReferenceId);
 
         PropertyUnit newPropertyUnit = new PropertyUnit();
-        newPropertyUnit.setPropertyUnitId(propertyUnitId);
+        newPropertyUnit.setPropertyId(propertyUnitId);
 
         // Create a new rental rentingHistory
         String newunitRentalHistoryId = PangoUtility.generateIdAsString();

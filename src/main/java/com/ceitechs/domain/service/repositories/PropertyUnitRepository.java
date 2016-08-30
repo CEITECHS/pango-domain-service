@@ -14,5 +14,6 @@ import com.ceitechs.domain.service.domain.User;
  */
 public interface PropertyUnitRepository extends MongoRepository<PropertyUnit, String>, PropertyUnitRepositoryCustom {
 
-    public List<PropertyUnit> findByOwner(User user);
+     List<PropertyUnit> findByOwner(User user);
+     PropertyUnit findByPropertyIdAndActiveTrue(String propertyId);
 }

@@ -1,0 +1,164 @@
+package com.ceitechs.domain.service.service;
+
+import com.ceitechs.domain.service.domain.PropertyHoldingHistory;
+import com.ceitechs.domain.service.domain.PropertyUnit;
+import com.ceitechs.domain.service.domain.User;
+import com.ceitechs.domain.service.repositories.PropertyHoldingHistoryRepository;
+import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
+import com.ceitechs.domain.service.repositories.UserRepository;
+import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
+import com.ceitechs.domain.service.service.events.PropertyHoldingEvent;
+import com.ceitechs.domain.service.util.PangoUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+/**
+ * @author iddymagohe on 8/29/16.
+ */
+
+// deals with holding and renting operations Pango's properties
+
+public interface PangoPropertyLeasingService {
+    /**
+     * @param user                interested in this property
+     * @param propertyReferenceId
+     * @return
+     * @throws EntityExists if there is an outstanding Holding to the property.
+     */
+    Optional<PropertyHoldingHistory> createPropertyHoldingRequestBy(User user, String propertyReferenceId) throws EntityExists, EntityNotFound;
+
+    /**
+     * user/owner updates to an existing holding request
+     *
+     * @param holdingHistory updated with the respective updates
+     * @param user           making the updates (Owner makes decision Accept/Reject), Requester cancels if allowed.
+     * @param isOwner        indicates whether user is the owner
+     * @return
+     */
+    Optional<PropertyHoldingHistory> updatePropertyHoldingRequest(PropertyHoldingHistory holdingHistory, User user, boolean isOwner);
+
+    /**
+     * retrieves all an expired holding requests made by the user or made to the owners properties.
+     *
+     * @param user
+     * @param isOwner indicates whether user is the owner
+     * @return
+     */
+    List<PropertyHoldingHistory> retrivesHoldingHistoryBy(User user, boolean isOwner);
+}
+
+@Service
+class PropertyLeasingServiceImpl implements  PangoPropertyLeasingService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PropertyLeasingServiceImpl.class);
+
+    private final UserRepository userRepository;
+    private final PropertyUnitRepository propertyUnitRepository;
+    private  final PropertyHoldingHistoryRepository propertyHoldingHistoryRepository;
+
+    @Autowired
+    PangoEventsPublisher eventsPublisher;
+
+    @Value("${property.holding.hours}")
+    private int holdingHours;
+
+    @Autowired
+    public PropertyLeasingServiceImpl(UserRepository userRepository, PropertyUnitRepository propertyUnitRepository, PropertyHoldingHistoryRepository propertyHoldingHistoryRepository) {
+        this.userRepository = userRepository;
+        this.propertyUnitRepository = propertyUnitRepository;
+        this.propertyHoldingHistoryRepository = propertyHoldingHistoryRepository;
+    }
+
+    /**
+     * @param user                interested in this property
+     * @param propertyReferenceId
+     * @return
+     * @throws EntityExists if there is an outstanding Holding to the property.
+     */
+    @Override
+    public Optional<PropertyHoldingHistory> createPropertyHoldingRequestBy(User user, String propertyReferenceId) throws EntityExists, EntityNotFound {
+        Assert.notNull(user, "User initiating a holding request can not be null ");
+        Assert.hasText(user.getUserReferenceId(), "userId initiating a holding request can not be null or empty ");
+        Assert.hasText(propertyReferenceId, "property referenceId can not be null or empty");
+
+        PropertyUnit property = propertyUnitRepository.findByPropertyIdAndActiveTrue(propertyReferenceId); // consider available property
+        if (property == null)
+            throw new EntityNotFound(String.format("Property : %s does not exist or can not be held.", propertyReferenceId), new IllegalArgumentException(String.format("Property : %s does not exist or can not be held.", propertyReferenceId)));
+
+        // Asynchronous get the a verified user by Id
+        CompletableFuture<User> userCompletableFuture = CompletableFuture.supplyAsync(() -> userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", user.getUserReferenceId()));
+
+        // Check for any outstanding holding on this property.
+        PropertyHoldingHistory holdingHistory = propertyHoldingHistoryRepository.findByPropertyUnitAndPhaseNotInOrderByCreatedDateDesc(property, Arrays.asList(PropertyHoldingHistory.HoldingPhase.CANCELLED, PropertyHoldingHistory.HoldingPhase.EXPIRED));
+        if (holdingHistory != null)
+            throw new EntityExists(String.format("Property : %s has an outstanding holding", propertyReferenceId), new IllegalArgumentException(String.format("Property : %s has an outstanding holding", propertyReferenceId)));
+
+        try {
+            User savedUser = userCompletableFuture.get();
+            if (savedUser == null)
+                throw new EntityNotFound(String.format("Unknown User : %s ", user.getUserReferenceId()), new IllegalArgumentException(String.format("Unknown User : %s ", user.getUserReferenceId())));
+
+            // creates a new holding request
+            PropertyHoldingHistory propertyHoldingHistory = new PropertyHoldingHistory();
+            propertyHoldingHistory.setHoldingReferenceId(PangoUtility.generateIdAsString());
+            propertyHoldingHistory.setPropertyUnit(property);
+            propertyHoldingHistory.setUser(savedUser);
+            propertyHoldingHistory.setStartDate(LocalDateTime.now());
+            propertyHoldingHistory.setEndDate(propertyHoldingHistory.getStartDate().plusHours(holdingHours));
+            propertyHoldingHistory.setOwnerReferenceId(property.getOwner().getUserReferenceId());
+            propertyHoldingHistory.setPhase(PropertyHoldingHistory.HoldingPhase.INITIATED);
+
+            logger.info(String.format("saving a new holding request for user : %s on property : %s  ", user.getUserReferenceId(), propertyReferenceId));
+            PropertyHoldingHistory savedHoldingHistory = propertyHoldingHistoryRepository.save(propertyHoldingHistory);
+
+            // trigger a holding event
+            CompletableFuture.runAsync(() -> {
+                logger.info(String.format("publishing holing INITIATED event : %s ", savedHoldingHistory.getHoldingReferenceId()));
+                eventsPublisher.publishPangoEvent(new PropertyHoldingEvent(savedHoldingHistory, property.getOwner()));
+            });
+
+            return Optional.ofNullable(savedHoldingHistory);
+
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error(e.getMessage(), e.getCause());
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * user/owner updates to an existing holding request
+     *
+     * @param holdingHistory updated with the respective updates
+     * @param user           making the updates (Owner makes decision Accept/Reject), Requester cancels if allowed.
+     * @param isOwner        indicates whether user is the owner
+     * @return
+     */
+    @Override
+    public Optional<PropertyHoldingHistory> updatePropertyHoldingRequest(PropertyHoldingHistory holdingHistory, User user, boolean isOwner) {
+        return null;
+    }
+
+    /**
+     * retrieves all an expired holding requests made by the user or made to the owners properties.
+     *
+     * @param user
+     * @param isOwner indicates whether user is the owner
+     * @return
+     */
+    @Override
+    public List<PropertyHoldingHistory> retrivesHoldingHistoryBy(User user, boolean isOwner) {
+        return null;
+    }
+}

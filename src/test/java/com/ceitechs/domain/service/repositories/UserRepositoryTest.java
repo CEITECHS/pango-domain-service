@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -33,11 +32,9 @@ import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
 import com.ceitechs.domain.service.domain.UserPreference.PreferenceCategory;
 import com.ceitechs.domain.service.domain.UserPreference.PreferenceType;
 import com.ceitechs.domain.service.service.GridFsService;
-import com.ceitechs.domain.service.util.DateConvertUtility;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.BasicDBObject;
-import org.springframework.test.context.TestExecutionListeners;
 
 /**
  * 
@@ -434,7 +431,7 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
         List<String> prtIds = new ArrayList<>();
 
         PropertyUnit propertyUnit = new PropertyUnit();
-        propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
+        propertyUnit.setPropertyId(PangoUtility.generateIdAsString());
 
         assertThat(user.getFavouredProperties(),hasSize(0));
         userRepository.updateFavouredProperties(user,propertyUnit,true);
@@ -449,15 +446,15 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
 
         IntStream.range(0,5).forEach(i -> {
             PropertyUnit unit = new PropertyUnit();
-            unit.setPropertyUnitId(PangoUtility.generateIdAsString() + i);
-            prtIds.add(unit.getPropertyUnitId());
+            unit.setPropertyId(PangoUtility.generateIdAsString() + i);
+            prtIds.add(unit.getPropertyId());
             userRepository.updateFavouredProperties(user,unit,true);
         });
 
         savedUsr = userRepository.findOne(user.getUserReferenceId());
         assertThat(savedUsr.getFavouredProperties(),hasSize(5));
 
-        propertyUnit.setPropertyUnitId(prtIds.get(0));
+        propertyUnit.setPropertyId(prtIds.get(0));
         userRepository.updateFavouredProperties(user,propertyUnit,false);
 
         savedUsr = userRepository.findOne(user.getUserReferenceId());

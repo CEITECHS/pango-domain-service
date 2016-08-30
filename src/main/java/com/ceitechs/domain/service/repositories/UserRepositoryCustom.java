@@ -1,7 +1,6 @@
 package com.ceitechs.domain.service.repositories;
 
 
-import com.ceitechs.domain.service.domain.Annotations.Updatable;
 import com.ceitechs.domain.service.domain.PropertyUnit;
 import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.domain.UserPreference;
@@ -122,8 +121,8 @@ public interface UserRepositoryCustom {
     public Optional<User> updateFavouredProperties(User user, PropertyUnit propertyUnit, boolean favourable) {
         Assert.notNull(user, "user can not be null");
         Assert.notNull(propertyUnit, "property can not be null");
-        Assert.hasText(propertyUnit.getPropertyUnitId(),"property reference id can not be null or empty");
-        Update update = favourable ? new Update().addToSet("favouredProperties",propertyUnit.getPropertyUnitId()) : new Update().pull("favouredProperties", propertyUnit.getPropertyUnitId());
+        Assert.hasText(propertyUnit.getPropertyId(),"property reference id can not be null or empty");
+        Update update = favourable ? new Update().addToSet("favouredProperties",propertyUnit.getPropertyId()) : new Update().pull("favouredProperties", propertyUnit.getPropertyId());
          mongoOperations.updateFirst(query(Criteria.where("_id").is(user.getUserReferenceId())), update, User.class);
         return Optional.of(user);
     }

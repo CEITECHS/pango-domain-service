@@ -47,7 +47,7 @@ public class PropertyHoldingHistory {
 
     private String decisionDetails;
 
-    private HoldingPhase holdingPhase = HoldingPhase.INITIATED;
+    private HoldingPhase phase = HoldingPhase.INITIATED;
 
     private String getRemainingTime(){
        return PangoUtility.remainingDurationBtnDateTimes(endDate, LocalDateTime.now());

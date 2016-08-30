@@ -14,8 +14,6 @@ import com.mongodb.gridfs.GridFSDBFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.geo.GeoResult;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.stereotype.Service;
@@ -189,14 +187,14 @@ class PangoDomainServiceImpl implements PangoDomainService {
         String userId = propertyUnit.getOwner().getUserReferenceId();
         User owner = userRepository.findOne(userId);
         propertyUnit.setOwner(owner);
-        if (!StringUtils.hasText(propertyUnit.getPropertyUnitId())){
-            propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
+        if (!StringUtils.hasText(propertyUnit.getPropertyId())){
+            propertyUnit.setPropertyId(PangoUtility.generateIdAsString());
             PropertyUnit savedUnit = propertyUnitRepository.save(propertyUnit);
             logger.info("Saved Property "+ savedUnit);
 
             if(savedUnit !=null && !propertyUnit.getAttachments().isEmpty()){
                 OnAttachmentUploadEvent attachmentEvent = new OnAttachmentUploadEvent(
-                       propertyUnit.getAttachments() .stream().map((attachment) ->  new AttachmentToUpload(savedUnit.getPropertyUnitId(), ReferenceIdFor.PROPERTY, attachment,"")).collect(Collectors.toList()));
+                       propertyUnit.getAttachments() .stream().map((attachment) ->  new AttachmentToUpload(savedUnit.getPropertyId(), ReferenceIdFor.PROPERTY, attachment,"")).collect(Collectors.toList()));
                         eventsPublisher.publishPangoEvent(attachmentEvent);
                 logger.info("published event to store attachments");
                 return Optional.of(savedUnit);
@@ -225,15 +223,15 @@ class PangoDomainServiceImpl implements PangoDomainService {
         if(!propertyUnitGeoResults.getContent().isEmpty()){
             // associate cover photos
            List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(propertyUnitGeoResults.getContent().parallelStream()
-                    .map(propertyUnitGeoResult -> propertyUnitGeoResult.getContent().getPropertyUnitId())
+                    .map(propertyUnitGeoResult -> propertyUnitGeoResult.getContent().getPropertyId())
                     .collect(Collectors.toList()));
             Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
 
             return propertyCoverPhoto.isEmpty()? propertyUnitGeoResults.getContent() : propertyUnitGeoResults.getContent().stream()
                     .map(propertyUnitGeoResult -> {
                         PropertyUnit propertyUnit = propertyUnitGeoResult.getContent();
-                        if(propertyCoverPhoto.containsKey(propertyUnit.getPropertyUnitId()))
-                           propertyUnit.setCoverPhoto(new Attachment(propertyCoverPhoto.get(propertyUnit.getPropertyUnitId())));
+                        if(propertyCoverPhoto.containsKey(propertyUnit.getPropertyId()))
+                           propertyUnit.setCoverPhoto(new Attachment(propertyCoverPhoto.get(propertyUnit.getPropertyId())));
                         return new GeoResult<>(propertyUnit,propertyUnitGeoResult.getDistance());
                     }).collect(Collectors.toList());
         }
@@ -257,7 +255,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
         if (!savedUsr.getFavouredProperties().isEmpty()) {
             List<PropertyUnit> propertyUnits = PangoUtility.toList(propertyUnitRepository.findAll(savedUsr.getFavouredProperties()));
 
-            List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(propertyUnits.parallelStream().map(propertyUnit -> propertyUnit.getPropertyUnitId()).collect(Collectors.toList()));
+            List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(propertyUnits.parallelStream().map(propertyUnit -> propertyUnit.getPropertyId()).collect(Collectors.toList()));
             Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
 
             List<PropertyUnit> units = propertyUnits.parallelStream().map(propertyUnit -> {
@@ -266,8 +264,8 @@ class PangoDomainServiceImpl implements PangoDomainService {
                     propertyUnit.setDistance(distance);
                 }
                 //associate cover photos
-                if (propertyCoverPhoto.containsKey(propertyUnit.getPropertyUnitId()))
-                    propertyUnit.setCoverPhoto(new Attachment(propertyCoverPhoto.get(propertyUnit.getPropertyUnitId())));
+                if (propertyCoverPhoto.containsKey(propertyUnit.getPropertyId()))
+                    propertyUnit.setCoverPhoto(new Attachment(propertyCoverPhoto.get(propertyUnit.getPropertyId())));
                 return propertyUnit;
             }).collect(Collectors.toList());
             units.sort(Comparator.comparing(PropertyUnit::getDistance));
@@ -290,7 +288,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
         recordUserSearchHistory(new UserSearchHistory(propertySearchCriteria, propertyUnit.isPresent()?1:0), user);
         propertyUnit.ifPresent(p -> {
             FileMetadata fileMetadata = new FileMetadata();
-            fileMetadata.setReferenceId(p.getPropertyUnitId());
+            fileMetadata.setReferenceId(p.getPropertyId());
             fileMetadata.setFileType(FileMetadata.FILETYPE.PHOTO.name());
             List<GridFSDBFile> attachments = gridFsService.getAllAttachments(fileMetadata, ReferenceIdFor.PROPERTY);
             p.setAttachments(FileMetadata.getFileMetaFromGridFSDBFileAsList(attachments).parallelStream().map(Attachment::new).collect(Collectors.toList()));

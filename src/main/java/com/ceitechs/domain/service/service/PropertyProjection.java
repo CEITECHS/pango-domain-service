@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  */
 public interface PropertyProjection {
 
-    String getPropertyUnitId();
+    String getPropertyId();
 
     String getUnitNumber();
 

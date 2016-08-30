@@ -9,7 +9,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@TestPropertySource(properties = {"pango.domain.service.db.host.name = localhost:27017", "pango.domain.service.db.password = pangoPreprodWriteUsrPass10",
+@TestPropertySource(properties = {"pango.domain.service.db.host.name = localhost:27017", "pango.domain.service.db.password = pangoPreprodWriteUsrPass10", "property.holding.hours=48",
         "pango.domain.service.db.user =pangoWriteUser", "pango.domain.service.db.name = pango", "pango.domain.service.bucket.name = picture","magic.key=5rGXHCU2yoGTn600Gz9i5A==",
         "templates.root.uri = https://raw.githubusercontent.com/CEITECHS/pango-configs/master/templates/",
         "user.verification.uri=https://www.chaguapango.com/accountVerification/",

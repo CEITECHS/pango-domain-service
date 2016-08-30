@@ -39,7 +39,7 @@ public class PropertyHoldingHistoryRepositoryTest extends AbstractPangoDomainSer
     private Resource propertyUnitResource = new ClassPathResource("propertyUnit.jpg");
 
     @Autowired
-    private UnitHoldingHistoryRepository unitHoldingHistoryRepository;
+    private PropertyHoldingHistoryRepository propertyHoldingHistoryRepository;
 
     @Autowired
     private PropertyUnitRepository propertyUnitRepository;
@@ -67,7 +67,7 @@ public class PropertyHoldingHistoryRepositoryTest extends AbstractPangoDomainSer
     @Before
     public void setUp() {
         // Delete all unit holding rentingHistory
-        unitHoldingHistoryRepository.deleteAll();
+        propertyHoldingHistoryRepository.deleteAll();
 
         PropertyHoldingHistory unitHoldingHistory = new PropertyHoldingHistory();
 
@@ -110,7 +110,7 @@ public class PropertyHoldingHistoryRepositoryTest extends AbstractPangoDomainSer
         // Create a new property unit
         PropertyUnit propertyUnit = new PropertyUnit();
         propertyUnitId = PangoUtility.generateIdAsString();
-        propertyUnit.setPropertyUnitId(propertyUnitId);
+        propertyUnit.setPropertyId(propertyUnitId);
 
         // Adding listing
         propertyUnit.setListingFor(ListingFor.RENT);
@@ -175,7 +175,7 @@ public class PropertyHoldingHistoryRepositoryTest extends AbstractPangoDomainSer
         unitHoldingHistory.setTransactionHistory(transactionHistory);
 
         // save unit holding rentingHistory
-        savedUnitHoldingHistory = unitHoldingHistoryRepository.save(unitHoldingHistory);
+        savedUnitHoldingHistory = propertyHoldingHistoryRepository.save(unitHoldingHistory);
     }
 
     @Test
@@ -190,7 +190,7 @@ public class PropertyHoldingHistoryRepositoryTest extends AbstractPangoDomainSer
         // Get all the unit holding rentingHistory for the user
         User newUser = new User();
         newUser.setUserReferenceId(userReferenceId);
-        Page<PropertyHoldingHistory> results = unitHoldingHistoryRepository.findByUserOrderByStartDateDesc(newUser,
+        Page<PropertyHoldingHistory> results = propertyHoldingHistoryRepository.findByUserOrderByStartDateDesc(newUser,
                 new PageRequest(0, 10));
         assertNotNull("The returned unit holding rentingHistory should not be null", results);
         assertThat("The returned unit holding rentingHistory should match the expected list", results.getContent(),
@@ -200,7 +200,7 @@ public class PropertyHoldingHistoryRepositoryTest extends AbstractPangoDomainSer
     @Test
     public void testGetUnitHoldingHistoryByOwner() {
         // Get all the unit holding rentingHistory for the owners property
-        Optional<List<PropertyHoldingHistory>> results = unitHoldingHistoryRepository
+        Optional<List<PropertyHoldingHistory>> results = propertyHoldingHistoryRepository
                 .getUnitHoldingHistory(ownerReferenceId);
         assertNotNull("The returned unit holding rentingHistory should not be null", results);
         assertThat("The returned unit holding rentingHistory should match the expected list", results.get(), hasSize(1));
@@ -212,11 +212,12 @@ public class PropertyHoldingHistoryRepositoryTest extends AbstractPangoDomainSer
     public void testGetUnitHoldingHistoryByOwnerWithNoProperty() {
         // Get all the unit holding rentingHistory for the owners property
         String ownerId = PangoUtility.generateIdAsString();
-        Optional<List<PropertyHoldingHistory>> results = unitHoldingHistoryRepository.getUnitHoldingHistory(ownerId);
+        Optional<List<PropertyHoldingHistory>> results = propertyHoldingHistoryRepository.getUnitHoldingHistory(ownerId);
         assertNotNull("The returned unit holding rentingHistory should be null", results);
         assertFalse("The returned unit holding rentingHistory should match the expected", results.isPresent());
     }
 
+    //TODO test case for - findByPropertyUnitAndPhaseNotInOrderByCreatedDateDesc
     @After
     public void tearDown() {
     }

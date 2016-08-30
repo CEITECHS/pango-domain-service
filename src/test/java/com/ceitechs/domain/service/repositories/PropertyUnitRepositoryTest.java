@@ -87,7 +87,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         PropertyUnit propertyUnit = new PropertyUnit();
 
         propertyUnitId=PangoUtility.generateIdAsString();
-        propertyUnit.setPropertyUnitId(propertyUnitId);
+        propertyUnit.setPropertyId(propertyUnitId);
 
         // Adding listing
         propertyUnit.setListingFor(ListingFor.RENT);
@@ -133,7 +133,14 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
     @Test
     public void testSavePropertyUnit() {
         assertNotNull("The saved property unit should not be null", savedPropertyUnit);
-        assertEquals("The propertyUnitId should match", propertyUnitId, savedPropertyUnit.getPropertyUnitId());
+        assertEquals("The propertyId should match", propertyUnitId, savedPropertyUnit.getPropertyId());
+    }
+
+    @Test
+    public void findActivePropertyTest(){
+        PropertyUnit unitById = propertyUnitRepository.findByPropertyIdAndActiveTrue(savedPropertyUnit.getPropertyId());
+        assertNotNull("The saved property unit should not be null", unitById);
+        assertEquals("The propertyId should match", propertyUnitId, unitById.getPropertyId());
     }
 
     @Test
@@ -261,7 +268,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
 
             }
 
-            propertyUnit.setPropertyUnitId(PangoUtility.generateIdAsString());
+            propertyUnit.setPropertyId(PangoUtility.generateIdAsString());
             propertyUnit.setPropertyUnitDesc(propertyUnit.getPropertyUnitDesc() + i);
             propertyUnitRepository.save(propertyUnit);
         });
@@ -293,7 +300,7 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         // Create a new property unit
         PropertyUnit propertyUnit = new PropertyUnit();
         propertyUnitId=PangoUtility.generateIdAsString();
-        propertyUnit.setPropertyUnitId(propertyUnitId);
+        propertyUnit.setPropertyId(propertyUnitId);
         propertyUnit.setPropertyUnitDesc("Amazing 2 bedrooms appartment");
 
         // Adding listing

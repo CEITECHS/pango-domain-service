@@ -30,7 +30,7 @@ public class PropertyUnit  implements PropertyProjection {
     }
 
     @Id
-    private String propertyUnitId;
+    private String propertyId;
 
     private String unitNumber;
 
