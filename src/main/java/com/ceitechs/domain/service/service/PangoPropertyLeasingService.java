@@ -91,14 +91,11 @@ class PropertyLeasingServiceImpl implements  PangoPropertyLeasingService {
         Assert.notNull(user, "User initiating a holding request can not be null ");
         Assert.hasText(user.getUserReferenceId(), "userId initiating a holding request can not be null or empty ");
         Assert.hasText(propertyReferenceId, "property referenceId can not be null or empty");
-
         PropertyUnit property = propertyUnitRepository.findByPropertyIdAndActiveTrue(propertyReferenceId); // consider available property
         if (property == null)
             throw new EntityNotFound(String.format("Property : %s does not exist or can not be held.", propertyReferenceId), new IllegalArgumentException(String.format("Property : %s does not exist or can not be held.", propertyReferenceId)));
-
         // Asynchronous get the a verified user by Id
         CompletableFuture<User> userCompletableFuture = CompletableFuture.supplyAsync(() -> userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", user.getUserReferenceId()));
-
         // Check for any outstanding holding on this property.
         PropertyHoldingHistory holdingHistory = propertyHoldingHistoryRepository.findByPropertyUnitAndPhaseNotInOrderByCreatedDateDesc(property, Arrays.asList(PropertyHoldingHistory.HoldingPhase.CANCELLED, PropertyHoldingHistory.HoldingPhase.EXPIRED));
         if (holdingHistory != null)
@@ -108,7 +105,6 @@ class PropertyLeasingServiceImpl implements  PangoPropertyLeasingService {
             User savedUser = userCompletableFuture.get();
             if (savedUser == null)
                 throw new EntityNotFound(String.format("Unknown User : %s ", user.getUserReferenceId()), new IllegalArgumentException(String.format("Unknown User : %s ", user.getUserReferenceId())));
-
             // creates a new holding request
             PropertyHoldingHistory propertyHoldingHistory = new PropertyHoldingHistory();
             propertyHoldingHistory.setHoldingReferenceId(PangoUtility.generateIdAsString());
@@ -118,10 +114,8 @@ class PropertyLeasingServiceImpl implements  PangoPropertyLeasingService {
             propertyHoldingHistory.setEndDate(propertyHoldingHistory.getStartDate().plusHours(holdingHours));
             propertyHoldingHistory.setOwnerReferenceId(property.getOwner().getUserReferenceId());
             propertyHoldingHistory.setPhase(PropertyHoldingHistory.HoldingPhase.INITIATED);
-
             logger.info(String.format("saving a new holding request for user : %s on property : %s  ", user.getUserReferenceId(), propertyReferenceId));
             PropertyHoldingHistory savedHoldingHistory = propertyHoldingHistoryRepository.save(propertyHoldingHistory);
-
             // trigger a holding event
             CompletableFuture.runAsync(() -> {
                 logger.info(String.format("publishing holing INITIATED event : %s ", savedHoldingHistory.getHoldingReferenceId()));
