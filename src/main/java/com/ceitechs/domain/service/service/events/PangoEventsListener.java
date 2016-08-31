@@ -115,11 +115,13 @@ public class PangoEventsListener{
     public void handlePropertyHoldingEvents(OnPangoEvent<PropertyHoldingHistory> holdingHistoryOnPangoEvent){
         //TODO holding events implementation
         PropertyHoldingHistory propertyHoldingHistory = holdingHistoryOnPangoEvent.get();
+        User owner = holdingHistoryOnPangoEvent.getUser(); // for notification purposes.
         if (propertyHoldingHistory == null ) return;
-
         switch(propertyHoldingHistory.getPhase()){
             case INITIATED:
                 //1 . notify (email, push )the property owner
+                logger.info("initiating holding event for : " + propertyHoldingHistory.getHoldingReferenceId());
+                //TODO send email to owner on this
                 break;
             case DECIDED:
                 //2. if accepted initiate payment for the duration (X) days this must go through.
@@ -130,8 +132,6 @@ public class PangoEventsListener{
                 break;
         }
     }
-
-
 
 
 }

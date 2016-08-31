@@ -2,12 +2,11 @@ package com.ceitechs.domain.service.repositories;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +27,7 @@ import com.ceitechs.domain.service.service.GridFsService;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.BasicDBObject;
+import org.springframework.util.Assert;
 
 /**
  * 
@@ -217,7 +217,25 @@ public class PropertyHoldingHistoryRepositoryTest extends AbstractPangoDomainSer
         assertFalse("The returned unit holding rentingHistory should match the expected", results.isPresent());
     }
 
-    //TODO test case for - findByPropertyUnitAndPhaseNotInOrderByCreatedDateDesc
+    @Test
+    public void findByPropertyAndPhaseNotInTest(){
+        PropertyUnit unit = propertyUnitRepository.findByPropertyIdAndActiveTrue(propertyUnitId);
+        Assert.notNull(unit, "unit can not be null");
+        PropertyHoldingHistory propertyHoldingHistory = propertyHoldingHistoryRepository.findByPropertyUnitAndPhaseNotInOrderByCreatedDateDesc(unit, Arrays.asList(PropertyHoldingHistory.HoldingPhase.CANCELLED, PropertyHoldingHistory.HoldingPhase.EXPIRED));
+        assertNotNull("The saved unit holding rentingHistory should not be null", propertyHoldingHistory);
+        assertEquals("The unit holding Id should match", unitHoldingHistoryId, propertyHoldingHistory.getHoldingReferenceId());
+
+    }
+
+    @Test
+    public void findByPropertyAndPhaseNotInTest2(){
+        PropertyUnit unit = propertyUnitRepository.findByPropertyIdAndActiveTrue(propertyUnitId);
+        Assert.notNull(unit, "unit can not be null");
+        PropertyHoldingHistory propertyHoldingHistory = propertyHoldingHistoryRepository.findByPropertyUnitAndPhaseNotInOrderByCreatedDateDesc(unit, Arrays.asList(PropertyHoldingHistory.HoldingPhase.CANCELLED, PropertyHoldingHistory.HoldingPhase.INITIATED, PropertyHoldingHistory.HoldingPhase.EXPIRED));
+        assertNull("The saved unit holding rentingHistory should not be null", propertyHoldingHistory);
+       // assertNotEquals("The unit holding Id should match", unitHoldingHistoryId, propertyHoldingHistory.getHoldingReferenceId());
+
+    }
     @After
     public void tearDown() {
     }

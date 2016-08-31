@@ -55,7 +55,7 @@ public interface PangoPropertyLeasingService {
      * @param isOwner indicates whether user is the owner
      * @return
      */
-    List<PropertyHoldingHistory> retrivesHoldingHistoryBy(User user, boolean isOwner);
+    List<PropertyHoldingHistory> retrievesHoldingHistoryBy(User user, boolean isOwner);
 }
 
 @Service
@@ -158,7 +158,7 @@ class PropertyLeasingServiceImpl implements  PangoPropertyLeasingService {
      * @return
      */
     @Override
-    public List<PropertyHoldingHistory> retrivesHoldingHistoryBy(User user, boolean isOwner) {
+    public List<PropertyHoldingHistory> retrievesHoldingHistoryBy(User user, boolean isOwner) {
         return null;
     }
 }
