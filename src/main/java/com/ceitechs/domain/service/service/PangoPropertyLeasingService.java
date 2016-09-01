@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -46,7 +47,7 @@ public interface PangoPropertyLeasingService {
      * @param isOwner        indicates whether user is the owner
      * @return
      */
-    Optional<PropertyHoldingHistory> updatePropertyHoldingRequest(PropertyHoldingHistory holdingHistory, User user, boolean isOwner);
+    Optional<PropertyHoldingHistory> updatePropertyHoldingRequest(PropertyHoldingHistory holdingHistory, User user, boolean isOwner) throws EntityNotFound;
 
     /**
      * retrieves all an expired holding requests made by the user or made to the owners properties.
@@ -55,17 +56,17 @@ public interface PangoPropertyLeasingService {
      * @param isOwner indicates whether user is the owner
      * @return
      */
-    List<PropertyHoldingHistory> retrievesHoldingHistoryBy(User user, boolean isOwner);
+    List<PropertyHoldingHistory> retrievesHoldingHistoryBy(User user, boolean isOwner) throws EntityNotFound;
 }
 
 @Service
-class PropertyLeasingServiceImpl implements  PangoPropertyLeasingService {
+class PropertyLeasingServiceImpl implements PangoPropertyLeasingService {
 
     private static final Logger logger = LoggerFactory.getLogger(PropertyLeasingServiceImpl.class);
 
     private final UserRepository userRepository;
     private final PropertyUnitRepository propertyUnitRepository;
-    private  final PropertyHoldingHistoryRepository propertyHoldingHistoryRepository;
+    private final PropertyHoldingHistoryRepository propertyHoldingHistoryRepository;
 
     @Autowired
     PangoEventsPublisher eventsPublisher;
@@ -118,7 +119,7 @@ class PropertyLeasingServiceImpl implements  PangoPropertyLeasingService {
             PropertyHoldingHistory savedHoldingHistory = propertyHoldingHistoryRepository.save(propertyHoldingHistory);
             // trigger a holding event
             CompletableFuture.runAsync(() -> {
-                logger.info(String.format("publishing holing INITIATED event : %s ", savedHoldingHistory.getHoldingReferenceId()));
+                logger.info(String.format("publishing holding INITIATED event : %s ", savedHoldingHistory.getHoldingReferenceId()));
                 eventsPublisher.publishPangoEvent(new PropertyHoldingEvent(savedHoldingHistory, property.getOwner()));
             });
 
@@ -140,8 +141,37 @@ class PropertyLeasingServiceImpl implements  PangoPropertyLeasingService {
      * @return
      */
     @Override
-    public Optional<PropertyHoldingHistory> updatePropertyHoldingRequest(PropertyHoldingHistory holdingHistory, User user, boolean isOwner) {
-        return null;
+    public Optional<PropertyHoldingHistory> updatePropertyHoldingRequest(PropertyHoldingHistory holdingHistory, User user, boolean isOwner) throws EntityNotFound {
+        Assert.notNull(holdingHistory, "holding history can not be null");
+        Assert.hasText(holdingHistory.getHoldingReferenceId(), "Holding referenceId can not be null or empty");
+        Assert.notNull(user, "user can not be null");
+        Assert.hasText(user.getUserReferenceId(), "User can not be null or empty");
+        User savedUser = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", user.getUserReferenceId());
+        if (savedUser == null)
+            throw new EntityNotFound(String.format("Unknown/Unverified User with Id : %s ", user.getUserReferenceId()), new IllegalArgumentException(String.format("Unknown/Unverified User with Id : %s ", user.getUserReferenceId())));
+
+        PropertyHoldingHistory savedHoldingHistory = propertyHoldingHistoryRepository.findOne(holdingHistory.getHoldingReferenceId());
+        if (savedHoldingHistory == null)
+            throw new EntityNotFound(String.format("Unknown HoldingHistory with Id : %s ", holdingHistory.getHoldingReferenceId()), new IllegalArgumentException(String.format("Unknown HoldingHistory with Id : %s ", holdingHistory.getHoldingReferenceId())));
+
+        Assert.isTrue(savedHoldingHistory.getUser().equals(savedUser) || savedHoldingHistory.getOwnerReferenceId().equals(savedUser.getUserReferenceId()), "Holding History can only be updated by the initiator or property owner");
+
+        Assert.isTrue(savedHoldingHistory.getPhase() == PropertyHoldingHistory.HoldingPhase.INITIATED, "Can not update holding history in status : " + savedHoldingHistory.getPhase().name());
+
+        if (isOwner) { // Owner updated Accept/Reject
+            savedHoldingHistory.setPhase(PropertyHoldingHistory.HoldingPhase.DECIDED);
+            savedHoldingHistory.setHoldingRequestAccepted(holdingHistory.isHoldingRequestAccepted());
+            propertyHoldingHistoryRepository.save(savedHoldingHistory);
+            CompletableFuture.runAsync(() -> {
+                logger.info(String.format("publishing holding DECIDED event : %s ", savedHoldingHistory.getHoldingReferenceId()));
+                eventsPublisher.publishPangoEvent(new PropertyHoldingEvent(savedHoldingHistory, savedUser));
+            });
+        } else {  // user updates - Cancel
+            savedHoldingHistory.setPhase(PropertyHoldingHistory.HoldingPhase.CANCELLED);
+            propertyHoldingHistoryRepository.save(savedHoldingHistory);
+        }
+
+        return Optional.ofNullable(savedHoldingHistory);
     }
 
     /**
@@ -152,7 +182,16 @@ class PropertyLeasingServiceImpl implements  PangoPropertyLeasingService {
      * @return
      */
     @Override
-    public List<PropertyHoldingHistory> retrievesHoldingHistoryBy(User user, boolean isOwner) {
-        return null;
+    public List<PropertyHoldingHistory> retrievesHoldingHistoryBy(User user, boolean isOwner) throws EntityNotFound {
+        Assert.notNull(user, "user can not be null ");
+        Assert.hasText(user.getUserReferenceId(), "User referenceId can not be null or empty");
+        User savedUser = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue("", user.getUserReferenceId());
+        if (savedUser == null)
+            throw new EntityNotFound(String.format("Unknown/Unverified User with Id : %s ", user.getUserReferenceId()), new IllegalArgumentException(String.format("Unknown/Unverified User with Id : %s ", user.getUserReferenceId())));
+
+        List<PropertyHoldingHistory> propertyHoldingHistories = isOwner ? propertyHoldingHistoryRepository.findByOwnerReferenceIdAndAndPhaseNotInOrderByStartDateDesc(user.getUserReferenceId(), Arrays.asList(PropertyHoldingHistory.HoldingPhase.EXPIRED, PropertyHoldingHistory.HoldingPhase.CANCELLED)) :
+                propertyHoldingHistoryRepository.findByUserAndAndPhaseNotInOrderByStartDateDesc(savedUser, Arrays.asList(PropertyHoldingHistory.HoldingPhase.EXPIRED, PropertyHoldingHistory.HoldingPhase.CANCELLED), new PageRequest(0, 50)).getContent();
+
+        return propertyHoldingHistories;
     }
 }

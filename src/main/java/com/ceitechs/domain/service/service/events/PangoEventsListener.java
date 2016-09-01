@@ -124,6 +124,7 @@ public class PangoEventsListener{
                 //TODO send email to owner on this
                 break;
             case DECIDED:
+                logger.info("decided holding event for : " + propertyHoldingHistory.getHoldingReferenceId());
                 //2. if accepted initiate payment for the duration (X) days this must go through.
                 //2.1.0 update the holding with payments, holding start/end date.
                 //2.1.1 notify the users about the accepted/declined holding decision

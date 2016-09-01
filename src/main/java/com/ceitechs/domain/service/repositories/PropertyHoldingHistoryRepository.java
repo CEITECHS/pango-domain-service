@@ -18,8 +18,9 @@ import java.util.List;
 public interface PropertyHoldingHistoryRepository
         extends MongoRepository<PropertyHoldingHistory, String>, PropertyHoldingHistoryRepositoryCustom {
 
-    Page<PropertyHoldingHistory> findByUserOrderByStartDateDesc(User user, Pageable page); //filter out the expired ones
+    Page<PropertyHoldingHistory> findByUserAndAndPhaseNotInOrderByStartDateDesc(User user, List<PropertyHoldingHistory.HoldingPhase> phases, Pageable page); //filter out the expired ones
 
     PropertyHoldingHistory findByPropertyUnitAndPhaseNotInOrderByCreatedDateDesc(PropertyUnit propertyUnit, List<PropertyHoldingHistory.HoldingPhase> phases);
+    List<PropertyHoldingHistory> findByOwnerReferenceIdAndAndPhaseNotInOrderByStartDateDesc(String ownerReferenceId, List<PropertyHoldingHistory.HoldingPhase> phases);
 
 }

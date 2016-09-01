@@ -59,4 +59,6 @@ public class PropertyHoldingHistory {
         DECIDED,
         EXPIRED
     }
+
+
 }
