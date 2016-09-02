@@ -158,7 +158,7 @@ class PropertyLeasingServiceImpl implements PangoPropertyLeasingService {
 
         Assert.isTrue(savedHoldingHistory.getPhase() == PropertyHoldingHistory.HoldingPhase.INITIATED, "Can not update holding history in status : " + savedHoldingHistory.getPhase().name());
 
-        if (isOwner) { // Owner updated Accept/Reject
+        if (isOwner && savedHoldingHistory.getOwnerReferenceId().equals(savedUser.getUserReferenceId())) { // Owner updated Accept/Reject
             savedHoldingHistory.setPhase(PropertyHoldingHistory.HoldingPhase.DECIDED);
             savedHoldingHistory.setHoldingRequestAccepted(holdingHistory.isHoldingRequestAccepted());
             propertyHoldingHistoryRepository.save(savedHoldingHistory);

@@ -185,6 +185,11 @@ public class PangoPropertyLeasingServiceTest extends AbstractPangoDomainServiceI
         user.setLastName("lName");
         user.setEmailAddress("fName.lName@pango.com");
 
+        UserProfile userProfile = new UserProfile();
+        userProfile.setVerified(true);
+
+        user.setProfile(userProfile);
+
         // Save the user
         userRepository.save(user);
 
@@ -268,5 +273,106 @@ public class PangoPropertyLeasingServiceTest extends AbstractPangoDomainServiceI
         return unitRepository.save(propertyUnit);
     }
 
- //TODO updatePropertyHoldingRequest test-case
+    @Test
+    public void updateUserPropertyHoldingRequestTest() throws EntityNotFound {
+        unitRepository.deleteAll();
+        userRepository.deleteAll();
+        propertyHoldingHistoryRepository.deleteAll();
+        PropertyUnit unit = createPropertyUnit();
+        User user = createUser();
+        String holdId = PangoUtility.generateIdAsString();
+        PropertyHoldingHistory unitHoldingHistory = new PropertyHoldingHistory();
+        unitHoldingHistory.setHoldingReferenceId(holdId);
+        unitHoldingHistory.setUser(user);
+        unitHoldingHistory.setPropertyUnit(unit);
+        // Holding on a property would be for 48 hours
+        unitHoldingHistory.setStartDate(LocalDateTime.now());
+        unitHoldingHistory.setEndDate(LocalDateTime.now().plusDays(1));
+        unitHoldingHistory.setOwnerReferenceId(unit.getOwner().getUserReferenceId());
+
+        // Holding Payment
+        PendingPayment holdingPayment = new PendingPayment();
+        unitHoldingHistory.setHoldingPayment(holdingPayment);
+
+        // User Transaction History
+        UserTransactionHistory transactionHistory = new UserTransactionHistory();
+        transactionHistory.setTransactionType(TransactionType.HOLDING);
+        unitHoldingHistory.setTransactionHistory(transactionHistory);
+        assertEquals(PropertyHoldingHistory.HoldingPhase.INITIATED, unitHoldingHistory.getPhase());
+        propertyHoldingHistoryRepository.save(unitHoldingHistory);
+        leasingService.updatePropertyHoldingRequest(unitHoldingHistory, user, false);
+        PropertyHoldingHistory propertyHoldingHistory = propertyHoldingHistoryRepository.findOne(unitHoldingHistory.getHoldingReferenceId());
+        assertEquals(PropertyHoldingHistory.HoldingPhase.CANCELLED, propertyHoldingHistory.getPhase());
+
+    }
+
+    @Test
+    public void updateOwnerPropertyHoldingRequestTest() throws EntityNotFound {
+        unitRepository.deleteAll();
+        userRepository.deleteAll();
+        propertyHoldingHistoryRepository.deleteAll();
+        PropertyUnit unit = createPropertyUnit();
+        User user = createUser();
+        String holdId = PangoUtility.generateIdAsString();
+        PropertyHoldingHistory unitHoldingHistory = new PropertyHoldingHistory();
+        unitHoldingHistory.setHoldingReferenceId(holdId);
+        unitHoldingHistory.setUser(user);
+        unitHoldingHistory.setPropertyUnit(unit);
+        // Holding on a property would be for 48 hours
+        unitHoldingHistory.setStartDate(LocalDateTime.now());
+        unitHoldingHistory.setEndDate(LocalDateTime.now().plusDays(1));
+        unitHoldingHistory.setOwnerReferenceId(unit.getOwner().getUserReferenceId());
+
+        // Holding Payment
+        PendingPayment holdingPayment = new PendingPayment();
+        unitHoldingHistory.setHoldingPayment(holdingPayment);
+
+        // User Transaction History
+        UserTransactionHistory transactionHistory = new UserTransactionHistory();
+        transactionHistory.setTransactionType(TransactionType.HOLDING);
+        unitHoldingHistory.setTransactionHistory(transactionHistory);
+        assertEquals(PropertyHoldingHistory.HoldingPhase.INITIATED, unitHoldingHistory.getPhase());
+        propertyHoldingHistoryRepository.save(unitHoldingHistory);
+        leasingService.updatePropertyHoldingRequest(unitHoldingHistory, unit.getOwner(), true);
+        PropertyHoldingHistory propertyHoldingHistory = propertyHoldingHistoryRepository.findOne(unitHoldingHistory.getHoldingReferenceId());
+        assertEquals(PropertyHoldingHistory.HoldingPhase.DECIDED, propertyHoldingHistory.getPhase());
+
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void updateOwnerUpdatedPropertyHoldingRequestTest() throws EntityNotFound {
+        unitRepository.deleteAll();
+        userRepository.deleteAll();
+        propertyHoldingHistoryRepository.deleteAll();
+        PropertyUnit unit = createPropertyUnit();
+        User user = createUser();
+        String holdId = PangoUtility.generateIdAsString();
+        PropertyHoldingHistory unitHoldingHistory = new PropertyHoldingHistory();
+        unitHoldingHistory.setHoldingReferenceId(holdId);
+        unitHoldingHistory.setUser(user);
+        unitHoldingHistory.setPropertyUnit(unit);
+        // Holding on a property would be for 48 hours
+        unitHoldingHistory.setStartDate(LocalDateTime.now());
+        unitHoldingHistory.setEndDate(LocalDateTime.now().plusDays(1));
+        unitHoldingHistory.setOwnerReferenceId(unit.getOwner().getUserReferenceId());
+
+        // Holding Payment
+        PendingPayment holdingPayment = new PendingPayment();
+        unitHoldingHistory.setHoldingPayment(holdingPayment);
+
+        // User Transaction History
+        UserTransactionHistory transactionHistory = new UserTransactionHistory();
+        transactionHistory.setTransactionType(TransactionType.HOLDING);
+        unitHoldingHistory.setTransactionHistory(transactionHistory);
+        assertEquals(PropertyHoldingHistory.HoldingPhase.INITIATED, unitHoldingHistory.getPhase());
+        propertyHoldingHistoryRepository.save(unitHoldingHistory);
+        leasingService.updatePropertyHoldingRequest(unitHoldingHistory, unit.getOwner(), true);
+        PropertyHoldingHistory propertyHoldingHistory = propertyHoldingHistoryRepository.findOne(unitHoldingHistory.getHoldingReferenceId());
+        assertEquals(PropertyHoldingHistory.HoldingPhase.DECIDED, propertyHoldingHistory.getPhase());
+        leasingService.updatePropertyHoldingRequest(unitHoldingHistory, user, false);
+
+    }
+
+
 }
