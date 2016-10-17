@@ -186,7 +186,7 @@ class PropertyLeasingServiceImpl implements PangoPropertyLeasingService {
     }
 
     /**
-     * retrieves all an expired holding requests made by the user or made to the owners properties.
+     * retrieves all un expired holding requests made by the user or made to the owner properties.
      *
      * @param user
      * @param isOwner indicates whether user is the owner
@@ -219,4 +219,6 @@ class PropertyLeasingServiceImpl implements PangoPropertyLeasingService {
     public Optional<PropertyRentalHistory> createPropertyRentalContract(User owner, PropertyRentalHistory rentalHistory) throws EntityNotFound, EntityExists {
         return null; //TODO impls
     }
+
+    //TODO mark holdings expired, rentals.
 }
