@@ -41,7 +41,7 @@ public interface PangoPropertyLeasingService {
     Optional<PropertyHoldingHistory> createPropertyHoldingRequestBy(User user, String propertyReferenceId) throws EntityExists, EntityNotFound;
 
     /**
-     * user/owner updates to an existing holding request
+     * user/owner updates to an existing holding request, holding start-date is not updatable
      *
      * @param holdingHistory updated with the respective updates
      * @param user           making the updates (Owner makes decision Accept/Reject), Requester cancels if allowed.
@@ -172,6 +172,7 @@ class PropertyLeasingServiceImpl implements PangoPropertyLeasingService {
         if (isOwner && savedHoldingHistory.getOwnerReferenceId().equals(savedUser.getUserReferenceId())) { // Owner updated Accept/Reject
             savedHoldingHistory.setPhase(PropertyHoldingHistory.HoldingPhase.DECIDED);
             savedHoldingHistory.setHoldingRequestAccepted(holdingHistory.isHoldingRequestAccepted());
+            savedHoldingHistory.setDecisionDetails(holdingHistory.getDecisionDetails());
             propertyHoldingHistoryRepository.save(savedHoldingHistory);
             CompletableFuture.runAsync(() -> {
                 logger.info(String.format("publishing holding DECIDED event : %s ", savedHoldingHistory.getHoldingReferenceId()));

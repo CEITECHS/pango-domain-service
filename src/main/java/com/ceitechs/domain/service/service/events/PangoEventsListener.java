@@ -159,11 +159,11 @@ public class PangoEventsListener{
                 break;
             case FULFILLED:
                 logger.info("FULFILLED rental event for : " + propertyRentalHistory.getRentalReferenceId());
-                //3. payed for, pending acceptance
+                //3. payed for, pending acceptance by owner and renter
                 break;
             case ACCEPTED:
                 logger.info("ACCEPTED rental event for : " + propertyRentalHistory.getRentalReferenceId());
-                //accepted for all parties
+                //accepted for all parties (owner and renter)
                 break;
             case CANCELLED:
                 logger.info("CANCELLED rental event for : " + propertyRentalHistory.getRentalReferenceId());
