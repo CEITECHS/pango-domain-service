@@ -15,8 +15,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Document(collection = "unit_holding_history")
-@TypeAlias("unit_holding_history")
+@Document(collection = "property_holding_history")
+@TypeAlias("property_holding_history")
 public class PropertyHoldingHistory {
 
     @Id

@@ -33,7 +33,7 @@ public class EmailModel<T> {
     /**
      * for sending template email(HTML) and want to pass data values for properties like FirstName , lastName etc
      * Set a domain object with these value data, you must implement accessor(get) methods of these properties
-     * when template is not provide , model is used as message body(String)
+     * when template is not provided {@link #model} is used as message body(String)
      */
     private T model;
 

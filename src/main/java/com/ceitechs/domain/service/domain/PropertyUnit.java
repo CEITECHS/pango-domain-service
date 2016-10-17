@@ -68,7 +68,7 @@ public class PropertyUnit  implements PropertyProjection {
     private Attachment coverPhoto;
 
     @Transient
-    private List<UnitRentalHistory> rentingHistory;
+    private List<PropertyRentalHistory> rentingHistory;
 
     @Transient
     private List<PropertyUnitEnquiry> enquiries;

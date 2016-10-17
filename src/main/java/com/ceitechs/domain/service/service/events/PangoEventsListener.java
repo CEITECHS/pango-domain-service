@@ -135,4 +135,43 @@ public class PangoEventsListener{
     }
 
 
+    @Async
+    @EventListener
+    public void handlePropertyRentingEvents(OnPangoEvent<PropertyRentalHistory> rentalHistoryOnPangoEvent){
+        //TODO holding events implementation
+        PropertyRentalHistory propertyRentalHistory = rentalHistoryOnPangoEvent.get();
+        User owner = rentalHistoryOnPangoEvent.getUser(); // for notification purposes.
+        if (propertyRentalHistory == null ) return;
+        switch(propertyRentalHistory.getPhase()){
+            case INITIATED:
+                //1 . notify (email, push ) to the property owner/renter to initiate payment, user registration for unregistered users
+                logger.info("initiating holding event for : " + propertyRentalHistory.getRentalReferenceId());
+                //TODO send email to owner on this
+                break;
+            case PROCESSING:
+                logger.info("PROCESSING rental event for : " + propertyRentalHistory.getRentalReferenceId());
+                break;
+            case PROCESSED:
+                logger.info("PROCESSED rental event for : " + propertyRentalHistory.getRentalReferenceId());
+                //2. payment processed and completed, notify the respective parties
+                //2.1.0 update the rental with payments, holding start/end date.
+                //2.1.1 notify the users about the accepted/declined payment decision
+                break;
+            case FULFILLED:
+                logger.info("FULFILLED rental event for : " + propertyRentalHistory.getRentalReferenceId());
+                //3. payed for, pending acceptance
+                break;
+            case ACCEPTED:
+                logger.info("ACCEPTED rental event for : " + propertyRentalHistory.getRentalReferenceId());
+                //accepted for all parties
+                break;
+            case CANCELLED:
+                logger.info("CANCELLED rental event for : " + propertyRentalHistory.getRentalReferenceId());
+                break;
+            default:
+                break;
+        }
+    }
+
+
 }

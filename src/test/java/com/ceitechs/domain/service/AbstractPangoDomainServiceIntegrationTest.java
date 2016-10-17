@@ -1,6 +1,7 @@
 package com.ceitechs.domain.service;
 
 import com.ceitechs.domain.service.config.PangoDomainServiceConfig;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -21,6 +22,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
         "mail.smtp.auth=true",
         "mail.smtp.starttls.enable=true"})
 @ContextConfiguration(classes = {PangoDomainServiceConfig.class})
+@Ignore
 public class AbstractPangoDomainServiceIntegrationTest {
     protected static final Resource resource = new ClassPathResource("ceitechs.png");
 }

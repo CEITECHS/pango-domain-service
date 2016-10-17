@@ -1,6 +1,7 @@
 package com.ceitechs.domain.service.service;
 
 import com.ceitechs.domain.service.domain.PropertyHoldingHistory;
+import com.ceitechs.domain.service.domain.PropertyRentalHistory;
 import com.ceitechs.domain.service.domain.PropertyUnit;
 import com.ceitechs.domain.service.domain.User;
 import com.ceitechs.domain.service.repositories.PropertyHoldingHistoryRepository;
@@ -57,6 +58,16 @@ public interface PangoPropertyLeasingService {
      * @return
      */
     List<PropertyHoldingHistory> retrievesHoldingHistoryBy(User user, boolean isOwner) throws EntityNotFound;
+
+    /**
+     *  creates a new rental contract for a pango property- initiated by Owner's.
+     * @param owner
+     * @param rentalHistory
+     * @return
+     * @throws EntityNotFound
+     * @throws EntityExists
+     */
+    Optional<PropertyRentalHistory> createPropertyRentalContract(User owner, PropertyRentalHistory rentalHistory) throws EntityNotFound, EntityExists;
 }
 
 @Service
@@ -193,5 +204,19 @@ class PropertyLeasingServiceImpl implements PangoPropertyLeasingService {
                 propertyHoldingHistoryRepository.findByUserAndAndPhaseNotInOrderByStartDateDesc(savedUser, Arrays.asList(PropertyHoldingHistory.HoldingPhase.EXPIRED, PropertyHoldingHistory.HoldingPhase.CANCELLED), new PageRequest(0, 50)).getContent();
 
         return propertyHoldingHistories;
+    }
+
+    /**
+     * creates a new rental contract for a pango property- initiated by Owner's.
+     *
+     * @param owner
+     * @param rentalHistory
+     * @return
+     * @throws EntityNotFound
+     * @throws EntityExists
+     */
+    @Override
+    public Optional<PropertyRentalHistory> createPropertyRentalContract(User owner, PropertyRentalHistory rentalHistory) throws EntityNotFound, EntityExists {
+        return null; //TODO impls
     }
 }

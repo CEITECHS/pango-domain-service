@@ -21,7 +21,7 @@ public class UserTransactionHistory {
 
     private String transactionId;
     private User user;
-    // private UnitRentalHistory rentalHistory;
+    // private PropertyRentalHistory rentalHistory;
     private PropertyHoldingHistory holdingHistory;
     private TransactionType transactionType;
     private String paymentReferenceId;
