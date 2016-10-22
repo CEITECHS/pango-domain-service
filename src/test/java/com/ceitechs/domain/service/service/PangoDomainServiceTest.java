@@ -175,6 +175,7 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         rent.setCurrency("TZS");
         rent.setPeriodforAmount(PerPeriod.MONTHLY);
         propertyUnit.setRent(rent);
+        propertyUnit.setAddress(address);
 
         // Adding property unit image
         propertyUnit.getAttachments().add(buildAttachment());

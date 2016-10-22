@@ -51,7 +51,7 @@ public interface PangoPropertyLeasingService {
     Optional<PropertyHoldingHistory> updatePropertyHoldingRequest(PropertyHoldingHistory holdingHistory, User user, boolean isOwner) throws EntityNotFound;
 
     /**
-     * retrieves all an expired holding requests made by the user or made to the owners properties.
+     * retrieves all unexpired/active holding requests made by the user or made to the owners properties.
      *
      * @param user
      * @param isOwner indicates whether user is the owner
