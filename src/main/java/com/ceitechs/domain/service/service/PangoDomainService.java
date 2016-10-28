@@ -552,7 +552,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
              }
              if (userInteraction == UserInteraction.VERIFICATION ) {
                  //do nothing
-                 logger.info("User : " + user.getEmailAddress() + " can not be allowed to login before verifyong his/her account " );
+                 logger.info("User : " + user.getEmailAddress() + " can not be allowed to login before verifying his/her account " );
              }
         });
         return;
