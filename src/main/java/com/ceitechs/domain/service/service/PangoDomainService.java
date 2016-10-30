@@ -281,7 +281,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
      */
     @Override
     public Optional<PropertyUnit> retrievePropertyBy(String propertyReferenceId, User user) {
-        Optional<PropertyUnit> propertyUnit = Optional.of(propertyUnitRepository.findOne(propertyReferenceId));
+        Optional<PropertyUnit> propertyUnit = Optional.ofNullable(propertyUnitRepository.findOne(propertyReferenceId));
 
         PropertySearchCriteria propertySearchCriteria = new PropertySearchCriteria();
         propertySearchCriteria.setPropertyReferenceId(propertyReferenceId);

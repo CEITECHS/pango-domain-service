@@ -126,11 +126,12 @@ public class PangoUtililityBeanTest extends AbstractPangoDomainServiceIntegratio
 //        String encryptedText = PangoUtility.encrypt("ceitechsender@gmail.com", secretKey);
 //        String encryptedString = PangoUtility.encrypt("Ceitechs2015", secretKey);
 //        assertTrue("ceitechsender@gmail.com".equals(PangoUtility.decrypt(encryptedText, secretKey)));
-//        assertTrue("Ceitechs2015".equals(PangoUtility.decrypt(encryptedString, secretKey)));
+          //assertTrue("Ceitechs2015".equals(PangoUtility.decrypt(encryptedString, secretKey)));
 //        System.out.println(secretKey);
 //        System.out.println(encryptedText);
 //        System.out.println(encryptedString);
     }
+
 
     @Test
     public void testGenerateIdAsString() {
