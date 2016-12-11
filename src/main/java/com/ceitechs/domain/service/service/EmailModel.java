@@ -12,6 +12,10 @@ import lombok.Setter;
 @Setter
 public class EmailModel<T> {
 
+    /**
+     * the from email, that can be replied to
+     */
+    private String fromEmail;
 
     /**
      * one or many receivers of this email.

@@ -13,11 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PangoEmailServiceTest extends AbstractPangoDomainServiceIntegrationTest {
     @Autowired PangoMailService mailService;
 
-    @Ignore
+    //@Ignore
     @Test
     public void sendPlainTextEmailTest(){
         EmailModel<String> emailModel = new EmailModel<>();
-        emailModel.setBccRecipients(new String[]{"iddy85@gmail.com","abhikumar.singh@gmail.com"});
+        emailModel.setBccRecipients(new String[]{"iddyiam@gmail.com","abhikumar.singh@gmail.com"});
         emailModel.setSubject("Pango Test Email");
         StringBuilder str = new StringBuilder("This is a test email from Pango service");
         str.append(System.lineSeparator());

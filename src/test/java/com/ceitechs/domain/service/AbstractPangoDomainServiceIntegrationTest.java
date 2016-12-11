@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
         "pango.domain.service.db.user =pangoWriteUser", "pango.domain.service.db.name = pango", "pango.domain.service.bucket.name = picture","magic.key=5rGXHCU2yoGTn600Gz9i5A==",
         "templates.root.uri = https://raw.githubusercontent.com/CEITECHS/pango-configs/master/templates/",
         "user.verification.uri=https://www.chaguapango.com/accountVerification/",
+        "from.email.address=iddy85@gmail.com",
         "mail.smtp.host=smtp.gmail.com",
         "mail.smtp.port=587",
         "mail.smtp.protocal=",

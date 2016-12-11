@@ -5,6 +5,7 @@ import org.apache.velocity.app.VelocityEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -38,6 +39,10 @@ public interface PangoMailService {
 @Service
 class PangoMailServiceImpl implements PangoMailService {
 
+    @Value("${from.email.address}")
+    private String defaultFromEmail;
+
+
     private static final Logger logger = LoggerFactory.getLogger(PangoMailServiceImpl.class);
     protected static final Resource resource = new ClassPathResource("templates/logo.png");
 
@@ -64,6 +69,7 @@ class PangoMailServiceImpl implements PangoMailService {
         Assert.isTrue(emailModel.getBccRecipients().length > 0 || emailModel.getRecipients().length >0 ,"recipient list can not be null or empty");
         Assert.notNull(emailModel.getModel() , "model can not be null ");
         Assert.isTrue(emailModel.getModel() instanceof String || StringUtils.hasText(emailModel.getTemplate()));
+        Assert.isTrue(StringUtils.hasText(emailModel.getFromEmail()) || StringUtils.hasText(defaultFromEmail), "from email can not be null or empty");
 
 
         mailSender.send(mimeMessage -> {
@@ -71,6 +77,7 @@ class PangoMailServiceImpl implements PangoMailService {
             if (emailModel.getRecipients().length > 0) message.setTo(emailModel.getRecipients());
             if (emailModel.getBccRecipients().length > 0) message.setBcc(emailModel.getBccRecipients());
             if (emailModel.getCopiedRecipients().length > 0) message.setCc(emailModel.getCopiedRecipients());
+            message.setFrom(StringUtils.hasText(emailModel.getFromEmail())? emailModel.getFromEmail():defaultFromEmail);
             message.setSentDate(new Date());
             message.setSubject(emailModel.getSubject());
 
