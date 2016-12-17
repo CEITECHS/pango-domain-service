@@ -21,7 +21,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.beans.IntrospectionException;
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -354,6 +356,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
             // generate account verification code
             verificationToken =  TokensUtil.createAccountVerificationToken(user);
             if (StringUtils.hasText(user.getProfile().getVerificationCode())) {
+                user.getProfile().setPasswordChangeDate(LocalDateTime.now());
                 savedUser = userRepository.save(user); // persist user details
                 savedUser.setVerificationPathParam(user.getUserReferenceId() + ":" +verificationToken); // for email template use.
             }
@@ -511,6 +514,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
             if (StringUtils.hasText(user.getProfile().getPassword())){
                 User savedUsr = userRepository.findOne(user.getUserReferenceId());
                 savedUsr.getProfile().setPassword(user.getProfile().getPassword());
+                savedUsr.getProfile().setPasswordChangeDate(LocalDateTime.now());
                 userRepository.save(savedUsr);
             }
         }

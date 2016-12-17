@@ -53,7 +53,7 @@ public class User implements UserProjection {
     private Set<String> favouredProperties = new HashSet<>();
 
     @Transient
-    private String verificationPathParam;
+    private String verificationPathParam; //temporarily holds verification token
 
     @Override
     public String getFullName() {

@@ -1,6 +1,8 @@
 package com.ceitechs.domain.service.domain;
 
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +22,7 @@ public class UserProfile {
     private boolean verified;
     private String verificationCode;
     private LocalDate verificationDate;
+    private LocalDateTime passwordChangeDate;
     private double customerRating;
     private LocalDate createdDate;
     @Transient Attachment profilePicture;
