@@ -189,4 +189,13 @@ public class PangoUtililityBeanTest extends AbstractPangoDomainServiceIntegratio
         System.out.println(PangoUtility.fieldNamesByAnnotation(User.class,Updatable.class));
     }
 
+    @Test
+    public void HexTest(){
+        String key = "onetwothre@four.com";
+        String encoded = new String(Hex.encode(key.getBytes()));
+        assertTrue(key.equals(new String(Hex.decode(encoded))));
+        System.out.println(encoded + " " + new String(Hex.decode(encoded)));
+
+    }
+
 }

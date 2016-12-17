@@ -281,16 +281,4 @@ public class PangoUtility {
        return Arrays.stream(fieldList).filter(field -> field.isAnnotationPresent(annotationClass)).map(Field::getName).collect(Collectors.toList());
     }
 
-    public static String compressBase64Token(String token){
-        Smaz smaz = new Smaz();
-        byte[] compressed = smaz.compress(token);
-        return new String(Hex.encode(compressed));
-    }
-
-    public static String decompressedToken(String compressBase64Token){
-        Smaz smaz = new Smaz();
-        byte[] compressed = Hex.decode(compressBase64Token);
-        return smaz.decompress(compressed);
-    }
-
 }

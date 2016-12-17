@@ -153,6 +153,8 @@ class PangoDomainServiceImpl implements PangoDomainService {
 
     private static final Logger logger = LoggerFactory.getLogger(PangoDomainServiceImpl.class);
 
+    private static final String TOKEN_SEPERATOR = ":";
+
     private final PangoEventsPublisher eventsPublisher;
     private final PropertyUnitRepository propertyUnitRepository;
     private final UserRepository userRepository;
@@ -307,17 +309,20 @@ class PangoDomainServiceImpl implements PangoDomainService {
     @Override
     public Optional<UserProjection> verifyUserAccountBy(String verificationToken) throws Exception {
         Assert.hasText(verificationToken, "Verification token can not be null or empty");
-        Optional<User> validatedToken = TokensUtil.validateToken(verificationToken);
+        Assert.isTrue(verificationToken.contains(TOKEN_SEPERATOR), "Invalid token");
+        String[] tokens = verificationToken.split(TOKEN_SEPERATOR);
+        User usr = userRepository.findOne(tokens[0]);
+
+        if (usr.getProfile().isVerified()) throw new IllegalStateException("User has already been verified");
+
+        Optional<User> validatedToken = TokensUtil.validateVerificationToken(tokens[1], usr);
         User savedUsr = null;
         if (validatedToken.isPresent()) {
             savedUsr = userRepository.findByEmailAddressIgnoreCase(validatedToken.get().getEmailAddress());
             if (!savedUsr.getProfile().isVerified()) {
-                if (validatedToken.get().getProfile().getVerificationCode().equals(savedUsr.getProfile().getVerificationCode())
-                        && validatedToken.get().getProfile().getPassword().equals(savedUsr.getProfile().getPassword())) {
-                    savedUsr.getProfile().setVerified(true);
-                    savedUsr.getProfile().setVerificationDate(LocalDate.now());
-                    savedUsr = userRepository.save(savedUsr);
-                }
+                savedUsr.getProfile().setVerified(true);
+                savedUsr.getProfile().setVerificationDate(LocalDate.now());
+                savedUsr = userRepository.save(savedUsr);
             }
         }
         return Optional.ofNullable(savedUsr);
@@ -348,12 +353,9 @@ class PangoDomainServiceImpl implements PangoDomainService {
         try {
             // generate account verification code
             verificationToken =  TokensUtil.createAccountVerificationToken(user);
-            Optional<User> userWithTokenOptional = TokensUtil.validateToken(verificationToken);
-            if (userWithTokenOptional.isPresent()) {
-                User userWithToken = userWithTokenOptional.get();
-                user.getProfile().setVerificationCode(userWithToken.getProfile().getVerificationCode());
+            if (StringUtils.hasText(user.getProfile().getVerificationCode())) {
                 savedUser = userRepository.save(user); // persist user details
-                savedUser.setVerificationPathParam(verificationToken); // for email template use.
+                savedUser.setVerificationPathParam(user.getUserReferenceId() + ":" +verificationToken); // for email template use.
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e); //TODO deal with these exception scenario.

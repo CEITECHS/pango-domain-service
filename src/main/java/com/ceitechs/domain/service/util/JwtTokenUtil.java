@@ -22,7 +22,7 @@ public class JwtTokenUtil implements Serializable {
 
     private static final String AUDIENCE_UNKNOWN = "unknown";
     public static final String AUDIENCE_WEB = "web";
-    public static final String UNEXPIRED_AUDIENCE = "un-expiring";
+    public static final String AUDIENCE_UNEXPIRED = "un-expiring";
 
 
     private static Long expiration = 3600L; // 1hr
@@ -74,7 +74,7 @@ public class JwtTokenUtil implements Serializable {
 
     private Boolean ignoreTokenExpiration(final Claims claims) {
         String audience = getAudienceFromClaims(claims);
-        return (UNEXPIRED_AUDIENCE.equals(audience));
+        return (AUDIENCE_UNEXPIRED.equals(audience));
     }
 
     public static String generateToken(Object subject, String audience, final String secret) {
@@ -130,7 +130,7 @@ public class JwtTokenUtil implements Serializable {
          *     String subject = {@link JwtTokenUtil#getSubjectFromClaims(Claims)}
          *     Date  createdDate = {@link JwtTokenUtil#getCreatedDateFromClaims(Claims)}
          *     return subject.equals(storedSubject) &&
-         *       ! {@link JwtTokenUtil#isTokenExpired(Claims)} &&
+         *       (! {@link JwtTokenUtil#isTokenExpired(Claims)} || {@link JwtTokenUtil#ignoreTokenExpiration(Claims)}) &&
          *       ! {@link JwtTokenUtil#isCreatedBeforeLastPasswordReset(Date, Date)}
          *
          * }

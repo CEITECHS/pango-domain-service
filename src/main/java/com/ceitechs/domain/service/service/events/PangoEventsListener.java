@@ -98,7 +98,7 @@ public class PangoEventsListener{
             //initiate email verification to user.
 
             EmailModel<UserProjection> emailModel = new EmailModel<>();
-            emailModel.setTemplate("registration-confirmation");//TODO: externalize this and subject-line.
+            emailModel.setTemplate("registration-confirmation");//TODO: externalize this and subject-line && Capture whether emails were sent
             emailModel.setRecipients(new String[]{usr.getEmailAddress()});
             emailModel.setSubject("Pango - Registration confirmation"); //
             emailModel.setModel(usr);

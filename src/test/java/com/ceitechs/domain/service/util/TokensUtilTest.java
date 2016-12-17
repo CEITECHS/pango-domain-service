@@ -22,11 +22,11 @@ public class TokensUtilTest {
         profile.setPassword("ThisSTrongPass!!");
         user.setProfile(profile);
         String signature = TokensUtil.createAccountVerificationToken(user);
-        System.out.println(signature);
-        Optional<User> userOptional = TokensUtil.validateToken(signature);
+        System.out.println(" sig " +signature);
+        Optional<User> userOptional = TokensUtil.validateVerificationToken(signature, user);
         assertTrue(userOptional.isPresent());
         assertEquals(user.getEmailAddress(),userOptional.get().getEmailAddress());
         assertEquals(user.getProfile().getPassword(),userOptional.get().getProfile().getPassword());
-        System.out.println(userOptional.get().getProfile().getVerificationCode());
+        System.out.println(" code " +userOptional.get().getProfile().getVerificationCode());
     }
 }
