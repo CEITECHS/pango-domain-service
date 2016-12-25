@@ -1,4 +1,4 @@
-package com.ceitechs.domain.service.config;
+ package com.ceitechs.domain.service.config;
 
 import java.util.Arrays;
 import java.util.List;
