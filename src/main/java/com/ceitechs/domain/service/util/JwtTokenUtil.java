@@ -66,13 +66,13 @@ public class JwtTokenUtil implements Serializable {
         return expiration.before(new Date());
     }
 
-    private Boolean isCreatedBeforeLastPasswordReset(Date created, Date lastPasswordReset) {
+    private static  Boolean isCreatedBeforeLastPasswordReset(Date created, Date lastPasswordReset) {
         return (lastPasswordReset != null && created.before(lastPasswordReset));
     }
 
 
 
-    private Boolean ignoreTokenExpiration(final Claims claims) {
+    private static Boolean ignoreTokenExpiration(final Claims claims) {
         String audience = getAudienceFromClaims(claims);
         return (AUDIENCE_UNEXPIRED.equals(audience));
     }
@@ -93,7 +93,7 @@ public class JwtTokenUtil implements Serializable {
                 .compact();
     }
 
-    public boolean isTokenRefreshable(final Claims claims, Date lastPasswordReset) {
+    public static boolean isTokenRefreshable(final Claims claims, Date lastPasswordReset) {
         final Date created = getCreatedDateFromClaims(claims);
         return !isCreatedBeforeLastPasswordReset(created, lastPasswordReset)
                 && (!isTokenExpired(claims) || ignoreTokenExpiration(claims));
