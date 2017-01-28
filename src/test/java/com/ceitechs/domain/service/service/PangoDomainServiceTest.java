@@ -183,8 +183,8 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         return propertyUnit;
     }
 
-    private static Attachment buildAttachment() throws IOException {
-        Attachment attachment = new Attachment();
+    private static AttachmentOld buildAttachment() throws IOException {
+        AttachmentOld attachment = new AttachmentOld();
         attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
         attachment.setFileName(resource.getFilename());
         attachment.setFileSize(resource.getFile().length());
@@ -361,7 +361,7 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         assertNull(usr.getAddress());
         Optional<UserProjection> savedUsr = domainService.registerUser(usr);
         usr.setUserReferenceId(savedUsr.get().getUserReferenceId());
-        Attachment profilePicture = buildAttachment();
+        AttachmentOld profilePicture = buildAttachment();
         profilePicture.setFileDescription("profile picture");
         usr.getProfile().setProfilePicture(profilePicture);
         assertTrue(domainService.updateUserInformation(usr,UserUpdating.PROFILE_PICTURE).isPresent());

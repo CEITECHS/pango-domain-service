@@ -130,7 +130,7 @@ public class PropertyRentalHistoryRepositoryTest extends AbstractPangoDomainServ
         propertyUnit.setRent(rent);
         // Adding property unit image
         try {
-            Attachment attachment = new Attachment();
+            AttachmentOld attachment = new AttachmentOld();
             attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
             attachment.setFileName(propertyUnitResource.getFilename());
             attachment.setFileSize(propertyUnitResource.getFile().length());

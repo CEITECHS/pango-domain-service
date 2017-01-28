@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import com.ceitechs.domain.service.domain.*;
 import org.junit.After;
@@ -142,7 +141,7 @@ public class PropertyHoldingHistoryRepositoryTest extends AbstractPangoDomainSer
 
         // Adding property unit image
         try {
-            Attachment attachment = new Attachment();
+            AttachmentOld attachment = new AttachmentOld();
             attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
             attachment.setFileName(propertyUnitResource.getFilename());
             attachment.setFileSize(propertyUnitResource.getFile().length());

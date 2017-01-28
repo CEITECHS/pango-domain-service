@@ -1,6 +1,5 @@
 package com.ceitechs.domain.service.domain;
 
-import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import lombok.Getter;
 import lombok.ToString;
@@ -14,10 +13,10 @@ import lombok.ToString;
 public class AttachmentToUpload {
     private  String referenceId;
     private ReferenceIdFor referenceIdFor;
-    private Attachment attachment;
+    private AttachmentOld attachment;
     private String parentReferenceId;
 
-    public AttachmentToUpload(String referenceId, ReferenceIdFor referenceIdFor, Attachment attachment, String parentReferenceId) {
+    public AttachmentToUpload(String referenceId, ReferenceIdFor referenceIdFor, AttachmentOld attachment, String parentReferenceId) {
         this.referenceId = referenceId;
         this.referenceIdFor = referenceIdFor;
         this.attachment = attachment;

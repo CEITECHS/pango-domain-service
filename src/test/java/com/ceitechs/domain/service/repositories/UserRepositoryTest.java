@@ -356,7 +356,7 @@ public class UserRepositoryTest extends AbstractPangoDomainServiceIntegrationTes
     @Test
     public void saveImage() {
         try {
-            Attachment attachment = new Attachment();
+            AttachmentOld attachment = new AttachmentOld();
             attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
             attachment.setFileName(resource.getFilename());
             attachment.setFileSize(resource.getFile().length());

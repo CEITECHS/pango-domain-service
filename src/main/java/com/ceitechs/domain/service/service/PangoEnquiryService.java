@@ -90,7 +90,7 @@ public interface PangoEnquiryService {
      * @param attachmentReferenceId
      * @return
      */
-    Optional<Attachment> retrieveCorrespondenceAttachmentBy(User user, String attachmentReferenceId);
+    Optional<AttachmentOld> retrieveCorrespondenceAttachmentBy(User user, String attachmentReferenceId);
 
 }
 
@@ -247,7 +247,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
             return propertyCoverPhoto.isEmpty() ? new ArrayList<>(result.getContent()) : result.getContent().parallelStream().map(enquiry -> {
                 PropertyUnitEnquiry propertyUnitEnquiry = enquiry;
                 if (propertyCoverPhoto.containsKey(enquiry.getPropertyUnit().getPropertyId()))
-                    propertyUnitEnquiry.getPropertyUnit().setCoverPhoto(new Attachment(propertyCoverPhoto.get(enquiry.getPropertyUnit().getPropertyId())));
+                    propertyUnitEnquiry.getPropertyUnit().setCoverPhoto(new AttachmentOld(propertyCoverPhoto.get(enquiry.getPropertyUnit().getPropertyId())));
                 return propertyUnitEnquiry;
             }).collect(Collectors.toList());
         }
@@ -352,7 +352,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
      * @return
      */
     @Override
-    public Optional<Attachment> retrieveCorrespondenceAttachmentBy(User user, String attachmentReferenceId) {
+    public Optional<AttachmentOld> retrieveCorrespondenceAttachmentBy(User user, String attachmentReferenceId) {
         Assert.notNull(user, "user can not be null");
         Assert.hasText(attachmentReferenceId, "attachment referenceId can not be null or empty");
         FileMetadata fileMetadata = new FileMetadata();
@@ -360,7 +360,7 @@ class PangoEnquiryServiceImpl implements PangoEnquiryService {
         fileMetadata.setReferenceId(attachmentReferenceId);
         List<GridFSDBFile> attachments = gridFsService.getAllAttachments(fileMetadata, ReferenceIdFor.ENQUIRY);
         FileMetadata fetchedData = FileMetadata.getFileMetadataFromGridFSDBFile(Optional.ofNullable(attachments.get(0)),ReferenceIdFor.ENQUIRY);
-        return attachments.isEmpty()? Optional.empty() : Optional.of(new Attachment(fetchedData));
+        return attachments.isEmpty()? Optional.empty() : Optional.of(new AttachmentOld(fetchedData));
     }
 }
 

@@ -229,7 +229,7 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
 
         Optional<EnquiryProjection> optional = enquiryService.retrieveEnquiryBy(usrs.get(0),enquiryProjectionListbyUsr.get(0).getEnquiryReferenceId());
         assertTrue(optional.isPresent());
-        Optional<Attachment> attachment = enquiryService.retrieveCorrespondenceAttachmentBy(usrs.get(0),optional.get().getCorrespondences().get(0).getAttachmentId());
+        Optional<AttachmentOld> attachment = enquiryService.retrieveCorrespondenceAttachmentBy(usrs.get(0),optional.get().getCorrespondences().get(0).getAttachmentId());
         assertTrue(attachment.isPresent());
         System.out.println(attachment);
 
@@ -310,8 +310,8 @@ public class PangoEnquiryServiceTest  extends AbstractPangoDomainServiceIntegrat
         return userListMap;
     }
 
-    private static Attachment buildAttachment() throws IOException {
-        Attachment attachment = new Attachment();
+    private static AttachmentOld buildAttachment() throws IOException {
+        AttachmentOld attachment = new AttachmentOld();
         attachment.setFileType(FileMetadata.FILETYPE.DOCUMENT.name());
         attachment.setFileName(resource.getFilename());
         attachment.setFileSize(resource.getFile().length());

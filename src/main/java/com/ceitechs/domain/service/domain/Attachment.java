@@ -1,68 +1,77 @@
 package com.ceitechs.domain.service.domain;
 
-import com.ceitechs.domain.service.util.MetadataFields;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.util.StringUtils;
+import lombok.ToString;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.util.Objects;
 
 /**
- * @author iddymagohe
- * @since 0.1
+ * @author iddymagohe on 12/18/16.
  */
 
 @Getter
 @Setter
-public class Attachment implements Cloneable{
+@Document(collection = "attachments")
+@TypeAlias("attachments")
+public class Attachment{
 
-    private String fileType; // Possible values are PHOTO, VIDEO, DOCUMENT
-    private String fileName;
-    private long fileSize;
-    private String contentBase64;
-    private String fileDescription;
-    private boolean profilePicture;
+    @Id
+    private String referenceId;
 
-    public String extractExtension(){
-        if(getFileName().contains(".")){
-            return getFileName().substring(getFileName().lastIndexOf(".")+1);
-        }
-        return "";
+    @Indexed
+    private String parentReferenceId;
+
+    @Indexed
+    private String category;
+
+    private String description;
+
+    private boolean thumbnail = false;
+
+    private boolean active = true;
+
+    @Transient
+    private MultipartFile attachment;
+
+    // uploaded by
+    @Indexed
+    private String userReferenceId;
+
+    //directory stored
+    private String bucket;
+
+    // accessible url to an attachment
+    private String url;
+
+    private LocalDate createdDate = LocalDate.now();
+
+    public enum attachmentCategoryType {
+        PROPERTY,
+        PROFILE_PICTURE,
+        CORRESPONDENCE,
+        OTHER
     }
 
     @Override
-    public Attachment clone() throws CloneNotSupportedException {
-        return (Attachment)super.clone();
-    }
-
-    public Attachment() {
-    }
-
-    public Attachment(FileMetadata fileMetadata) {
-        if (fileMetadata != null) {
-            this.setContentBase64(fileMetadata.getContentBase64());
-            this.setFileType(fileMetadata.getFileType());
-            this.setFileDescription(fileMetadata.getCaption());
-            this.setProfilePicture(fileMetadata.isThumbnail());
-            this.setFileName(fileMetadata.getFileName());
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Attachment that = (Attachment) o;
+        return Objects.equals(referenceId, that.referenceId) &&
+                Objects.equals(parentReferenceId, that.parentReferenceId);
     }
 
     @Override
-    public String toString() {
-        return "Attachment{" +
-                "fileType='" + fileType + '\'' +
-                ", fileName='" + fileName + '\'' +
-                ", fileSize=" + fileSize +
-                ", fileDescription='" + fileDescription + '\'' +
-                ", profilePicture=" + profilePicture +
-                '}';
-    }
-
-    public String getFileType(){
-            try {
-                fileType = FileMetadata.FILETYPE.valueOf(fileType.toUpperCase()).name();
-            }catch (Exception ex){
-                fileType = FileMetadata.FILETYPE.PHOTO.name();
-            }
-        return FileMetadata.FILETYPE.valueOf(fileType).name();
+    public int hashCode() {
+        return Objects.hash(referenceId, parentReferenceId);
     }
 }

@@ -62,10 +62,10 @@ public class PropertyUnit  implements PropertyProjection {
     @Transient
     private List<FileMetadata> propertyUnitImages = new ArrayList<>();
     @Transient
-    private List<Attachment> attachments = new ArrayList<>();
+    private List<AttachmentOld> attachments = new ArrayList<>();
 
     @Transient
-    private Attachment coverPhoto;
+    private AttachmentOld coverPhoto;
 
     @Transient
     private List<PropertyRentalHistory> rentingHistory;

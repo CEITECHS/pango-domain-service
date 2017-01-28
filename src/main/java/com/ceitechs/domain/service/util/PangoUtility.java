@@ -3,11 +3,9 @@
  */
 package com.ceitechs.domain.service.util;
 
-import com.ceitechs.domain.service.domain.Annotations.Updatable;
-import com.ceitechs.domain.service.domain.Attachment;
+import com.ceitechs.domain.service.domain.AttachmentOld;
 import com.ceitechs.domain.service.domain.FileMetadata;
 import com.ceitechs.domain.service.domain.AttachmentToUpload;
-import com.ceitechs.domain.service.domain.User;
 import lombok.Getter;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
@@ -27,14 +25,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -182,7 +178,7 @@ public class PangoUtility {
      * @param referenceIdFor
      * @return
      */
-    public static Map<String, String> attachmentMetadataToMap(String referenceId,ReferenceIdFor referenceIdFor,Attachment attachment,  String ...parentReferenceIds) {
+    public static Map<String, String> attachmentMetadataToMap(String referenceId, ReferenceIdFor referenceIdFor, AttachmentOld attachment, String ...parentReferenceIds) {
         Map<String, String> metadataMap = new HashMap<>();
         metadataMap.put(MetadataFields.CONTENT_TYPE, FileMetadata.FILETYPE.valueOf(attachment.getFileType().toUpperCase()).getSuffix()+ attachment.extractExtension());
         metadataMap.put(MetadataFields.FILE_NAME, attachment.getFileName());

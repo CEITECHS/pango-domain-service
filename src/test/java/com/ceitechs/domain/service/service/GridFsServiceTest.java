@@ -4,9 +4,8 @@
 package com.ceitechs.domain.service.service;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
-import com.ceitechs.domain.service.domain.Attachment;
+import com.ceitechs.domain.service.domain.AttachmentOld;
 import com.ceitechs.domain.service.domain.FileMetadata;
-import com.ceitechs.domain.service.util.MetadataFields;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.BasicDBObject;
@@ -17,7 +16,6 @@ import org.springframework.data.mongodb.gridfs.GridFsOperations;
 
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -59,7 +57,7 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
 	public void getProfilePictureTest() throws IOException {
         operations.delete(null);
         assertTrue(operations.find(null).size() == 0);
-       Attachment attachment = buildAttachment();
+       AttachmentOld attachment = buildAttachment();
         Map<String,String> metadataMap=  PangoUtility.attachmentMetadataToMap("1", ReferenceIdFor.PROPERTY,attachment,"");
         gridFsService.storeFiles(resource.getInputStream(), metadataMap, BasicDBObject::new);
         FileMetadata meta = new FileMetadata();
@@ -76,14 +74,14 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
 	public void getAllAttachmentTest() throws IOException, CloneNotSupportedException {
         operations.delete(null);
         assertTrue(operations.find(null).size() == 0);
-        Attachment at1 = buildAttachment();
-        Attachment at2 = at1.clone();
+        AttachmentOld at1 = buildAttachment();
+        AttachmentOld at2 = at1.clone();
         at2.setProfilePicture(false);
         at2.setFileName("second-"+resource.getFilename());
-        Attachment at3 = at1.clone();
+        AttachmentOld at3 = at1.clone();
         at3.setProfilePicture(false);
         at3.setFileName("third-"+resource.getFilename());
-        Attachment at4 = at1.clone();
+        AttachmentOld at4 = at1.clone();
         Stream.of(at1,at2,at3).forEach(at ->{
             try {
                 Map<String,String> metadataMap=  PangoUtility.attachmentMetadataToMap("10", ReferenceIdFor.UNIT_PROPERTY,at,"1");
@@ -109,8 +107,8 @@ public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest
         assertTrue(operations.find(null).size() < files.size());
     }
 	
-	private static Attachment buildAttachment() throws IOException {
-		Attachment attachment = new Attachment();
+	private static AttachmentOld buildAttachment() throws IOException {
+		AttachmentOld attachment = new AttachmentOld();
 		attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
 		attachment.setFileName(resource.getFilename());
 		attachment.setFileSize(resource.getFile().length());

@@ -63,7 +63,7 @@ public class User implements UserProjection {
 
 
     @Override
-    public Attachment getProfilePicture() {
+    public AttachmentOld getProfilePicture() {
         return profile.getProfilePicture();
     }
 

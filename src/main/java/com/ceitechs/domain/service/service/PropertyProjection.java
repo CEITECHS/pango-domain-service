@@ -17,7 +17,7 @@ public interface PropertyProjection {
 
     PropertyUnit.PropertyPurpose getPurpose();
 
-    Attachment getCoverPhoto();
+    AttachmentOld getCoverPhoto();
 
     PropertyFeature getFeatures();
 

@@ -25,6 +25,7 @@ public class UserProfile {
     private LocalDateTime passwordChangeDate;
     private double customerRating;
     private LocalDate createdDate;
-    @Transient Attachment profilePicture;
+    @Transient
+    AttachmentOld profilePicture;
     List<PangoUserRole> roles = new ArrayList<>();
 }

@@ -1,7 +1,7 @@
 package com.ceitechs.domain.service.service;
 
 import com.ceitechs.domain.service.domain.Address;
-import com.ceitechs.domain.service.domain.Attachment;
+import com.ceitechs.domain.service.domain.AttachmentOld;
 
 /**
  * @author  by iddymagohe on 7/30/16.
@@ -16,5 +16,5 @@ public interface UserProjection {
     String getPhoneNumber();
     String getVerificationPathParam();
     Address getAddress();
-    Attachment getProfilePicture();
+    AttachmentOld getProfilePicture();
 }

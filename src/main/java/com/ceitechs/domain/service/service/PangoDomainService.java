@@ -21,7 +21,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.beans.IntrospectionException;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -235,7 +234,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
                     .map(propertyUnitGeoResult -> {
                         PropertyUnit propertyUnit = propertyUnitGeoResult.getContent();
                         if(propertyCoverPhoto.containsKey(propertyUnit.getPropertyId()))
-                           propertyUnit.setCoverPhoto(new Attachment(propertyCoverPhoto.get(propertyUnit.getPropertyId())));
+                           propertyUnit.setCoverPhoto(new AttachmentOld(propertyCoverPhoto.get(propertyUnit.getPropertyId())));
                         return new GeoResult<>(propertyUnit,propertyUnitGeoResult.getDistance());
                     }).collect(Collectors.toList());
         }
@@ -269,7 +268,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
                 }
                 //associate cover photos
                 if (propertyCoverPhoto.containsKey(propertyUnit.getPropertyId()))
-                    propertyUnit.setCoverPhoto(new Attachment(propertyCoverPhoto.get(propertyUnit.getPropertyId())));
+                    propertyUnit.setCoverPhoto(new AttachmentOld(propertyCoverPhoto.get(propertyUnit.getPropertyId())));
                 return propertyUnit;
             }).collect(Collectors.toList());
             units.sort(Comparator.comparing(PropertyUnit::getDistance));
@@ -295,7 +294,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
             fileMetadata.setReferenceId(p.getPropertyId());
             fileMetadata.setFileType(FileMetadata.FILETYPE.PHOTO.name());
             List<GridFSDBFile> attachments = gridFsService.getAllAttachments(fileMetadata, ReferenceIdFor.PROPERTY);
-            p.setAttachments(FileMetadata.getFileMetaFromGridFSDBFileAsList(attachments).parallelStream().map(Attachment::new).collect(Collectors.toList()));
+            p.setAttachments(FileMetadata.getFileMetaFromGridFSDBFileAsList(attachments).parallelStream().map(AttachmentOld::new).collect(Collectors.toList()));
         });
 
         return propertyUnit;
@@ -387,7 +386,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
         if (user != null) {
             FileMetadata fileMetadata = new FileMetadata();
             fileMetadata.setReferenceId(user.getUserReferenceId());
-            Attachment userProfilePicture = new Attachment(FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(gridFsService.getProfilePicture(fileMetadata, ReferenceIdFor.USER)), ReferenceIdFor.USER));
+            AttachmentOld userProfilePicture = new AttachmentOld(FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(gridFsService.getProfilePicture(fileMetadata, ReferenceIdFor.USER)), ReferenceIdFor.USER));
             user.getProfile().setProfilePicture(userProfilePicture);
         }
 

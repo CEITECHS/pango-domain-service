@@ -2,7 +2,7 @@ package com.ceitechs.domain.service.service;
 
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
-import com.ceitechs.domain.service.domain.Attachment;
+import com.ceitechs.domain.service.domain.AttachmentOld;
 import com.ceitechs.domain.service.domain.AttachmentToUpload;
 import com.ceitechs.domain.service.domain.FileMetadata;
 import com.ceitechs.domain.service.service.events.OnAttachmentUploadEvent;
@@ -50,8 +50,8 @@ public class PangoAttachmentEventListenerTest extends AbstractPangoDomainService
         assertTrue(files.size() > 0);
     }
 
-    private static Attachment buildAttachment()  {
-        Attachment attachment = new Attachment();
+    private static AttachmentOld buildAttachment()  {
+        AttachmentOld attachment = new AttachmentOld();
         attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
         attachment.setFileName(resource.getFilename());
         try {

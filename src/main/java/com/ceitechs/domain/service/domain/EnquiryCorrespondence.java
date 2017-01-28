@@ -2,7 +2,6 @@ package com.ceitechs.domain.service.domain;
 
 
 import java.time.Clock;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import lombok.Getter;
@@ -21,7 +20,7 @@ public class EnquiryCorrespondence {
     private long correspondenceReferenceId;
     private String message;
     @Transient
-    private Attachment attachment;
+    private AttachmentOld attachment;
     private LocalDateTime correspondenceDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType correspondenceType;
     private boolean owner;
