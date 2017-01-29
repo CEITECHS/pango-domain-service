@@ -57,7 +57,7 @@ public class AttachmentRepositoryTest extends AbstractPangoDomainServiceIntegrat
         });
     }
 
-    private static Attachment createAttachment(){
+    public static Attachment createAttachment(){
         Attachment attachment = new Attachment();
         attachment.setBucket("test");
         attachment.setCategory(Attachment.attachmentCategoryType.PROPERTY.name());

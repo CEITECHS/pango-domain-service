@@ -87,6 +87,11 @@
             <artifactId>spring-web</artifactId> <!-- dependency on multi-part classes-->
         </dependency>
 
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+
         <!-- MongoDB dependencies -->
         <dependency>
             <groupId>org.mongodb</groupId>

@@ -125,6 +125,10 @@ public class PangoUtility {
         return replaceHyphens(UUID.randomUUID().toString());
     }
 
+    public static String generateIdAsUUID() {
+        return UUID.randomUUID().toString();
+    }
+
     public static String replaceSpaces(String codefrom) {
         return codefrom.replaceAll("\\s+", "");
     }
