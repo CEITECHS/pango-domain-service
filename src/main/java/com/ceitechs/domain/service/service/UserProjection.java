@@ -16,5 +16,5 @@ public interface UserProjection {
     String getPhoneNumber();
     String getVerificationPathParam();
     Address getAddress();
-    AttachmentOld getProfilePicture();
+    AttachmentProjection getProfilePicture();
 }

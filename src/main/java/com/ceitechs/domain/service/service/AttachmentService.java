@@ -31,11 +31,15 @@ public interface AttachmentService {
 
     Optional<Attachment> removeAttachmentBy(String referenceId);
 
+    Optional<Attachment> retrieveProfilePictureBy(String parentReferenceId, String Category);
+
     List<Attachment> retrieveAttachmentsBy(User user);
 
     List<Attachment> retrieveAttachmentsBy(String parentReferenceId, String category);
 
     List<Attachment> retrieveThumbnailAttachmentsBy(List<String> parentReferenceIds, String category);
+
+    List<Attachment> retrieveAttachmentsBy(List<String> parentReferenceIds, String category);
 
 }
 
@@ -74,16 +78,13 @@ class AttachmentServiceImpl implements AttachmentService {
         Assert.isTrue(Arrays.stream(Attachment.attachmentCategoryType.values()).map(Enum::name).anyMatch(cat -> cat.equals(attachment.getCategory().toUpperCase())),"un-supported-category");
         Assert.isTrue(MAX_SIZE >= (attachment.getAttachment().getSize()/MAX_SIZE) ,"attachment-size can not be greater than 1MB");
         attachment.setUserReferenceId(user.getUserReferenceId());
-        // prepare Id
-        StringBuilder keyName = new StringBuilder(attachment.getCategory().toUpperCase());
-        keyName.append("/");
-        keyName.append(PangoUtility.generateIdAsUUID());
+
         //set Id
-        attachment.setReferenceId(keyName.toString());
+        attachment.setReferenceId(PangoUtility.generateIdAsUUID());
 
         attachment.setCategory(attachment.getCategory().toUpperCase());
 
-         Attachment attachmentToLoad = null;
+         Attachment attachmentToLoad;
          try {
              //1. store actual file
              attachmentToLoad = fileStorageService.storeFile(attachment);
@@ -128,6 +129,13 @@ class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
+    public Optional<Attachment> retrieveProfilePictureBy(String parentReferenceId, String Category) {
+        //TODO pending impl
+        //TODO pending url resolve
+        return null;
+    }
+
+    @Override
     public List<Attachment> retrieveAttachmentsBy(User user) {
         Assert.notNull(user, "user can not be null");
         Assert.hasText(user.getUserReferenceId(), "User-referenceId can not be null or empty");
@@ -141,6 +149,14 @@ class AttachmentServiceImpl implements AttachmentService {
         Assert.hasText(category, "category: can not be null or empty");
         List<Attachment> attachments = attachmentRepository.findByParentReferenceIdAndCategoryAndActiveTrue(parentReferenceId, category);
         return CollectionUtils.isNotEmpty(attachments) ? resolveUrls(attachments) : attachments;
+    }
+
+    @Override
+    public List<Attachment> retrieveAttachmentsBy(List<String> parentReferenceIds, String category) {
+        Assert.notEmpty(parentReferenceIds, "parent-reference-ids; can not be null or empty");
+        Assert.hasText(category, "category: can not be null or empty");
+        List<Attachment> attachments = attachmentRepository.findByParentReferenceIdInAndCategoryAndActiveTrueOrderByCreatedDateDesc(parentReferenceIds,category);
+        return CollectionUtils.isNotEmpty(attachments)? resolveUrls(attachments):attachments;
     }
 
     @Override

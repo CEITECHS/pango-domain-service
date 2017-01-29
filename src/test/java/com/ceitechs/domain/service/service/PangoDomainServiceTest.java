@@ -351,45 +351,6 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
 
     }
 
-    @Ignore // Requires a verified user.
-    @Test
-    public void updateUserProfilePictureTest() throws EntityExists, IOException {
-        operations.delete(null);
-        userRepository.deleteAll();
-        User usr = createUser();
-        usr.getProfile().getRoles().add(PangoUserRole.USER);
-        assertNull(usr.getAddress());
-        Optional<UserProjection> savedUsr = domainService.registerUser(usr);
-        usr.setUserReferenceId(savedUsr.get().getUserReferenceId());
-        AttachmentOld profilePicture = buildAttachment();
-        profilePicture.setFileDescription("profile picture");
-        usr.getProfile().setProfilePicture(profilePicture);
-        assertTrue(domainService.updateUserInformation(usr,UserUpdating.PROFILE_PICTURE).isPresent());
-        FileMetadata fileMetadata = new FileMetadata();
-        fileMetadata.setReferenceId(usr.getUserReferenceId());
-        fileMetadata.setFileType(FileMetadata.FILETYPE.PHOTO.name());
-        GridFSDBFile profilePic = gridFsService.getProfilePicture(fileMetadata,ReferenceIdFor.USER);
-        assertNotNull(profilePic);
-        FileMetadata fileMetadata1 = FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(profilePic),ReferenceIdFor.USER);
-        assertEquals(profilePicture.getFileDescription(),fileMetadata1.getCaption());
-        usr.getProfile().getProfilePicture().setFileDescription("Updated profile picture");
-        assertTrue(domainService.updateUserInformation(usr,UserUpdating.PROFILE_PICTURE).isPresent());
-        FileMetadata fileMetadata2 = FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(gridFsService.getProfilePicture(fileMetadata,ReferenceIdFor.USER)),ReferenceIdFor.USER);
-        assertEquals(profilePicture.getFileDescription(),fileMetadata2.getCaption());
-
-        //test retrieval with associated user profile picture
-        Optional<UserProjection> userProjection = domainService.retrieveUserByIdOrUserName("",usr.getEmailAddress());
-        assertTrue(userProjection.isPresent());
-        assertNotNull(userProjection.get().getProfilePicture());
-        assertEquals(fileMetadata2.getCaption(), userProjection.get().getProfilePicture().getFileDescription());
-
-        Optional<UserProjection> userProjection2 = domainService.retrieveUserByIdOrUserName(usr.getUserReferenceId(),"");
-        assertTrue(userProjection2.isPresent());
-        assertNotNull(userProjection2.get().getProfilePicture());
-        assertEquals(userProjection.get().getProfilePicture().getFileDescription(),userProjection2.get().getProfilePicture().getFileDescription());
-        assertEquals(userProjection.get().getEmailAddress(),userProjection2.get().getEmailAddress());
-    }
-
     @Test
     public void updateUserFavoritePropertiesTest() throws IOException, EntityNotFound {
         userRepository.deleteAll();

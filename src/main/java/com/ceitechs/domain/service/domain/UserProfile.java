@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ceitechs.domain.service.service.AttachmentProjection;
 import org.springframework.data.annotation.Transient;
 
 import lombok.Getter;
@@ -26,6 +27,6 @@ public class UserProfile {
     private double customerRating;
     private LocalDate createdDate;
     @Transient
-    AttachmentOld profilePicture;
+    AttachmentProjection profilePicture;
     List<PangoUserRole> roles = new ArrayList<>();
 }

@@ -16,6 +16,7 @@ public interface EnquiryProjection {
     String getSubject();
     int getCorrespondenceCount();
     List<EnquiryCorrespondence> getCorrespondences();
+    List<AttachmentProjection> getAttachments();
     LocalDateTime getEnquiryDate();
 
 }

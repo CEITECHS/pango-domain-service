@@ -1,6 +1,7 @@
 package com.ceitechs.domain.service.domain;
 
 
+import com.ceitechs.domain.service.service.AttachmentProjection;
 import com.ceitechs.domain.service.service.EnquiryProjection;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,12 +45,17 @@ public class PropertyUnitEnquiry implements EnquiryProjection {
     private String message;
     private LocalDateTime enquiryDate = LocalDateTime.now(Clock.systemUTC());
     private CorrespondenceType enquiryType;
+
     List<EnquiryCorrespondence> correspondences = new ArrayList<>();
+
+    @Transient
+    List<AttachmentProjection> attachments = new ArrayList<>();
 
     public void addCorrespondence(EnquiryCorrespondence e){
         Assert.notNull(e, "Correspondence object can not be null");
          correspondences.add(e);
     }
+
 
     @Override
     public int getCorrespondenceCount() {

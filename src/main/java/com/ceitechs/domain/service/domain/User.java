@@ -3,6 +3,7 @@ package com.ceitechs.domain.service.domain;
 import java.util.*;
 
 import com.ceitechs.domain.service.domain.Annotations.Updatable;
+import com.ceitechs.domain.service.service.AttachmentProjection;
 import com.ceitechs.domain.service.service.UserProjection;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -63,7 +64,7 @@ public class User implements UserProjection {
 
 
     @Override
-    public AttachmentOld getProfilePicture() {
+    public AttachmentProjection getProfilePicture() {
         return profile.getProfilePicture();
     }
 

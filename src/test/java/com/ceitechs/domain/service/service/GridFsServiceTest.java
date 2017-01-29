@@ -10,6 +10,7 @@ import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.BasicDBObject;
 import com.mongodb.gridfs.GridFSDBFile;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertTrue;
  * @author iddymagohe
  * @since 0.1
  */
+@Ignore
 public class GridFsServiceTest extends AbstractPangoDomainServiceIntegrationTest {
 	
 	@Autowired

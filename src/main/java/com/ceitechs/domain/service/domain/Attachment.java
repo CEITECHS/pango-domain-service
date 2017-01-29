@@ -1,7 +1,9 @@
 package com.ceitechs.domain.service.domain;
 
+import com.ceitechs.domain.service.service.AttachmentProjection;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -19,9 +21,10 @@ import java.util.Objects;
 
 @Getter
 @Setter
+@ToString
 @Document(collection = "attachments")
 @TypeAlias("attachments")
-public class Attachment{
+public class Attachment implements AttachmentProjection {
 
     @Id
     private String referenceId;
@@ -76,22 +79,5 @@ public class Attachment{
     @Override
     public int hashCode() {
         return Objects.hash(referenceId, parentReferenceId);
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Attachment{");
-        sb.append("referenceId='").append(referenceId).append('\'');
-        sb.append(", parentReferenceId='").append(parentReferenceId).append('\'');
-        sb.append(", category='").append(category).append('\'');
-        sb.append(", description='").append(description).append('\'');
-        sb.append(", thumbnail=").append(thumbnail);
-        sb.append(", active=").append(active);
-        sb.append(", userReferenceId='").append(userReferenceId).append('\'');
-        sb.append(", bucket='").append(bucket).append('\'');
-        sb.append(", url='").append(url).append('\'');
-        sb.append(", createdDate=").append(createdDate);
-        sb.append('}');
-        return sb.toString();
     }
 }

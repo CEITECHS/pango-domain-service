@@ -165,6 +165,8 @@ class PangoDomainServiceImpl implements PangoDomainService {
     @Autowired
     PangoMailService mailService;
 
+    @Autowired
+    AttachmentService attachmentService;
 
 
     @Autowired
@@ -384,10 +386,9 @@ class PangoDomainServiceImpl implements PangoDomainService {
         User user = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue(userName, userId);
         // associate user's profile picture
         if (user != null) {
-            FileMetadata fileMetadata = new FileMetadata();
-            fileMetadata.setReferenceId(user.getUserReferenceId());
-            AttachmentOld userProfilePicture = new AttachmentOld(FileMetadata.getFileMetadataFromGridFSDBFile(Optional.of(gridFsService.getProfilePicture(fileMetadata, ReferenceIdFor.USER)), ReferenceIdFor.USER));
-            user.getProfile().setProfilePicture(userProfilePicture);
+            Optional<Attachment> userProfilePicture = attachmentService.retrieveProfilePictureBy(user.getUserReferenceId(), Attachment.attachmentCategoryType.PROFILE_PICTURE.name());
+            if (userProfilePicture.isPresent())
+                user.getProfile().setProfilePicture(userProfilePicture.get());
         }
 
         return Optional.ofNullable(user);
@@ -444,7 +445,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
         if (userRepository.exists(user.getUserReferenceId())) {
             switch (updating) {
                 case PROFILE_PICTURE:
-                    updateUserProfilePicture(user);
+                    //updateUserProfilePicture(user); TODO update this differently
                     break;
                 case PASSWORD_CHANGE:
                     changeUserPassword(user);
@@ -515,22 +516,6 @@ class PangoDomainServiceImpl implements PangoDomainService {
                 savedUsr.getProfile().setPassword(user.getProfile().getPassword());
                 savedUsr.getProfile().setPasswordChangeDate(LocalDateTime.now());
                 userRepository.save(savedUsr);
-            }
-        }
-    }
-    private void updateUserProfilePicture(User user) {
-        if (user != null && user.getProfile() != null) {
-            if (user.getProfile().getProfilePicture() != null) {
-                // 1. Delete an existing Profile picture
-                FileMetadata fileMetadata = new FileMetadata();
-                fileMetadata.setReferenceId(user.getUserReferenceId());
-                fileMetadata.setFileType(FileMetadata.FILETYPE.PHOTO.name());
-                gridFsService.deleteAllAttachmentsFor(fileMetadata, ReferenceIdFor.USER, false);
-
-                // 2. Publish attachment upload event to upload the new photo
-                user.getProfile().getProfilePicture().setProfilePicture(true); // make sure it's a profile pic
-                AttachmentToUpload attachmentToUpload = new AttachmentToUpload(user.getUserReferenceId(), ReferenceIdFor.USER, user.getProfile().getProfilePicture(), "");
-                eventsPublisher.publishPangoEvent(new OnAttachmentUploadEvent(attachmentToUpload));
             }
         }
     }
