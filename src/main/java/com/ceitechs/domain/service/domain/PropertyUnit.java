@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ceitechs.domain.service.service.AttachmentProjection;
 import com.ceitechs.domain.service.service.PropertyProjection;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -60,12 +61,10 @@ public class PropertyUnit  implements PropertyProjection {
     private PropertyRent rent;
 
     @Transient
-    private List<FileMetadata> propertyUnitImages = new ArrayList<>();
-    @Transient
-    private List<AttachmentOld> attachments = new ArrayList<>();
+    private List<AttachmentProjection> attachments = new ArrayList<>();
 
     @Transient
-    private AttachmentOld coverPhoto;
+    private AttachmentProjection coverPhoto;
 
     @Transient
     private List<PropertyRentalHistory> rentingHistory;

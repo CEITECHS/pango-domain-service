@@ -34,8 +34,6 @@ public class PangoEventsListener{
     @Value("${user.verification.uri}")
     private String verificationUri;
 
-    @Autowired
-    private GridFsService gridFsService;
 
     @Autowired
     private UserRepository userRepository;
@@ -51,23 +49,7 @@ public class PangoEventsListener{
     @Async
     @EventListener
     public void handleAttachmentsUpload(OnPangoEvent<List<AttachmentToUpload>> onPangoEvent){
-        List<AttachmentToUpload> attachmentToUploadList = onPangoEvent.get();
-        if (!CollectionUtils.isEmpty(attachmentToUploadList)){
-            attachmentToUploadList.stream()
-                    .filter(attachmentToUpload -> attachmentToUpload.getAttachment() != null && (StringUtils.hasText(attachmentToUpload.getAttachment().getFileName()) && StringUtils.hasText(attachmentToUpload.getAttachment().getContentBase64())))
-                    .forEach(attachmentToUpload -> {
-                        Map<String, String> metadata = PangoUtility.attachmentMetadataToMap(attachmentToUpload);
-                        try {
-                            PangoUtility.Base64ToInputStream(Optional.of(attachmentToUpload.getAttachment().getContentBase64()))
-                                    .ifPresent(inputStream -> {
-                                        gridFsService.storeFiles(inputStream, metadata, BasicDBObject::new);
-                                        logger.info("stored attachment" + attachmentToUpload);
-                                    });
-                        } catch (Exception e) {
-                            logger.error("An error has Occured while trying to save " + attachmentToUpload, e.getCause());
-                        }
-                    });
-        }
+       //TODO IMPL
     }
 
     @Async

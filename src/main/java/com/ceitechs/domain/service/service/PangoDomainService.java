@@ -1,16 +1,17 @@
 package com.ceitechs.domain.service.service;
 
 
-import com.ceitechs.domain.service.domain.*;
 import com.ceitechs.domain.service.domain.Annotations.Updatable;
+import com.ceitechs.domain.service.domain.*;
 import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
-import com.ceitechs.domain.service.service.events.*;
+import com.ceitechs.domain.service.service.events.OnPropertySearchEvent;
+import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
+import com.ceitechs.domain.service.service.events.UserInteraction;
+import com.ceitechs.domain.service.service.events.UserVerificationEvent;
 import com.ceitechs.domain.service.util.DistanceCalculator;
 import com.ceitechs.domain.service.util.PangoUtility;
-import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.ceitechs.domain.service.util.TokensUtil;
-import com.mongodb.gridfs.GridFSDBFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+
 
 /**
  * @author iddymagohe
@@ -192,19 +196,11 @@ class PangoDomainServiceImpl implements PangoDomainService {
         String userId = propertyUnit.getOwner().getUserReferenceId();
         User owner = userRepository.findOne(userId);
         propertyUnit.setOwner(owner);
-        if (!StringUtils.hasText(propertyUnit.getPropertyId())){
+        if (!StringUtils.hasText(propertyUnit.getPropertyId())) {
             propertyUnit.setPropertyId(PangoUtility.generateIdAsString());
             PropertyUnit savedUnit = propertyUnitRepository.save(propertyUnit);
-            logger.info("Saved Property "+ savedUnit);
-
-            if(savedUnit !=null && !propertyUnit.getAttachments().isEmpty()){
-                OnAttachmentUploadEvent attachmentEvent = new OnAttachmentUploadEvent(
-                       propertyUnit.getAttachments() .stream().map((attachment) ->  new AttachmentToUpload(savedUnit.getPropertyId(), ReferenceIdFor.PROPERTY, attachment,"")).collect(Collectors.toList()));
-                        eventsPublisher.publishPangoEvent(attachmentEvent);
-                logger.info("published event to store attachments");
-                return Optional.of(savedUnit);
-            }
-
+            logger.info("Saved Property " + savedUnit);
+            return Optional.of(savedUnit);
         }
         //TODO : Existing or firstTime update by Coordinator do update
         return Optional.empty();
@@ -219,26 +215,27 @@ class PangoDomainServiceImpl implements PangoDomainService {
      */
     @Override
     public List<GeoResult<PropertyUnit>> searchForProperties(PropertySearchCriteria searchCriteria, User user) {
-        Assert.notNull(searchCriteria,"Search criteria can not be null ");
+        Assert.notNull(searchCriteria, "Search criteria can not be null ");
         GeoResults<PropertyUnit> propertyUnitGeoResults = propertyUnitRepository.findAllPropertyUnits(searchCriteria);
 
         //record user search rentingHistory
         recordUserSearchHistory(new UserSearchHistory(searchCriteria, propertyUnitGeoResults.getContent().size()), user);
 
-        if(!propertyUnitGeoResults.getContent().isEmpty()){
+        if (!propertyUnitGeoResults.getContent().isEmpty()) {
             // associate cover photos
-           List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(propertyUnitGeoResults.getContent().parallelStream()
-                    .map(propertyUnitGeoResult -> propertyUnitGeoResult.getContent().getPropertyId())
-                    .collect(Collectors.toList()));
-            Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
+            List<String> propertyIds = propertyUnitGeoResults.getContent().stream().map(g -> g.getContent()).map(PropertyUnit::getPropertyId).collect(toList());
+            List<Attachment> thumbnails = attachmentService.retrieveThumbnailAttachmentsBy(propertyIds, Attachment.attachmentCategoryType.PROPERTY.name());
 
-            return propertyCoverPhoto.isEmpty()? propertyUnitGeoResults.getContent() : propertyUnitGeoResults.getContent().stream()
-                    .map(propertyUnitGeoResult -> {
-                        PropertyUnit propertyUnit = propertyUnitGeoResult.getContent();
-                        if(propertyCoverPhoto.containsKey(propertyUnit.getPropertyId()))
-                           propertyUnit.setCoverPhoto(new AttachmentOld(propertyCoverPhoto.get(propertyUnit.getPropertyId())));
-                        return new GeoResult<>(propertyUnit,propertyUnitGeoResult.getDistance());
-                    }).collect(Collectors.toList());
+            if (thumbnails != null && !thumbnails.isEmpty()) {
+                Map<String, List<Attachment>> thumbnailsMap = thumbnails.stream().collect(groupingBy(Attachment::getParentReferenceId));
+                return propertyUnitGeoResults.getContent().parallelStream()
+                        .map(propertyUnitGeoResult -> {
+                            PropertyUnit propertyUnit = propertyUnitGeoResult.getContent();
+                            propertyUnit.setCoverPhoto((AttachmentProjection) thumbnailsMap.get(propertyUnit.getPropertyId()));
+                            return new GeoResult<>(propertyUnit, propertyUnitGeoResult.getDistance());
+                        }).collect(toList());
+            }
+
         }
         return propertyUnitGeoResults.getContent();
     }
@@ -260,8 +257,8 @@ class PangoDomainServiceImpl implements PangoDomainService {
         if (!savedUsr.getFavouredProperties().isEmpty()) {
             List<PropertyUnit> propertyUnits = PangoUtility.toList(propertyUnitRepository.findAll(savedUsr.getFavouredProperties()));
 
-            List<GridFSDBFile> coverPhotos = gridFsService.getPropertiesCoverPhotos(propertyUnits.parallelStream().map(propertyUnit -> propertyUnit.getPropertyId()).collect(Collectors.toList()));
-            Map<String, FileMetadata> propertyCoverPhoto = FileMetadata.getFileMetaFromGridFSDBFileAsMap(coverPhotos);
+            List<Attachment> thumbnails = attachmentService.retrieveThumbnailAttachmentsBy(new ArrayList<>(savedUsr.getFavouredProperties()), Attachment.attachmentCategoryType.PROPERTY.name());
+            Map<String, List<Attachment>> thumbnailsMap = thumbnails!=null && !thumbnails.isEmpty() ? thumbnails.stream().collect(groupingBy(Attachment::getParentReferenceId)): new HashMap<>();
 
             List<PropertyUnit> units = propertyUnits.parallelStream().map(propertyUnit -> {
                 if (user.getLatitude() != 0.0 && user.getLongitude() != 0.0) { // calculate distance from user
@@ -269,10 +266,9 @@ class PangoDomainServiceImpl implements PangoDomainService {
                     propertyUnit.setDistance(distance);
                 }
                 //associate cover photos
-                if (propertyCoverPhoto.containsKey(propertyUnit.getPropertyId()))
-                    propertyUnit.setCoverPhoto(new AttachmentOld(propertyCoverPhoto.get(propertyUnit.getPropertyId())));
+                    propertyUnit.setCoverPhoto((AttachmentProjection) thumbnailsMap.get(propertyUnit.getPropertyId()));
                 return propertyUnit;
-            }).collect(Collectors.toList());
+            }).collect(toList());
             units.sort(Comparator.comparing(PropertyUnit::getDistance));
             return new ArrayList<>(units);
         }
@@ -290,13 +286,10 @@ class PangoDomainServiceImpl implements PangoDomainService {
 
         PropertySearchCriteria propertySearchCriteria = new PropertySearchCriteria();
         propertySearchCriteria.setPropertyReferenceId(propertyReferenceId);
-        recordUserSearchHistory(new UserSearchHistory(propertySearchCriteria, propertyUnit.isPresent()?1:0), user);
+        recordUserSearchHistory(new UserSearchHistory(propertySearchCriteria, propertyUnit.isPresent() ? 1 : 0), user);
         propertyUnit.ifPresent(p -> {
-            FileMetadata fileMetadata = new FileMetadata();
-            fileMetadata.setReferenceId(p.getPropertyId());
-            fileMetadata.setFileType(FileMetadata.FILETYPE.PHOTO.name());
-            List<GridFSDBFile> attachments = gridFsService.getAllAttachments(fileMetadata, ReferenceIdFor.PROPERTY);
-            p.setAttachments(FileMetadata.getFileMetaFromGridFSDBFileAsList(attachments).parallelStream().map(AttachmentOld::new).collect(Collectors.toList()));
+            List<Attachment> images = attachmentService.retrieveAttachmentsBy(Arrays.asList(p.getPropertyId()), Attachment.attachmentCategoryType.PROPERTY.name());
+            p.setAttachments(new ArrayList<>(images));
         });
 
         return propertyUnit;
@@ -352,7 +345,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
         }
         user.getProfile().setVerified(false);
         User savedUser = null;
-        String verificationToken = null;
+        String verificationToken;
         try {
             // generate account verification code
             verificationToken =  TokensUtil.createAccountVerificationToken(user);
@@ -489,7 +482,6 @@ class PangoDomainServiceImpl implements PangoDomainService {
     private User updateUserBasicInfo(User user) {
         if (user != null) {
             User savedUsr = userRepository.findOne(user.getUserReferenceId());
-
             // Extract fields to update
             List<String> fieldsForUpdate = PangoUtility.fieldNamesByAnnotation(User.class, Updatable.class);
             try {
@@ -500,14 +492,11 @@ class PangoDomainServiceImpl implements PangoDomainService {
             } catch (IntrospectionException e) {
                 logger.error(e.getMessage(),e.getCause());
             }
-
             return savedUsr;
         }
 
         return user;
     }
-
-
 
     private void changeUserPassword(User user){
         if(user != null && user.getProfile() !=null) {

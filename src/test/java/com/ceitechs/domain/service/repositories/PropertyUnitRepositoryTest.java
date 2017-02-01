@@ -115,18 +115,6 @@ public class PropertyUnitRepositoryTest extends AbstractPangoDomainServiceIntegr
         propertyUnit.setRent(rent);
 
         // Adding property unit image
-        try {
-            AttachmentOld attachment = new AttachmentOld();
-            attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
-            attachment.setFileName(propertyUnitResource.getFilename());
-            attachment.setFileSize(propertyUnitResource.getFile().length());
-            attachment.setFileDescription("An Amazing PropertyRemoved Unit");
-            Map<String, String> metadata = PangoUtility.attachmentMetadataToMap(propertyUnitId,
-                    ReferenceIdFor.UNIT_PROPERTY, attachment, propertyId);
-            gridFsService.storeFiles(propertyUnitResource.getInputStream(), metadata, BasicDBObject::new);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         savedPropertyUnit = propertyUnitRepository.save(propertyUnit);
     }
 
