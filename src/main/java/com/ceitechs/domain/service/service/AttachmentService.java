@@ -129,10 +129,16 @@ class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public Optional<Attachment> retrieveProfilePictureBy(String parentReferenceId, String Category) {
-        //TODO pending impl
-        //TODO pending url resolve
-        return null;
+    public Optional<Attachment> retrieveProfilePictureBy(String parentReferenceId, String category) {
+        Assert.hasText(parentReferenceId, "ParentReferenceId can not be null or empty");
+        Assert.hasText(category, "Category can not be null or empty");
+        Attachment attachment = attachmentRepository.findByParentReferenceIdAndCategoryAndActiveIsTrue(parentReferenceId,category);
+        try {
+            attachment.setUrl(fileStorageService.resolveUrl(attachment));
+        } catch (Exception ex) {
+            logger.error("Error occurred during attachment-url resolve " + ex.getMessage(), ex);
+        }
+        return Optional.ofNullable(attachment);
     }
 
     @Override
@@ -147,7 +153,7 @@ class AttachmentServiceImpl implements AttachmentService {
     public List<Attachment> retrieveAttachmentsBy(String parentReferenceId, String category) {
         Assert.hasText(parentReferenceId, "attachment-parent-reference-id: can not be null or empty");
         Assert.hasText(category, "category: can not be null or empty");
-        List<Attachment> attachments = attachmentRepository.findByParentReferenceIdAndCategoryAndActiveTrue(parentReferenceId, category);
+        List<Attachment> attachments = attachmentRepository.findByParentReferenceIdAndCategoryAndActiveTrue(parentReferenceId, category.toUpperCase());
         return CollectionUtils.isNotEmpty(attachments) ? resolveUrls(attachments) : attachments;
     }
 
@@ -155,7 +161,7 @@ class AttachmentServiceImpl implements AttachmentService {
     public List<Attachment> retrieveAttachmentsBy(List<String> parentReferenceIds, String category) {
         Assert.notEmpty(parentReferenceIds, "parent-reference-ids; can not be null or empty");
         Assert.hasText(category, "category: can not be null or empty");
-        List<Attachment> attachments = attachmentRepository.findByParentReferenceIdInAndCategoryAndActiveTrueOrderByCreatedDateDesc(parentReferenceIds,category);
+        List<Attachment> attachments = attachmentRepository.findByParentReferenceIdInAndCategoryAndActiveTrueOrderByCreatedDateDesc(parentReferenceIds,category.toUpperCase());
         return CollectionUtils.isNotEmpty(attachments)? resolveUrls(attachments):attachments;
     }
 
@@ -163,7 +169,7 @@ class AttachmentServiceImpl implements AttachmentService {
     public List<Attachment> retrieveThumbnailAttachmentsBy(List<String> parentReferenceIds, String category) {
         Assert.notEmpty(parentReferenceIds, "parent-reference-ids; can not be null or empty");
         Assert.hasText(category, "category: can not be null or empty");
-        List<Attachment> attachments = attachmentRepository.findByParentReferenceIdInAndCategoryAndThumbnailTrueAndActiveTrue(parentReferenceIds,category);
+        List<Attachment> attachments = attachmentRepository.findByParentReferenceIdInAndCategoryAndThumbnailTrueAndActiveTrue(parentReferenceIds,category.toUpperCase());
         return CollectionUtils.isNotEmpty(attachments)? resolveUrls(attachments):attachments;
     }
 

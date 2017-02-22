@@ -18,6 +18,7 @@ public interface AttachmentRepository extends MongoRepository<Attachment, String
     List<Attachment> findByParentReferenceIdInAndCategoryAndActiveTrueOrderByCreatedDateDesc(Collection<String> parentReferenceIds, String Category);
 
     List<Attachment> findByParentReferenceIdAndCategoryAndActiveTrue(String referenceId, String category);
+    Attachment findByParentReferenceIdAndCategoryAndActiveIsTrue(String referenceId, String category);
 
     Attachment findByReferenceIdAndActiveTrue(String referenceId);
 }

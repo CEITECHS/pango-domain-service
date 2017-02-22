@@ -6,5 +6,6 @@ package com.ceitechs.domain.service.domain;
  */
 public enum PangoUserRole {
     USER,
-    RENTAL_OWNER
+    RENTAL_OWNER,
+    COORDINATOR
 }

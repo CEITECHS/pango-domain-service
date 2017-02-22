@@ -3,6 +3,7 @@ package com.ceitechs.domain.service.service;
 
 import com.ceitechs.domain.service.domain.Annotations.Updatable;
 import com.ceitechs.domain.service.domain.*;
+import com.ceitechs.domain.service.repositories.AttachmentRepository;
 import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.service.events.OnPropertySearchEvent;
@@ -134,6 +135,24 @@ public interface PangoDomainService {
     Optional<UserProjection> updateUserInformation(User user, UserUpdating updating);
 
     /**
+     *  Add/Update user profile-picture or property-picture
+     * @param user
+     * @param attachment
+     * @return
+     */
+    Optional<Attachment> saveAttachment(User user, Attachment attachment);
+
+    /**
+     * Removes the attachment by it's reference-id
+     * @param user
+     * @param attachmentReferenceId
+     * @return
+     */
+    Optional<Attachment> deleteAttachment(User user, String attachmentReferenceId);
+
+
+
+    /**
      *  add/remove a property by referenceId as a user's favorite depending favourable flag
      * @param user
      * @param propertyReferenceId
@@ -163,7 +182,10 @@ class PangoDomainServiceImpl implements PangoDomainService {
     private final PangoEventsPublisher eventsPublisher;
     private final PropertyUnitRepository propertyUnitRepository;
     private final UserRepository userRepository;
-    private final GridFsService gridFsService;
+
+    @Autowired
+    private AttachmentRepository attachmentRepository;
+
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     @Autowired
@@ -174,11 +196,11 @@ class PangoDomainServiceImpl implements PangoDomainService {
 
 
     @Autowired
-    public PangoDomainServiceImpl(PangoEventsPublisher eventsPublisher, PropertyUnitRepository propertyUnitRepository, UserRepository userRepository,GridFsService gridFsService) {
+    public PangoDomainServiceImpl(PangoEventsPublisher eventsPublisher, PropertyUnitRepository propertyUnitRepository, UserRepository userRepository,AttachmentService attachmentService) {
         this.eventsPublisher = eventsPublisher;
         this.propertyUnitRepository = propertyUnitRepository;
         this.userRepository = userRepository;
-        this.gridFsService = gridFsService;
+        this.attachmentService = attachmentService;
     }
 
     /**
@@ -477,6 +499,45 @@ class PangoDomainServiceImpl implements PangoDomainService {
             throw new EntityNotFound(String.format("Property : %s  does not exist", propertyReferenceId), new IllegalArgumentException(String.format("Property : %s  does not exist", propertyReferenceId)));
 
         return Optional.ofNullable(userRepository.updateFavouredProperties(savedUsr,propertyUnit,favourable).get());
+    }
+
+
+    /**
+     * Add/Update user profile-picture or property-picture
+     *
+     * @param user
+     * @param attachment
+     * @return
+     */
+    @Override
+    public Optional<Attachment> saveAttachment(User user, Attachment attachment) {
+        //TODO pending save or update of attachment from service layer
+        return null;
+    }
+
+    /**
+     * Removes the attachment by it's reference-id
+     *
+     * @param user
+     * @param attachmentReferenceId
+     * @return
+     */
+    @Override
+    public Optional<Attachment> deleteAttachment(User user, String attachmentReferenceId) {
+        User userSaved = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue(user.getEmailAddress(), null);
+        Attachment attachment = attachmentRepository.findOne(attachmentReferenceId);
+        if (userSaved != null && attachment != null) {
+            if (attachment.getCategory().toUpperCase().equalsIgnoreCase(Attachment.attachmentCategoryType.PROFILE_PICTURE.name())) {
+                Assert.isTrue(attachment.getParentReferenceId().equals(userSaved.getUserReferenceId()), "profile picture can only be removed by it's owner");
+                return attachmentService.removeAttachmentBy(attachmentReferenceId);
+            }
+            if (attachment.getCategory().toUpperCase().equalsIgnoreCase(Attachment.attachmentCategoryType.PROPERTY.name())) {
+                PropertyUnit propertyUnit = propertyUnitRepository.findOne(attachment.getParentReferenceId());
+                Assert.isTrue(propertyUnit.getOwner().getUserReferenceId().equals(userSaved.getUserReferenceId()) || user.getProfile().getRoles().stream().anyMatch(r -> r == PangoUserRole.COORDINATOR), " property picture can only be removed by owner or coordinator");
+                return attachmentService.removeAttachmentBy(attachmentReferenceId);
+            }
+        }
+        return Optional.empty();
     }
 
     private User updateUserBasicInfo(User user) {
