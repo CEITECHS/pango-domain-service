@@ -3,9 +3,7 @@
  */
 package com.ceitechs.domain.service.util;
 
-import com.ceitechs.domain.service.domain.AttachmentOld;
-import com.ceitechs.domain.service.domain.FileMetadata;
-import com.ceitechs.domain.service.domain.AttachmentToUpload;
+import com.ceitechs.domain.service.domain.*;
 import lombok.Getter;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
@@ -279,6 +277,43 @@ public class PangoUtility {
     public static List<String> fieldNamesByAnnotation(Class clazz, Class<? extends Annotation> annotationClass){
         Field[] fieldList = clazz.getDeclaredFields();
        return Arrays.stream(fieldList).filter(field -> field.isAnnotationPresent(annotationClass)).map(Field::getName).collect(Collectors.toList());
+    }
+
+    public static boolean isProfilePictureOwner(User user, Attachment profilePicture) {
+        return (user != null && profilePicture != null) && profilePicture.getParentReferenceId().equals(user.getUserReferenceId());
+
+    }
+
+    public static boolean isPropertyOwner(User user, PropertyUnit property) {
+        return (user != null && property != null) &&
+                property.getOwner().getUserReferenceId().equals(user.getUserReferenceId());
+    }
+
+    public static boolean hasRole(User user, PangoUserRole role) {
+        return (user != null && user.getProfile() != null) &&
+                user.getProfile().getRoles().stream().anyMatch(r -> r == role);
+    }
+
+    public static boolean isCoordinator(User user){
+        return hasRole(user, PangoUserRole.COORDINATOR);
+    }
+
+    public static boolean isAttachmentCategoty(Attachment attachment, Attachment.attachmentCategoryType categoryType){
+        return (attachment != null && attachment.getCategory() != null) &&
+                attachment.getCategory().equalsIgnoreCase(categoryType.name());
+
+    }
+
+    /**
+     * check whether it's a property owner or a user who initiated the enquiry
+     * @param user
+     * @param enquiry
+     * @return
+     */
+    public static boolean isEnquiryParticipant(User user, PropertyUnitEnquiry enquiry) {
+        return (user != null && enquiry != null) &&
+                (enquiry.getProspectiveTenant().getUserReferenceId().equals(user.getUserReferenceId()) ||
+                        enquiry.getPropertyUnit().getOwner().getUserReferenceId().equals(user.getUserReferenceId()));
     }
 
 }

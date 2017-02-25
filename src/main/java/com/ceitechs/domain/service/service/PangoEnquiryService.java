@@ -19,7 +19,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -183,8 +186,7 @@ public interface PangoEnquiryService {
                 throw new EntityNotFound(String.format("Enquiry with ID: %s not found", enquiryReferenceId), new IllegalArgumentException(String.format("Enquiry with ID: %s not found", enquiryReferenceId)));
 
             //2. Ensure that correspondence can only be added by property owner or a user who initiated the enquiry
-            Assert.isTrue((propertyUnitEnquiry.getProspectiveTenant().getUserReferenceId().equals(user.getUserReferenceId())) ||
-                    (propertyUnitEnquiry.getPropertyUnit().getOwner().getUserReferenceId().equals(user.getUserReferenceId())), String.format("User : %s not allowed to modify the  Enquiry", user.getUserReferenceId()));
+            Assert.isTrue(PangoUtility.isEnquiryParticipant(user, propertyUnitEnquiry), String.format("User : %s not allowed to modify the  Enquiry", user.getUserReferenceId()));
 
 
             //3. add correspondence to the enquiry
@@ -214,20 +216,34 @@ public interface PangoEnquiryService {
                 throw new EntityNotFound(String.format("Unknown user %s  ", prospectiveTenant.toString()), new IllegalArgumentException(String.format("Unkown user %s  ", prospectiveTenant.toString())));
             Page<PropertyUnitEnquiry> result = enquiryRepository.findByProspectiveTenantOrderByEnquiryDateDesc(savedUsr, new PageRequest(0, count > 0 ? count : 50));
 
-            //Associate cover photos to properties.
+              //retrieve cover photos to properties.
             if (result.getContent() != null || !result.getContent().isEmpty()) {
+                CompletableFuture<Map<String, List<Attachment>>> completableFuturePropertiesThumbnails = CompletableFuture.supplyAsync(() -> {
+                    List<Attachment> attachments = attachmentService.retrieveThumbnailAttachmentsBy(result.getContent().stream()
+                            .map(enquiry -> enquiry.getPropertyUnit().getPropertyId()).collect(toList()), Attachment.attachmentCategoryType.PROPERTY.name());
+                    return attachments.stream().collect(groupingBy(Attachment::getParentReferenceId));
+                });
 
-                CompletableFuture<List<Attachment>> completableFuturePropertiesThumbnails = CompletableFuture.supplyAsync(() -> attachmentService.retrieveThumbnailAttachmentsBy(result.getContent().stream()
-                        .map(enquiry -> enquiry.getPropertyUnit().getPropertyId()).collect(toList()), Attachment.attachmentCategoryType.PROPERTY.name()));
-
-                result.getContent().forEach(enquiry -> { // calculate and associate distance btn a user and properties they're enquired
+                // calculate and associate distance btn a user and properties they're enquired
+                result.getContent().forEach(enquiry -> {
                     if (prospectiveTenant.getLatitude() != 0.0 && prospectiveTenant.getLongitude() != 0.0) { // calculate distance from user
                         double distance = DistanceCalculator.distance(prospectiveTenant.getLatitude(), prospectiveTenant.getLongitude(), enquiry.getPropertyUnit().getLocation()[1], enquiry.getPropertyUnit().getLocation()[0], "K");
                         enquiry.getPropertyUnit().setDistance(distance);
                     }
                 });
 
-                //TODO map thumbnails (completableFuturePropertiesThumbnails) to property associated with enquiry
+                //associate cover photos to properties when available
+                try {
+                    Map<String, List<Attachment>> retrievedAttachments = completableFuturePropertiesThumbnails.get(1500, TimeUnit.MILLISECONDS);
+                    result.getContent().stream().forEach(enquiry -> {
+                        if (retrievedAttachments.containsKey(retrievedAttachments.get(enquiry.getPropertyUnit().getPropertyId())))
+                            enquiry.getPropertyUnit().setCoverPhoto(retrievedAttachments.get(enquiry.getPropertyUnit().getPropertyId()).get(0));
+                    });
+
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    logger.error(" Un-exception has occurred while retrieving property thumbnail to associate to Enqury");
+
+                }
 
             }
 
@@ -309,13 +325,16 @@ public interface PangoEnquiryService {
             PropertyUnitEnquiry enquiry = enquiryRepository.findOne(enquiryReferenceId);
 
             if (enquiry != null) {
-
-                List<Attachment> attachments = attachmentService.retrieveAttachmentsBy(Arrays.asList(enquiryReferenceId), Attachment.attachmentCategoryType.CORRESPONDENCE.name());
-                enquiry.setAttachments(new ArrayList<>(attachments));
+                try {
+                    List<Attachment> attachments = attachmentService.retrieveAttachmentsBy(Arrays.asList(enquiryReferenceId), Attachment.attachmentCategoryType.CORRESPONDENCE.name());
+                    enquiry.setAttachments(new ArrayList<>(attachments));
+                    enquiry.getAttachments().sort(Comparator.comparing(AttachmentProjection::getCreatedDate).reversed());
+                } catch (Exception ex) {
+                    logger.error("Error occurred while retrieving attachments associated with Enquiry: " + enquiryReferenceId);
+                }
 
                 //ensure that a right user is accessing the enquiry
-                Assert.isTrue((enquiry.getProspectiveTenant().getUserReferenceId().equals(user.getUserReferenceId())) ||
-                        (enquiry.getPropertyUnit().getOwner().getUserReferenceId().equals(user.getUserReferenceId())), String.format("User : %s not allowed to retrieve the  Enquiry Details", user.getUserReferenceId()));
+                Assert.isTrue(PangoUtility.isEnquiryParticipant(user, enquiry), String.format("User : %s not allowed to retrieve the  Enquiry Details", user.getUserReferenceId()));
                 //enquiry.getCorrespondences().forEach(correspondence -> correspondence.setAttachmentId(enquiry.getEnquiryReferenceId() + "-" + correspondence.getCorrespondenceReferenceId())); // associate attachmentId
                 enquiry.getCorrespondences().sort(Comparator.comparing(EnquiryCorrespondence::getCorrespondenceDate).reversed()); // sort by most recent
 

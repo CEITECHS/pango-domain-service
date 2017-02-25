@@ -5,7 +5,9 @@ import com.ceitechs.domain.service.domain.Attachment;
 import com.ceitechs.domain.service.util.PangoUtility;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +66,12 @@ public class AttachmentRepositoryTest extends AbstractPangoDomainServiceIntegrat
         attachment.setDescription("test - attachment");
         attachment.setReferenceId(PangoUtility.generateIdAsString());
         attachment.setParentReferenceId(PangoUtility.generateIdAsString());
+        try {
+            MockMultipartFile multiPartFile = new MockMultipartFile(resource.getFilename(), resource.getFilename(), null, resource.getInputStream());
+            attachment.setAttachment(multiPartFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return attachment;
     }
 

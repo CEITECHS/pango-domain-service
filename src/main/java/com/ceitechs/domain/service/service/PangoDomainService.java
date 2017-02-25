@@ -4,6 +4,7 @@ package com.ceitechs.domain.service.service;
 import com.ceitechs.domain.service.domain.Annotations.Updatable;
 import com.ceitechs.domain.service.domain.*;
 import com.ceitechs.domain.service.repositories.AttachmentRepository;
+import com.ceitechs.domain.service.repositories.PropertyUnitEnquiryRepository;
 import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.service.events.OnPropertySearchEvent;
@@ -26,6 +27,7 @@ import java.beans.IntrospectionException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -46,6 +48,15 @@ public interface PangoDomainService {
      * @return
      */
      Optional<PropertyUnit> createProperty(PropertyUnit propertyUnit, User user);
+
+
+    /**
+     *  modify and existing property
+     * @param propertyUnit
+     * @param user
+     * @return
+     */
+    Optional<PropertyUnit> updateProperty(PropertyUnit propertyUnit, User user);
 
     /**
      * Search for properties and updates user search criteria
@@ -110,6 +121,14 @@ public interface PangoDomainService {
     Optional<UserProjection> addUserPreference(UserPreference userPreference, User user);
 
     /**
+     * verify that property does exist or remove it from the Pango.
+     * @param user
+     * @param property
+     * @return
+     */
+    Optional<PropertyUnit> verifyProperty(User user, PropertyUnit property);
+
+    /**
      *  removes a particular user's preference
      * @param preferenceId
      * @param user
@@ -135,12 +154,23 @@ public interface PangoDomainService {
     Optional<UserProjection> updateUserInformation(User user, UserUpdating updating);
 
     /**
-     *  Add/Update user profile-picture or property-picture
+     *  Add user profile-picture or property-picture or correspondence-attachment
      * @param user
      * @param attachment
      * @return
      */
     Optional<Attachment> saveAttachment(User user, Attachment attachment);
+
+
+    /**
+     *  replace attachment or update attachment metadata user profile-picture or property-picture
+     * @param user
+     * @param attachment
+     * @return
+     */
+    Optional<Attachment> updateAttachment(User user, Attachment attachment);
+
+
 
     /**
      * Removes the attachment by it's reference-id
@@ -186,6 +216,9 @@ class PangoDomainServiceImpl implements PangoDomainService {
     @Autowired
     private AttachmentRepository attachmentRepository;
 
+    @Autowired
+    private PropertyUnitEnquiryRepository enquiryRepository;
+
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     @Autowired
@@ -214,18 +247,50 @@ class PangoDomainServiceImpl implements PangoDomainService {
     public Optional<PropertyUnit> createProperty(PropertyUnit propertyUnit, User user) {
         Assert.notNull(propertyUnit, "Property to add can not be null or Empty");
         Assert.notNull(propertyUnit.getOwner(), "Property Owner can not be null or Empty");
+        Assert.isTrue(PangoUtility.isPropertyOwner(user, propertyUnit) || PangoUtility.isCoordinator(user), "Property can only be added by it's owner or coordinator");
 
         String userId = propertyUnit.getOwner().getUserReferenceId();
         User owner = userRepository.findOne(userId);
         propertyUnit.setOwner(owner);
         if (!StringUtils.hasText(propertyUnit.getPropertyId())) {
             propertyUnit.setPropertyId(PangoUtility.generateIdAsString());
+            propertyUnit.setVerified(PangoUtility.isCoordinator(user)); // verified only when added by a coordinator.
             PropertyUnit savedUnit = propertyUnitRepository.save(propertyUnit);
             logger.info("Saved Property " + savedUnit);
+            if ( !PangoUtility.isCoordinator(user) && !owner.getProfile().getRoles().contains(PangoUserRole.RENTAL_OWNER)) {
+                owner.getProfile().getRoles().add(PangoUserRole.RENTAL_OWNER);
+                CompletableFuture.runAsync(() -> userRepository.save(owner));
+            }
+
             return Optional.of(savedUnit);
         }
-        //TODO : Existing or firstTime update by Coordinator do update
+        //TODO : check for Existing
         return Optional.empty();
+    }
+
+
+    /**
+     * verify that property does exist or remove it from the Pango.
+     *
+     * @param user
+     * @param property
+     * @return
+     */
+    @Override
+    public Optional<PropertyUnit> verifyProperty(User user, PropertyUnit property) {
+        throw new UnsupportedOperationException("yet to be implemented"); //TODO implementation
+    }
+
+    /**
+     * modify and existing property
+     *
+     * @param propertyUnit
+     * @param user
+     * @return
+     */
+    @Override
+    public Optional<PropertyUnit> updateProperty(PropertyUnit propertyUnit, User user) {
+        throw new UnsupportedOperationException("yet to be implemented"); //TODO implementation
     }
 
     /**
@@ -253,7 +318,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
                 return propertyUnitGeoResults.getContent().parallelStream()
                         .map(propertyUnitGeoResult -> {
                             PropertyUnit propertyUnit = propertyUnitGeoResult.getContent();
-                            propertyUnit.setCoverPhoto((AttachmentProjection) thumbnailsMap.get(propertyUnit.getPropertyId()));
+                            propertyUnit.setCoverPhoto(thumbnailsMap.get(propertyUnit.getPropertyId()).get(0));
                             return new GeoResult<>(propertyUnit, propertyUnitGeoResult.getDistance());
                         }).collect(toList());
             }
@@ -503,7 +568,7 @@ class PangoDomainServiceImpl implements PangoDomainService {
 
 
     /**
-     * Add/Update user profile-picture or property-picture
+     * Add user profile-picture or property-picture or correspondence
      *
      * @param user
      * @param attachment
@@ -511,12 +576,50 @@ class PangoDomainServiceImpl implements PangoDomainService {
      */
     @Override
     public Optional<Attachment> saveAttachment(User user, Attachment attachment) {
-        //TODO pending save or update of attachment from service layer
-        return null;
+        Assert.notNull(user, "user can not be null or Empty");
+        Assert.notNull(attachment, "Attachment can not be null or empty");
+        Assert.hasText(attachment.getCategory(), "Attachment-category can not be null or empty");
+        User userSaved = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue(user.getEmailAddress(), "");
+
+        if (userSaved != null) {
+            if (PangoUtility.isAttachmentCategoty(attachment, Attachment.attachmentCategoryType.PROFILE_PICTURE)) {
+                Assert.isTrue(PangoUtility.isProfilePictureOwner(userSaved, attachment), "profile picture can only be added or modified by it's owner ");
+                return attachmentService.storeAttachment(userSaved, attachment);
+            }
+
+            if (PangoUtility.isAttachmentCategoty(attachment, Attachment.attachmentCategoryType.PROPERTY)) {
+                PropertyUnit propertyUnit = propertyUnitRepository.findOne(attachment.getParentReferenceId());
+                Assert.isTrue(PangoUtility.isPropertyOwner(userSaved, propertyUnit) || PangoUtility.isCoordinator(userSaved), " property pictures can only be added by owner or coordinator");
+                return  attachmentService.storeAttachment(userSaved, attachment);
+            }
+
+            if (PangoUtility.isAttachmentCategoty(attachment, Attachment.attachmentCategoryType.CORRESPONDENCE)){
+                PropertyUnitEnquiry propertyUnitEnquiry = enquiryRepository.findOne(attachment.getParentReferenceId());
+                Assert.isTrue(PangoUtility.isEnquiryParticipant(userSaved, propertyUnitEnquiry), "Enquiry attachment can only be added or modified by it's respective participants.");
+                return attachmentService.storeAttachment(userSaved, attachment);
+            }
+        } else {
+            logger.error("User: " + user.getEmailAddress() + " does not exist or has not been verified, can no perform the operation");
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * replace attachment or update attachment metadata user profile-picture or property-picture
+     *
+     * @param user
+     * @param attachment
+     * @return
+     */
+    @Override
+    public Optional<Attachment> updateAttachment(User user, Attachment attachment) {
+        throw new UnsupportedOperationException(" yet to be implemented");
     }
 
     /**
      * Removes the attachment by it's reference-id
+     * Attachment can only be removed by it's owner or coordinator for property attachments
      *
      * @param user
      * @param attachmentReferenceId
@@ -524,16 +627,16 @@ class PangoDomainServiceImpl implements PangoDomainService {
      */
     @Override
     public Optional<Attachment> deleteAttachment(User user, String attachmentReferenceId) {
-        User userSaved = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue(user.getEmailAddress(), null);
+        User userSaved = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue(user.getEmailAddress(), "");
         Attachment attachment = attachmentRepository.findOne(attachmentReferenceId);
         if (userSaved != null && attachment != null) {
             if (attachment.getCategory().toUpperCase().equalsIgnoreCase(Attachment.attachmentCategoryType.PROFILE_PICTURE.name())) {
-                Assert.isTrue(attachment.getParentReferenceId().equals(userSaved.getUserReferenceId()), "profile picture can only be removed by it's owner");
+                Assert.isTrue(PangoUtility.isProfilePictureOwner(userSaved, attachment), "profile picture can only be removed by it's owner");
                 return attachmentService.removeAttachmentBy(attachmentReferenceId);
             }
             if (attachment.getCategory().toUpperCase().equalsIgnoreCase(Attachment.attachmentCategoryType.PROPERTY.name())) {
                 PropertyUnit propertyUnit = propertyUnitRepository.findOne(attachment.getParentReferenceId());
-                Assert.isTrue(propertyUnit.getOwner().getUserReferenceId().equals(userSaved.getUserReferenceId()) || user.getProfile().getRoles().stream().anyMatch(r -> r == PangoUserRole.COORDINATOR), " property picture can only be removed by owner or coordinator");
+                Assert.isTrue(PangoUtility.isPropertyOwner(userSaved, propertyUnit) || PangoUtility.isCoordinator(userSaved), " property picture can only be removed by owner or coordinator");
                 return attachmentService.removeAttachmentBy(attachmentReferenceId);
             }
         }

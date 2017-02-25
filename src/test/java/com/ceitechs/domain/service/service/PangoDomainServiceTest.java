@@ -2,20 +2,18 @@ package com.ceitechs.domain.service.service;
 
 import com.ceitechs.domain.service.AbstractPangoDomainServiceIntegrationTest;
 import com.ceitechs.domain.service.domain.*;
+import com.ceitechs.domain.service.repositories.AttachmentRepository;
+import com.ceitechs.domain.service.repositories.AttachmentRepositoryTest;
 import com.ceitechs.domain.service.repositories.PropertyUnitRepository;
 import com.ceitechs.domain.service.repositories.UserRepository;
 import com.ceitechs.domain.service.util.PangoUtility;
-import com.ceitechs.domain.service.util.ReferenceIdFor;
-import com.mongodb.gridfs.GridFSDBFile;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.collection.IsCollectionWithSize;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.geo.GeoResult;
-import org.springframework.data.mongodb.gridfs.GridFsOperations;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -40,9 +38,9 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
     @Autowired
     UserRepository userRepository;
 
-
     @Autowired
-    private GridFsOperations operations;
+    private AttachmentRepository attachmentRepository;
+
 
     @Autowired
     PropertyUnitRepository unitRepository;
@@ -51,37 +49,41 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
     @Lazy(true)
     PangoDomainService domainService;
 
+
+
     @Value("${user.verification.uri}")
     private String verificationUri;
 
     @Test
     public void createPropertyTest() throws IOException {
-        operations.delete(null);
         unitRepository.deleteAll();
         userRepository.deleteAll();
+        attachmentRepository.deleteAll();
 
         PropertyUnit unit = createPropertyUnit();
         User usr = unit.getOwner();
 
         Optional<PropertyUnit> propertyUnitOptional = domainService.createProperty(unit, usr);
         assertTrue(propertyUnitOptional.isPresent());
-       // FileMetadata meta = new FileMetadata();
-       // meta.setReferenceId(propertyUnitOptional.get().getPropertyId());
-       // GridFSDBFile file = gridFsService.getProfilePicture(meta, ReferenceIdFor.PROPERTY);
-        //assertNotNull(file);
+
     }
 
     @Test
     public void searchPropertyTest() throws IOException {
-        operations.delete(null);
         unitRepository.deleteAll();
         userRepository.deleteAll();
+        attachmentRepository.deleteAll();
 
         PropertyUnit unit = createPropertyUnit();
         User usr = unit.getOwner();
 
         Optional<PropertyUnit> propertyUnitOptional = domainService.createProperty(unit, usr);
         assertTrue(propertyUnitOptional.isPresent());
+
+        Attachment attachment = AttachmentRepositoryTest.createAttachment();
+        attachment.setParentReferenceId(propertyUnitOptional.get().getPropertyId());
+        attachment.setThumbnail(true);
+        domainService.saveAttachment(usr,attachment);
 
         PropertySearchCriteria searchCriteria= new PropertySearchCriteria();
         searchCriteria.setMinPrice(1000);
@@ -95,24 +97,41 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         assertThat("A size of one is expected", geoResults,hasSize(1));
         geoResults.forEach(g ->{
             System.out.println(g.getDistance() + " - " +g.getContent());
-            System.out.println(g.getContent().getCoverPhoto());
+            assertThat("cover photo can not be null", g.getContent().getCoverPhoto() !=null);
+            assertThat("cover photo description should match", g.getContent().getCoverPhoto().getDescription().equals(attachment.getDescription()));
+            assertThat("Url should not be null or empty", g.getContent().getCoverPhoto().getUrl().length() > 0);
         });
+
     }
 
     @Test
     public void searchPropertyByReferenceIdTest() throws IOException {
-        operations.delete(null);
         unitRepository.deleteAll();
         userRepository.deleteAll();
+        attachmentRepository.deleteAll();
 
         PropertyUnit unit = createPropertyUnit();
         User usr = unit.getOwner();
 
         Optional<PropertyUnit> propertyUnitOptional = domainService.createProperty(unit, usr);
         assertTrue(propertyUnitOptional.isPresent());
+
+        Attachment attachment = AttachmentRepositoryTest.createAttachment();
+        attachment.setParentReferenceId(propertyUnitOptional.get().getPropertyId());
+        attachment.setThumbnail(true);
+        domainService.saveAttachment(usr,attachment);
+
        Optional<PropertyUnit> propertyUnit = domainService.retrievePropertyBy(propertyUnitOptional.get().getPropertyId(),usr);
         assertTrue(propertyUnit.isPresent());
-        assertThat("Attachments", propertyUnit.get().getAttachments(),hasSize(unit.getAttachments().size()));
+
+        assertThat("Attachments", propertyUnit.get().getAttachments(),hasSize(1));
+        propertyUnit.get().getAttachments().forEach(a ->{
+            System.out.println(propertyUnit.get().getDistance() );
+            assertThat("cover photo can not be null", a !=null);
+            assertThat("cover photo description should match", a.getDescription().equals(attachment.getDescription()));
+            assertThat("Url should not be null or empty", a.getUrl().length() > 0);
+        });
+        domainService.deleteAttachment(usr, propertyUnit.get().getAttachments().get(0).getReferenceId());
         System.out.println(propertyUnit.get());
     }
 
@@ -132,6 +151,11 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         user.setFirstName("fName");
         user.setLastName("lName");
         user.setEmailAddress("fName.lName@pango.com");
+
+        UserProfile profile = new UserProfile();
+        profile.setVerified(true);
+
+        user.setProfile(profile);
 
         // Save the user
         userRepository.save(user);
@@ -179,17 +203,6 @@ public class PangoDomainServiceTest extends AbstractPangoDomainServiceIntegratio
         //propertyUnit.getAttachments().add(buildAttachment());
 
         return propertyUnit;
-    }
-
-    private static AttachmentOld buildAttachment() throws IOException {
-        AttachmentOld attachment = new AttachmentOld();
-        attachment.setFileType(FileMetadata.FILETYPE.PHOTO.name());
-        attachment.setFileName(resource.getFilename());
-        attachment.setFileSize(resource.getFile().length());
-        attachment.setFileDescription("Cover photo");
-        attachment.setProfilePicture(true);
-        attachment.setContentBase64(PangoUtility.InputStreamToBase64(Optional.of(resource.getInputStream()),attachment.extractExtension()).get());
-        return attachment;
     }
 
     @Test
