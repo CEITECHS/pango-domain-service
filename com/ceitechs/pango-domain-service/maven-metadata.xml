@@ -4,9 +4,8 @@
   <artifactId>pango-domain-service</artifactId>
   <versioning>
     <versions>
-      <version>1.0.0-SNAPSHOT</version>
       <version>1.0.1-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20170122161229</lastUpdated>
+    <lastUpdated>20170225221728</lastUpdated>
   </versioning>
 </metadata>
