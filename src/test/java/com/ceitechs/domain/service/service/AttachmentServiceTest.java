@@ -30,6 +30,7 @@ public class AttachmentServiceTest extends AbstractPangoDomainServiceIntegration
     @Test(expected = RuntimeException.class)
     public void storeAttachmentWithoutActualAttachmentTest() {
         Attachment attachment = AttachmentRepositoryTest.createAttachment();
+        attachment.setAttachment(null);
         User user = new User();
         user.setUserReferenceId(PangoUtility.generateIdAsString());
         attachmentService.storeAttachment(user, attachment);

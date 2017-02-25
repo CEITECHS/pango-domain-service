@@ -10,6 +10,7 @@ import com.ceitechs.domain.service.service.events.PangoEventsPublisher;
 import com.ceitechs.domain.service.util.PangoUtility;
 import com.ceitechs.domain.service.util.ReferenceIdFor;
 import com.mongodb.gridfs.GridFSDBFile;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertTrue;
  * @author iddymagohe
  * @since 1.0
  */
+@Ignore
 public class PangoAttachmentEventListenerTest extends AbstractPangoDomainServiceIntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(PangoAttachmentEventListenerTest.class);
