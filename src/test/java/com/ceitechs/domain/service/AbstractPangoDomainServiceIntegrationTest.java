@@ -21,7 +21,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
         "mail.smtp.user=KrWdWgeYKiIMQqEUVbWMG6xUaIIsDfPJhEVr/VsXUOQ=",
         "mail.smtp.password=NkCHfPStANtsWkcTbsoaDQ==",
         "mail.smtp.auth=true",
-        "mail.smtp.starttls.enable=true"})
+        "mail.smtp.starttls.enable=true", "access.key.id=AKIAJLBAJNUMLHZIUZEA", "secret.key.id=9xinRhvCzMO10uBnmFa0IqSnQFTuNk9JjFlKxkHHOdYFRFJTagTG8wKs5i4X+dQK",
+        "s3.signedurl.timeout.milliseconds=3600000", "s3.attachments.bucketname=pango-attachments"
+})
 @ContextConfiguration(classes = {PangoDomainServiceConfig.class})
 @Ignore
 public class AbstractPangoDomainServiceIntegrationTest {

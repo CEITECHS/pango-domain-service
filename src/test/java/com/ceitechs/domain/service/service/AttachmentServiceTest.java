@@ -45,5 +45,6 @@ public class AttachmentServiceTest extends AbstractPangoDomainServiceIntegration
         Optional<Attachment> attachmentOptional = attachmentService.storeAttachment(user, attachment);
         assertTrue(attachmentOptional.isPresent());
         assertNotNull(attachmentOptional.get().getUrl());
+        System.out.println(attachmentOptional.get().getUrl());
     }
 }

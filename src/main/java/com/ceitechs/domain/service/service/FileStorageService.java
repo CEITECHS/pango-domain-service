@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.ceitechs.domain.service.domain.Attachment;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +43,7 @@ class AWSS3FileStorageService implements FileStorageService {
 
     private final AmazonS3 s3Client;
 
-   private final TransferManager transferManager;
+    private final TransferManager transferManager;
 
     @Value("${s3.signedurl.timeout.milliseconds:3600000}")
     private  long signedUrlTimeout;
@@ -50,11 +51,9 @@ class AWSS3FileStorageService implements FileStorageService {
     @Value("${s3.attachments.bucketname:pango-attachmentse}")
     private  String bucketName;
 
-    public AWSS3FileStorageService() {
-        this.s3Client = AmazonS3ClientBuilder.standard()
-                .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
-                .withRegion(Regions.US_EAST_1)
-                .build();
+    @Autowired
+    public AWSS3FileStorageService(AmazonS3 s3Client) {
+        this.s3Client = s3Client;
         this.transferManager = TransferManagerBuilder.standard()
                 .withS3Client(s3Client)
                 .build();

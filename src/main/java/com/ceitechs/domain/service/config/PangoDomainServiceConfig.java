@@ -1,5 +1,11 @@
 package com.ceitechs.domain.service.config;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.ceitechs.domain.service.util.PangoUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +52,13 @@ public class PangoDomainServiceConfig {
      @Value("${templates.root.uri}")
      private String templatesRoot;
 
+    @Value("${access.key.id}")
+     private String keyId;
+
+    @Value("${secret.key.id}")
+    private String secretKey;
+
+
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigurer() {
@@ -83,5 +96,14 @@ public class PangoDomainServiceConfig {
         //velocityProperties.setProperty("url.resource.loader.modificationCheckInterval","5");
         velocityEngineFactoryBean.setVelocityProperties(velocityProperties);
         return velocityEngineFactoryBean;
+    }
+
+    @Bean
+    public AmazonS3 amazonS3Client() throws Exception {
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(keyId, PangoUtility.decrypt(secretKey,appliedKey));
+        return AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+                .withRegion(Regions.US_EAST_1)
+                .build();
     }
 }
