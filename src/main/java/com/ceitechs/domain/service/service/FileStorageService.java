@@ -1,16 +1,10 @@
 package com.ceitechs.domain.service.service;
 
 import com.amazonaws.HttpMethod;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
