@@ -627,8 +627,12 @@ class PangoDomainServiceImpl implements PangoDomainService {
      */
     @Override
     public Optional<Attachment> deleteAttachment(User user, String attachmentReferenceId) {
+        Assert.hasText(attachmentReferenceId, "ReferenceId can not be null or empty");
+        Assert.notNull(user, "user can not be null or empty");
         User userSaved = userRepository.findByEmailAddressOrUserReferenceIdAllIgnoreCaseAndProfileVerifiedTrue(user.getEmailAddress(), "");
+        Assert.notNull(user, "user has not been verified or does not exists");
         Attachment attachment = attachmentRepository.findOne(attachmentReferenceId);
+        Assert.notNull(attachment, "Attachment with reference-Id does not exists");
         if (userSaved != null && attachment != null) {
             if (attachment.getCategory().toUpperCase().equalsIgnoreCase(Attachment.attachmentCategoryType.PROFILE_PICTURE.name())) {
                 Assert.isTrue(PangoUtility.isProfilePictureOwner(userSaved, attachment), "profile picture can only be removed by it's owner");

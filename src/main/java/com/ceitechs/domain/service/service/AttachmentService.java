@@ -122,7 +122,7 @@ class AttachmentServiceImpl implements AttachmentService {
             attachmentRepository.delete(referenceId);
         }catch (Exception ex){
             logger.error("Error occurred during attachment upload " + ex.getMessage(), ex);
-            throw new RuntimeException("Error occurred during attachment upload ", ex);
+            throw new RuntimeException("Error occurred while trying to delete an attachment ", ex);
         }
 
         return Optional.ofNullable(attachment);

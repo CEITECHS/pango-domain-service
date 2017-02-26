@@ -1,6 +1,7 @@
 package com.ceitechs.domain.service.domain;
 
 import com.ceitechs.domain.service.service.AttachmentProjection;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -43,6 +44,7 @@ public class Attachment implements AttachmentProjection {
 
     private boolean active = true;
 
+    @JsonIgnore
     @Transient
     private MultipartFile attachment;
 

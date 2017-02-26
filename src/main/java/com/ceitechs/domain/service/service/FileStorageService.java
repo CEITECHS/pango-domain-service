@@ -2,6 +2,7 @@ package com.ceitechs.domain.service.service;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -58,6 +59,7 @@ class AWSS3FileStorageService implements FileStorageService {
     public Attachment storeFile(Attachment attachment) throws Exception {
         ObjectMetadata metaData = new ObjectMetadata();
         metaData.setContentLength(attachment.getAttachment().getSize());
+        metaData.setContentType(attachment.getAttachment().getContentType());
         metaData.addUserMetadata(ATTACHMENT_REFRENCE_ID, attachment.getReferenceId());
         metaData.addUserMetadata(ATTACHMENT_CATEGORY, attachment.getCategory());
         metaData.addUserMetadata(PARENT_REFERENCE_ID, attachment.getParentReferenceId());
@@ -91,8 +93,7 @@ class AWSS3FileStorageService implements FileStorageService {
 
     @Override
     public void removeFile(Attachment attachment) throws Exception {
-        //TODO pending impl
-        return;
+        s3Client.deleteObject(new DeleteObjectRequest(attachment.getBucket(), resolveKeyName(attachment)));
     }
 
 
