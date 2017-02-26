@@ -40,6 +40,7 @@ class AWSS3FileStorageService implements FileStorageService {
     private static final String ATTACHMENT_REFRENCE_ID="referenceId";
     private static final String ATTACHMENT_CATEGORY="category";
     private static final String PARENT_REFERENCE_ID="parentReferenceId";
+    private static final String ATTACHMENT_DESCRIPTION="description";
 
     private final AmazonS3 s3Client;
 
@@ -66,6 +67,7 @@ class AWSS3FileStorageService implements FileStorageService {
         metaData.addUserMetadata(ATTACHMENT_REFRENCE_ID, attachment.getReferenceId());
         metaData.addUserMetadata(ATTACHMENT_CATEGORY, attachment.getCategory());
         metaData.addUserMetadata(PARENT_REFERENCE_ID, attachment.getParentReferenceId());
+        metaData.addUserMetadata(ATTACHMENT_DESCRIPTION, attachment.getDescription());
         Upload upload = transferManager.upload(new PutObjectRequest(bucketName, resolveKeyName(attachment), attachment.getAttachment().getInputStream(), metaData));
         upload.waitForCompletion();
         attachment.setBucket(bucketName);
