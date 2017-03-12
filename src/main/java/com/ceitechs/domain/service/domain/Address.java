@@ -18,11 +18,35 @@ public class Address {
 
     private String addressLine2;
 
+    /**
+     * represents street or locality name within a county depending on the country of use
+     *
+     */
+    private String street;
+
+    /**
+     * county or main area within in the city/district
+     */
+    private String county;
+
+    /**
+     * city or district name in of a state/region
+     */
     private String city;
 
+    /**
+     * represents region or state depending on the country of use
+     */
     private String State;
 
+    /**
+     * represents postal code
+     */
     private String zip;
+
+    private double longitude;
+
+    private double latitude;
 
     private String country;
 
